@@ -1248,26 +1248,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"frontend@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "frontend@workspace:."
-  dependencies:
-    "@eslint/js": ^9.36.0
-    "@types/react": ^19.1.16
-    "@types/react-dom": ^19.1.9
-    "@vitejs/plugin-react": ^5.0.4
-    eslint: ^9.36.0
-    eslint-config-prettier: ^9.1.0
-    eslint-plugin-react-hooks: ^5.2.0
-    eslint-plugin-react-refresh: ^0.4.22
-    globals: ^16.4.0
-    prettier: ^3.4.2
-    react: ^19.1.1
-    react-dom: ^19.1.1
-    vite: "npm:rolldown-vite@7.1.14"
-  languageName: unknown
-  linkType: soft
-
 "fs-minipass@npm:^3.0.0":
   version: 3.0.3
   resolution: "fs-minipass@npm:3.0.3"
@@ -2355,6 +2335,26 @@ __metadata:
   checksum: 7167432de6817fe8e9e0c9684f1d2de2bb688c94388f7569f7dbdb1587c9f4ca2a77962f134ec90be0cc4d004c939ff0d05acc9f34a0db39a3c797dada262633
   languageName: node
   linkType: hard
+
+"versatile-pos@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "versatile-pos@workspace:."
+  dependencies:
+    "@eslint/js": ^9.36.0
+    "@types/react": ^19.1.16
+    "@types/react-dom": ^19.1.9
+    "@vitejs/plugin-react": ^5.0.4
+    eslint: ^9.36.0
+    eslint-config-prettier: ^9.1.0
+    eslint-plugin-react-hooks: ^5.2.0
+    eslint-plugin-react-refresh: ^0.4.22
+    globals: ^16.4.0
+    prettier: ^3.4.2
+    react: ^19.1.1
+    react-dom: ^19.1.1
+    vite: "npm:rolldown-vite@7.1.14"
+  languageName: unknown
+  linkType: soft
 
 "vite@npm:rolldown-vite@7.1.14":
   version: 7.1.14

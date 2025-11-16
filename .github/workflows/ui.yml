@@ -1,0 +1,38 @@
+name: UI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    name: Build UI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        working-directory: ui
+        run: yarn install --immutable
+
+      - name: Run typecheck
+        working-directory: ui
+        run: yarn typecheck
+
+      - name: Run lint
+        working-directory: ui
+        run: yarn lint
+
+      - name: Build
+        working-directory: ui
+        run: yarn build

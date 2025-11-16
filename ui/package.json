@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "yarn@3.6.4",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -13,11 +14,15 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,json,css,scss,md}\""
   },
   "dependencies": {
+    "@ant-design/icons": "^6.1.0",
+    "antd": "^5.28.1",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@types/node": "^24.10.1",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",

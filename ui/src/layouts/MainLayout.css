@@ -1,0 +1,30 @@
+.main-layout {
+  min-height: 100vh;
+}
+
+.main-layout-header {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  background-color: var(--ant-dark-blue);
+}
+
+.main-layout-logo {
+  display: flex;
+  align-items: center;
+  margin-right: 40px;
+  font-size: 20px;
+  color: #1890ff;
+}
+
+.main-layout-content {
+  padding: 24px;
+  background: #f0f2f5;
+}
+
+.main-layout-content-wrapper {
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  min-height: calc(100vh - 112px);
+}

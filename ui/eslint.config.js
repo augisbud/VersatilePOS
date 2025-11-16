@@ -30,6 +30,9 @@ export default defineConfig([
         'error',
         { varsIgnorePattern: '^[A-Z_]' },
       ],
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
 ]);

@@ -18,6 +18,14 @@ jobs:
       with:
         go-version: '1.25.3'
 
+    - name: Tidy
+      working-directory: api
+      run: go mod tidy
+
     - name: Build
       working-directory: api
-      run: go build -v ./...
+      run: |
+        go install github.com/swaggo/swag/cmd/swag@latest
+        swag init -g server/main.go
+        go build -v server/main.go
+        

@@ -119,7 +119,7 @@ func getAccount(c *gin.Context) {
 // @Router /account/{id} [delete]
 func deleteAccount(c *gin.Context) {
 	id := c.Param("id")
-	if result := database.DB.Delete(&entities.Account{}, id); result.Error != nil {
+	if result := database.DB.Where("ident_account = ?", id).Delete(&entities.Account{}); result.Error != nil {
 		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: result.Error.Error()})
 		return
 	} else if result.RowsAffected == 0 {

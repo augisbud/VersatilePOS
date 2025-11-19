@@ -1,7 +1,7 @@
 package database
 
 import (
-	"VersatilePOS/internal/database/entities"
+	"VersatilePOS/database/entities"
 	"log"
 
 	"gorm.io/driver/postgres"

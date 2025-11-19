@@ -1,17 +1,21 @@
 package main
 
 import (
-	"VersatilePOS/internal/database"
-	"VersatilePOS/internal/router"
+	"VersatilePOS/database"
+	"VersatilePOS/router"
 
 	"github.com/gin-gonic/gin"
 )
 
-// @title POS API
+// @title VersatilePOS API
 // @version 1.0
-// @description POS API (generated with swaggo/swag)
+// @description VersatilePOS API
 // @host localhost:8080
 // @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description "Type 'Bearer' followed by a space and a JWT token."
 func main() {
 	database.Connect()
 

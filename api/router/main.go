@@ -1,8 +1,9 @@
 package router
 
 import (
+	"VersatilePOS/account"
+	"VersatilePOS/business"
 	_ "VersatilePOS/docs"
-	"VersatilePOS/internal/account"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -11,6 +12,7 @@ import (
 
 func RegisterRoutes(r *gin.Engine) {
 	account.RegisterHandlers(r)
+	business.RegisterHandlers(r)
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

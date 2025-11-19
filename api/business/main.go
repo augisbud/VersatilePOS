@@ -25,6 +25,7 @@ import (
 // @Failure 500 {object} models.HTTPError
 // @Security BearerAuth
 // @Router /business [post]
+// @Id createBusiness
 func createBusiness(c *gin.Context) {
 	var req businessModels.CreateBusinessRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -87,6 +88,7 @@ func createBusiness(c *gin.Context) {
 // @Failure 500 {object} models.HTTPError
 // @Security BearerAuth
 // @Router /business/{id} [get]
+// @Id getBusinessById
 func getBusiness(c *gin.Context) {
 	id := c.Param("id")
 

@@ -30,6 +30,7 @@ import (
 // @Failure 500 {object} models.HTTPError
 // @Security BearerAuth
 // @Router /account [post]
+// @Id createAccount
 func createAccount(c *gin.Context) {
 	var req accountModels.CreateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -96,6 +97,7 @@ func createAccount(c *gin.Context) {
 // @Failure 500 {object} models.HTTPError
 // @Security BearerAuth
 // @Router /account [get]
+// @Id getAccounts
 func getAccounts(c *gin.Context) {
 	userID, err := middleware.GetUserIDFromContext(c)
 	if err != nil {
@@ -160,6 +162,7 @@ func getAccounts(c *gin.Context) {
 // @Failure 400 {object} models.HTTPError
 // @Failure 401 {object} models.HTTPError
 // @Router /account/login [post]
+// @Id loginAccount
 func login(c *gin.Context) {
 	var req accountModels.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -209,6 +212,7 @@ func login(c *gin.Context) {
 // @Failure 404 {object} models.HTTPError
 // @Security BearerAuth
 // @Router /account/{id} [get]
+// @Id getAccountById
 func getAccount(c *gin.Context) {
 	id := c.Param("id")
 	requestingUserID, err := middleware.GetUserIDFromContext(c)
@@ -288,6 +292,7 @@ func getAccount(c *gin.Context) {
 // @Failure 500 {object} models.HTTPError
 // @Security BearerAuth
 // @Router /account/{id} [delete]
+// @Id deleteAccountById
 func deleteAccount(c *gin.Context) {
 	id := c.Param("id")
 	requestingUserID, err := middleware.GetUserIDFromContext(c)

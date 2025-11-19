@@ -1,25 +1,13 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { routesConfig } from '@/config/routes.config';
 import { useAuth } from '@/contexts/AuthContext';
-import { Typography } from 'antd';
 import { UserRole } from '@/types/auth';
 import { getRoutesForBusinessType } from '@/utils/routes';
-
-const { Title, Paragraph } = Typography;
-
-const NotFound = () => (
-  <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-    <Title level={1}>404</Title>
-    <Paragraph>Page not found</Paragraph>
-  </div>
-);
-
-const Unauthorized = () => (
-  <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-    <Title level={1}>403</Title>
-    <Paragraph>You don't have permission to access this page</Paragraph>
-  </div>
-);
+import { AuthGateway } from '@/layouts/AuthGateway';
+import { RouteId } from '@/types/routes';
+import { NotFound } from '@/pages/NotFound';
+import { Register } from '@/pages/Register';
+import { Login } from '@/pages/Login';
 
 interface ProtectedRouteProps {
   element: React.ComponentType;
@@ -27,15 +15,10 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ element: Component, roles }: ProtectedRouteProps) => {
-  const { isAuthenticated, hasRole } = useAuth();
-
-  if (!isAuthenticated) {
-    // In a real app, redirect to login
-    return <Navigate to="/" replace />;
-  }
+  const { hasRole } = useAuth();
 
   if (!hasRole(roles)) {
-    return <Unauthorized />;
+    return <Navigate to={RouteId.UNAUTHORIZED} />;
   }
 
   return <Component />;
@@ -48,15 +31,19 @@ export const AppRouter = () => {
 
   return (
     <Routes>
-      {availableRoutes.map((route) => (
-        <Route
-          key={route.id}
-          path={route.path}
-          element={
-            <ProtectedRoute element={route.component} roles={route.roles} />
-          }
-        />
-      ))}
+      <Route path={RouteId.LOGIN} element={<Login />} />
+      <Route path={RouteId.REGISTER} element={<Register />} />
+      <Route element={<AuthGateway />}>
+        {availableRoutes.map((route) => (
+          <Route
+            key={route.id}
+            path={route.path}
+            element={
+              <ProtectedRoute element={route.component} roles={route.roles} />
+            }
+          />
+        ))}
+      </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

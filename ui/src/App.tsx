@@ -1,16 +1,16 @@
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import { MainLayout } from './layouts/MainLayout';
 import { AppRouter } from './router/AppRouter';
+import { WithStore } from './hoc/WithStore';
 
 export const App = () => {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <MainLayout>
+    <WithStore>
+      <BrowserRouter>
+        <AuthProvider>
           <AppRouter />
-        </MainLayout>
-      </AuthProvider>
-    </BrowserRouter>
+        </AuthProvider>
+      </BrowserRouter>
+    </WithStore>
   );
 };

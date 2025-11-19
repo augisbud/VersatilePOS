@@ -11,17 +11,20 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,css,scss,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,css,scss,md}\""
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,css,scss,md}\"",
+    "generate-api": "openapi-ts"
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
     "antd": "^5.28.1",
+    "axios": "^1.13.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@hey-api/openapi-ts": "0.87.5",
     "@types/node": "^24.10.1",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",

@@ -3,8 +3,11 @@ package main
 import (
 	"VersatilePOS/database"
 	"VersatilePOS/router"
+	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 // @title VersatilePOS API
@@ -17,11 +20,25 @@ import (
 // @name Authorization
 // @description "Type 'Bearer' followed by a space and a JWT token."
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Warning: Error loading .env file:", err)
+	}
+
 	database.Connect()
 
 	r := gin.Default()
 
 	router.RegisterRoutes(r)
 
-	r.Run("localhost:8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = "localhost"
+	}
+
+	r.Run(host + ":" + port)
 }

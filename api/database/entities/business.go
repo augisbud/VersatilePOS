@@ -7,5 +7,5 @@ type Business struct {
 	Address           string  `json:"address"`
 	Phone             string  `json:"phone"`
 	Email             string  `json:"email"`
-	OwnerAccount      Account `gorm:"foreignKey:IdentOwnerAccount;constraint:OnDelete:RESTRICT"`
+	OwnerAccount      Account `gorm:"foreignKey:IdentOwnerAccount;references:IdentAccount;constraint:OnDelete:RESTRICT"`
 }

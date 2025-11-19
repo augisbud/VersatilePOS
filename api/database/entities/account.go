@@ -6,5 +6,5 @@ type Account struct {
 	IdentBusiness *uint64   `json:"identBusiness"`
 	Username      string    `json:"username" gorm:"unique"`
 	PasswordHash  string    `json:"-"`
-	Business      *Business `gorm:"foreignKey:IdentBusiness;constraint:OnDelete:SET NULL"`
+	Business      *Business `gorm:"foreignKey:IdentBusiness;references:IdentBusiness;constraint:OnDelete:SET NULL"`
 }

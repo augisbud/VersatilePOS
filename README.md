@@ -22,5 +22,5 @@ go install github.com/swaggo/swag/cmd/swag@latest
 export PATH=$PATH:$(go env GOPATH)/bin
 
 swag init -g server/main.go
-go run ./server
+go run ./server/main.go
 ```

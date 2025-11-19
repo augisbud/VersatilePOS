@@ -2,6 +2,10 @@ import { ReactNode } from 'react';
 import { UserRole } from './auth';
 
 export enum RouteId {
+  LOGIN = 'login',
+  REGISTER = 'register',
+  NOT_FOUND = 'not_found',
+  UNAUTHORIZED = 'unauthorized',
   DASHBOARD = 'dashboard',
   BOOKINGS = 'bookings',
   CUSTOMERS = 'customers',
@@ -20,5 +24,5 @@ export interface ScreenConfig {
   roles: UserRole[];
   icon?: ReactNode;
   showInNav?: boolean;
-  businessType: BusinessType;
+  businessType?: BusinessType;
 }

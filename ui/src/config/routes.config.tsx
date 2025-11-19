@@ -8,6 +8,7 @@ import { UserRole } from '@/types/auth';
 import { Dashboard } from '@/pages/Dashboard';
 import { Bookings } from '@/pages/Bookings';
 import { Customers } from '@/pages/Customers';
+import { Unauthorized } from '@/pages/Unauthorized';
 
 export const routesConfig: ScreenConfig[] = [
   {
@@ -39,5 +40,13 @@ export const routesConfig: ScreenConfig[] = [
     icon: <UserOutlined />,
     showInNav: true,
     businessType: BusinessType.BEAUTY_SALON,
+  },
+  {
+    id: RouteId.UNAUTHORIZED,
+    path: '/unauthorized',
+    title: 'Unauthorized',
+    component: Unauthorized,
+    roles: [UserRole.ADMIN, UserRole.STAFF],
+    showInNav: false,
   },
 ];

@@ -24,6 +24,7 @@
                     "account"
                 ],
                 "summary": "Get accounts",
+                "operationId": "getAccounts",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -65,6 +66,7 @@
                     "account"
                 ],
                 "summary": "Create account",
+                "operationId": "createAccount",
                 "parameters": [
                     {
                         "description": "Account to create",
@@ -123,6 +125,7 @@
                     "account"
                 ],
                 "summary": "Log in to account",
+                "operationId": "loginAccount",
                 "parameters": [
                     {
                         "description": "Login credentials",
@@ -174,6 +177,7 @@
                     "account"
                 ],
                 "summary": "Get account information",
+                "operationId": "getAccountById",
                 "parameters": [
                     {
                         "type": "integer",
@@ -221,6 +225,7 @@
                     "account"
                 ],
                 "summary": "Delete an account",
+                "operationId": "deleteAccountById",
                 "parameters": [
                     {
                         "type": "integer",
@@ -279,6 +284,7 @@
                     "business"
                 ],
                 "summary": "Create a business",
+                "operationId": "createBusiness",
                 "parameters": [
                     {
                         "description": "Business to create",
@@ -333,6 +339,7 @@
                     "business"
                 ],
                 "summary": "Get business information",
+                "operationId": "getBusinessById",
                 "parameters": [
                     {
                         "type": "integer",

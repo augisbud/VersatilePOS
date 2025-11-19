@@ -8,7 +8,7 @@ import (
 
 type CreateAccountRequest struct {
 	Name          string `json:"name" validate:"required"`
-	IdentBusiness uint64 `json:"identBusiness" validate:"required,gt=0"`
+	IdentBusiness *uint64 `json:"identBusiness,omitempty" validate:"omitempty,gt=0"`
 	Username      string `json:"username" validate:"required,alphanum,min=4,max=32"`
 	Password      string `json:"password" validate:"required,min=8,password"`
 }
@@ -35,8 +35,10 @@ func (r *CreateAccountRequest) Validate(businessExists BusinessExistsFunc) error
 	if err := validate.Struct(r); err != nil {
 		return err
 	}
-	if !businessExists(r.IdentBusiness) {
-		return errors.New("identBusiness does not exist")
+	if r.IdentBusiness != nil {
+		if !businessExists(*r.IdentBusiness) {
+			return errors.New("identBusiness does not exist")
+		}
 	}
 	return nil
 }

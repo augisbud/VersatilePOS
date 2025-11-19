@@ -1,7 +1,7 @@
 package entities
 
 type Account struct {
-	IdentAccount  uint64    `json:"identAccount" gorm:"primaryKey; autoIncrement"`
+	IdentAccount  uint64    `json:"identAccount" gorm:"primaryKey;autoIncrement"`
 	Name          string    `json:"name"`
 	IdentBusiness *uint64   `json:"identBusiness"`
 	Username      string    `json:"username" gorm:"unique"`

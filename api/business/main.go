@@ -111,8 +111,16 @@ func getBusiness(c *gin.Context) {
 	if business.IdentOwnerAccount != userID {
 		// If not owner, check if user is an employee of the business
 		var userAccount entities.Account
-		if err := database.DB.First(&userAccount, userID).Error; err != nil || userAccount.IdentBusiness == nil || *userAccount.IdentBusiness != business.IdentBusiness {
-			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: "access denied"})
+		if err := database.DB.First(&userAccount, userID).Error; err != nil {
+			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: "user not found"})
+			return
+		}
+		if userAccount.IdentBusiness == nil {
+			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: "user is not associated with any business"})
+			return
+		}
+		if *userAccount.IdentBusiness != business.IdentBusiness {
+			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: "user does not belong to this business"})
 			return
 		}
 	}

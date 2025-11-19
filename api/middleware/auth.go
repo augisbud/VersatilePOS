@@ -41,7 +41,11 @@ func AuthorizeAndGetClaims(c *gin.Context) (jwt.MapClaims, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv("JWT_SECRET")), nil
+		secret := os.Getenv("JWT_SECRET")
+		if len(secret) < 16 {
+			return nil, fmt.Errorf("JWT_SECRET environment variable is not set or is too short (must be at least 16 characters)")
+		}
+		return []byte(secret), nil
 	})
 
 	if err != nil {

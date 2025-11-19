@@ -20,4 +20,7 @@ jobs:
 
     - name: Build
       working-directory: api
-      run: go build -v ./...
+      run: |
+        go install github.com/swaggo/swag/cmd/swag@latest
+        swag init -g server/main.go
+        go build -v server/main.go

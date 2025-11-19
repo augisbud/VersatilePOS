@@ -5,10 +5,15 @@ import (
 	"VersatilePOS/internal/database"
 	"VersatilePOS/internal/database/entities"
 	"VersatilePOS/internal/generic/models"
+	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 // @Summary Create worker account
@@ -41,7 +46,8 @@ func createAccount(c *gin.Context) {
 	}
 
 	if result := database.DB.Create(&account); result.Error != nil {
-		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: result.Error.Error()})
+		log.Println("Failed to create account:", result.Error)
+		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
 		return
 	}
 
@@ -49,7 +55,7 @@ func createAccount(c *gin.Context) {
 }
 
 // @Summary Get all accounts
-// @Description Get all accounts (with pagination)
+// @Description Get all accounts
 // @Produce  json
 // @Success 200 {array} entities.Account
 // @Failure 500 {object} models.HTTPError
@@ -57,7 +63,8 @@ func createAccount(c *gin.Context) {
 func getAccounts(c *gin.Context) {
 	var accounts []entities.Account
 	if result := database.DB.Find(&accounts); result.Error != nil {
-		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: result.Error.Error()})
+		log.Println("Failed to get accounts:", result.Error)
+		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
 		return
 	}
 	c.IndentedJSON(http.StatusOK, accounts)
@@ -68,7 +75,7 @@ func getAccounts(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param   credentials  body  models.LoginRequest  true  "Login credentials"
-// @Success 200 {object} models.HTTPSuccess
+// @Success 200 {object} map[string]string
 // @Failure 400 {object} models.HTTPError
 // @Failure 401 {object} models.HTTPError
 // @Router /account/login [post]
@@ -81,7 +88,12 @@ func login(c *gin.Context) {
 
 	var account entities.Account
 	if result := database.DB.Where("username = ?", req.Username).First(&account); result.Error != nil {
-		c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: "invalid credentials"})
+		if result.Error == gorm.ErrRecordNotFound {
+			c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: "invalid credentials"})
+		} else {
+			log.Println("Failed to find account for login:", result.Error)
+			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
+		}
 		return
 	}
 
@@ -90,7 +102,19 @@ func login(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, models.HTTPSuccess{Message: "login successful"})
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": account.IdentAccount,
+		"exp": time.Now().Add(time.Hour * 24).Unix(),
+	})
+
+	// Sign and get the complete encoded token as a string using the secret
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "failed to generate token"})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{"token": tokenString})
 }
 
 // @Summary Get account information
@@ -104,7 +128,12 @@ func getAccount(c *gin.Context) {
 	id := c.Param("id")
 	var account entities.Account
 	if result := database.DB.Where("ident_account = ?", id).First(&account); result.Error != nil {
-		c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: "account not found"})
+		if result.Error == gorm.ErrRecordNotFound {
+			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: "account not found"})
+		} else {
+			log.Println("Failed to get account:", result.Error)
+			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
+		}
 		return
 	}
 	c.IndentedJSON(http.StatusOK, account)
@@ -120,7 +149,8 @@ func getAccount(c *gin.Context) {
 func deleteAccount(c *gin.Context) {
 	id := c.Param("id")
 	if result := database.DB.Where("ident_account = ?", id).Delete(&entities.Account{}); result.Error != nil {
-		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: result.Error.Error()})
+		log.Println("Failed to delete account:", result.Error)
+		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
 		return
 	} else if result.RowsAffected == 0 {
 		c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: "account not found"})

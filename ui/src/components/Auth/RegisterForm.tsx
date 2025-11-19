@@ -11,18 +11,22 @@ export interface RegisterFormValues {
 }
 
 interface RegisterFormProps {
-  onFinish: (values: RegisterFormValues) => void;
+  onFinish: (values: RegisterFormValues) => Promise<void>;
   loading: boolean;
 }
 
 export const RegisterForm = ({ onFinish, loading }: RegisterFormProps) => {
   const [form] = Form.useForm();
 
+  const handleFinish = (values: RegisterFormValues) => {
+    void onFinish(values);
+  };
+
   return (
     <Form
       form={form}
       name="register"
-      onFinish={onFinish}
+      onFinish={handleFinish}
       layout="vertical"
       size="large"
       scrollToFirstError

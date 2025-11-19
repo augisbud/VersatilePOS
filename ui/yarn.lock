@@ -124,6 +124,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ant-design/v5-patch-for-react-19@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "@ant-design/v5-patch-for-react-19@npm:1.0.3"
+  peerDependencies:
+    antd: ">=5.22.6"
+    react: ">=19.0.0"
+    react-dom: ">=19.0.0"
+  checksum: d4cf734b4f399b0d27b5548a90b35c20696681ccb4fa19db23973805219e9640747bb77757f4cb5592defeec3013257302ffcabacdf1b3361f3c161c61560958
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:^7.27.1":
   version: 7.27.1
   resolution: "@babel/code-frame@npm:7.27.1"
@@ -4417,6 +4428,7 @@ __metadata:
   resolution: "versatile-pos@workspace:."
   dependencies:
     "@ant-design/icons": ^6.1.0
+    "@ant-design/v5-patch-for-react-19": ^1.0.3
     "@eslint/js": ^9.36.0
     "@hey-api/openapi-ts": 0.87.5
     "@reduxjs/toolkit": ^2.10.1

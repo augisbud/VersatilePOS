@@ -14,7 +14,8 @@ import (
 // @version 1.0
 // @description VersatilePOS API
 // @host localhost:8080
-// @BasePath /
+// @BasePath 
+// @schemes http
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization

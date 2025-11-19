@@ -5,19 +5,31 @@ import {
   RegisterForm,
   RegisterFormValues,
 } from '@/components/Auth/RegisterForm';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { createAccount } from '@/actions/user';
 
 const { Title } = Typography;
 
 export const Register = () => {
   const [loading, setLoading] = useState(false);
+  const dispatch = useAppDispatch();
 
-  const onFinish = (values: RegisterFormValues) => {
+  const onFinish = async (values: RegisterFormValues) => {
     setLoading(true);
 
-    setTimeout(() => {
+    try {
+      await dispatch(
+        createAccount({
+          name: values.name,
+          username: values.username,
+          password: values.password,
+        })
+      ).unwrap();
+    } catch (error) {
+      console.error(error);
+    } finally {
       setLoading(false);
-      console.log(values);
-    }, 1000);
+    }
   };
 
   return (
@@ -31,7 +43,6 @@ export const Register = () => {
         <div style={{ textAlign: 'center' }}>
           <Title level={2}>Register Account</Title>
         </div>
-
         <RegisterForm onFinish={onFinish} loading={loading} />
       </Card>
     </PageLayout>

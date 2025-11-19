@@ -1,0 +1,57 @@
+name: Generate OpenAPI Spec
+
+on:
+  pull_request:
+    types: [opened]
+    branches: ["main"]
+    paths:
+      - "api/**"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate-openapi:
+    name: Generate OpenAPI Contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.3"
+
+      - name: Install swag
+        run: go install github.com/swaggo/swag/cmd/swag@latest
+
+      - name: Generate OpenAPI specification
+        working-directory: api
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          swag init -g server/main.go
+
+      - name: Create ui/openapi directory
+        run: mkdir -p ui/src/openapi
+
+      - name: Move OpenAPI spec to ui folder
+        run: |
+          mv api/docs/swagger.json ui/src/openapi/openapi.json
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --exit-code ui/src/openapi/ || echo "changes=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push if changes
+        if: steps.git-check.outputs.changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add ui/src/openapi/
+          git commit -m "chore: update OpenAPI specification"
+          git push

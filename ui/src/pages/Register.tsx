@@ -1,36 +1,44 @@
 import { PageLayout } from '@/layouts/PageLayout';
 import { Typography, Card } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   RegisterForm,
   RegisterFormValues,
 } from '@/components/Auth/RegisterForm';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { createAccount } from '@/actions/user';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 const { Title } = Typography;
 
 export const Register = () => {
   const [loading, setLoading] = useState(false);
-  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { register, login, isAuthenticated } = useAuth();
 
   const onFinish = async (values: RegisterFormValues) => {
     setLoading(true);
 
-    try {
-      await dispatch(
-        createAccount({
-          name: values.name,
-          username: values.username,
-          password: values.password,
-        })
-      ).unwrap();
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+    await register({
+      name: values.name,
+      username: values.username,
+      password: values.password,
+    });
+
+    await login({
+      username: values.username,
+      password: values.password,
+    });
+
+    void navigate('/');
+
+    setLoading(false);
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      void navigate('/');
+    }
+  }, [isAuthenticated]);
 
   return (
     <PageLayout>

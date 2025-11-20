@@ -1,4 +1,4 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { DashboardLayout } from './DashboardLayout';
 import { Navigate, Outlet } from 'react-router-dom';
 import { RouteId } from '@/types/routes';

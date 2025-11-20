@@ -9,18 +9,22 @@ export interface LoginFormValues {
 }
 
 interface LoginFormProps {
-  onFinish: (values: LoginFormValues) => void;
+  onFinish: (values: LoginFormValues) => Promise<void>;
   loading: boolean;
 }
 
 export const LoginForm = ({ onFinish, loading }: LoginFormProps) => {
   const [form] = Form.useForm();
 
+  const handleFinish = (values: LoginFormValues) => {
+    void onFinish(values);
+  };
+
   return (
     <Form
       form={form}
       name="login"
-      onFinish={onFinish}
+      onFinish={handleFinish}
       layout="vertical"
       size="large"
       scrollToFirstError

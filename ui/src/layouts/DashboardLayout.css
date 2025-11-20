@@ -17,6 +17,14 @@
   color: #1890ff;
 }
 
+.user {
+  color: #fff;
+}
+
+.user:hover {
+  color: #fff !important;
+}
+
 .main-layout-content {
   padding: 24px;
   background: #f0f2f5;

@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { routesConfig } from '@/config/routes.config';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { UserRole } from '@/types/auth';
 import { getRoutesForBusinessType } from '@/utils/routes';
 import { AuthGateway } from '@/layouts/AuthGateway';

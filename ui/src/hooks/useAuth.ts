@@ -33,6 +33,7 @@ export const useAuth = () => {
     dispatch(createAccountAction(accountData)).unwrap();
 
   const logout = () => dispatch(logoutAction());
+
   return {
     isAuthenticated: authenticated,
     user,

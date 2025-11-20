@@ -1,3 +1,4 @@
+import { EntitiesAccount } from '@/api';
 import { BusinessType } from './routes';
 
 export enum UserRole {
@@ -5,10 +6,7 @@ export enum UserRole {
   STAFF = 'staff',
 }
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
+export interface User extends EntitiesAccount {
   role: UserRole;
   businessType: BusinessType;
 }

@@ -1,21 +1,34 @@
 import { PageLayout } from '@/layouts/PageLayout';
 import { Typography, Card } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LoginForm, LoginFormValues } from '@/components/Auth/LoginForm';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 const { Title } = Typography;
 
 export const Login = () => {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated, login } = useAuth();
 
-  const onFinish = (values: LoginFormValues) => {
+  const onFinish = async (values: LoginFormValues) => {
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      console.log(values);
-    }, 1000);
+    await login({
+      username: values.username,
+      password: values.password,
+    });
+
+    void navigate('/');
+    setLoading(false);
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      void navigate('/');
+    }
+  }, [isAuthenticated]);
 
   return (
     <PageLayout>

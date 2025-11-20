@@ -1,7 +1,7 @@
 import { Menu } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 import { routesConfig } from '@/config/routes.config';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { getRoutesForBusinessType } from '@/utils/routes';
 
 export const TopNavigation = () => {

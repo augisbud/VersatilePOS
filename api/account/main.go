@@ -38,17 +38,17 @@ func createAccount(c *gin.Context) {
 		return
 	}
 
-	if req.IdentBusiness != nil {
+	if req.BusinessID != 0 {
 		claims, err := middleware.AuthorizeAndGetClaims(c)
 		if err != nil {
 			c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: err.Error()})
 			return
 		}
 
-		userID := uint64(claims["id"].(float64))
+		userID := uint(claims["id"].(float64))
 
 		var business entities.Business
-		if err := database.DB.First(&business, *req.IdentBusiness).Error; err != nil {
+		if err := database.DB.First(&business, req.BusinessID).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "business not found"})
 			} else {
@@ -57,7 +57,7 @@ func createAccount(c *gin.Context) {
 			return
 		}
 
-		if business.IdentOwnerAccount != userID {
+		if business.OwnerID != userID {
 			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: "only the business owner can add employees"})
 			return
 		}
@@ -75,8 +75,17 @@ func createAccount(c *gin.Context) {
 		PasswordHash: string(passwordHash),
 	}
 
-	if req.IdentBusiness != nil {
-		account.IdentBusiness = req.IdentBusiness
+	if req.BusinessID != 0 {
+		var business entities.Business
+		if err := database.DB.First(&business, req.BusinessID).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "business not found"})
+			} else {
+				c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "failed to get business"})
+			}
+			return
+		}
+		account.MemberOf = append(account.MemberOf, business)
 	}
 
 	if result := database.DB.Create(&account); result.Error != nil {
@@ -105,48 +114,30 @@ func getAccounts(c *gin.Context) {
 		return
 	}
 
-	var accounts []entities.Account
-	var business entities.Business
-
-	// Check if the user is a business owner
-	if err := database.DB.Where("ident_owner_account = ?", userID).First(&business).Error; err == nil {
-		// User is an owner, get all accounts for this business (employees + owner)
-		if result := database.DB.Preload("Business").Where("ident_business = ? OR (ident_business IS NULL AND ident_account = ?)", business.IdentBusiness, userID).Find(&accounts); result.Error != nil {
-			log.Println("Failed to get business accounts for owner:", result.Error)
-			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
-			return
-		}
-	} else if err != gorm.ErrRecordNotFound {
-		log.Println("Failed to check for business ownership:", err)
-		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
+	var user entities.Account
+	if err := database.DB.Preload("OwnedBusinesses").Preload("MemberOf").First(&user, userID).Error; err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "failed to get user"})
 		return
-	} else {
-		// User is not an owner, check if they are an employee or individual
-		var userAccount entities.Account
-		if err := database.DB.Preload("Business").First(&userAccount, userID).Error; err != nil {
-			log.Println("Failed to get user account:", err)
-			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
-			return
-		}
+	}
 
-		if userAccount.IdentBusiness != nil {
-			// User is an employee, get all accounts for their business
-			businessID := *userAccount.IdentBusiness
-			var owner entities.Business
-			if err := database.DB.Where("ident_business = ?", businessID).First(&owner).Error; err != nil {
-				log.Println("Failed to find business for employee:", err)
-				c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
-				return
-			}
-			if result := database.DB.Preload("Business").Where("ident_business = ? OR ident_account = ?", businessID, owner.IdentOwnerAccount).Find(&accounts); result.Error != nil {
-				log.Println("Failed to get business accounts for employee:", result.Error)
-				c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
-				return
-			}
-		} else {
-			// User is not associated with a business, return only their own account
-			accounts = append(accounts, userAccount)
-		}
+	var accounts []entities.Account
+	if len(user.OwnedBusinesses) > 0 {
+		// User is an owner, get all accounts for their business
+		business := user.OwnedBusinesses[0]
+		var employees []entities.Account
+		database.DB.Model(&business).Association("Employees").Find(&employees)
+		accounts = append(accounts, user) // Add owner to the list
+		accounts = append(accounts, employees...)
+	} else if len(user.MemberOf) > 0 {
+		// User is an employee, get all accounts for their business
+		business := user.MemberOf[0]
+		database.DB.Model(&business).Association("Employees").Find(&accounts)
+		var owner entities.Account
+		database.DB.First(&owner, business.OwnerID)
+		accounts = append(accounts, owner)
+	} else {
+		// User is an individual
+		accounts = append(accounts, user)
 	}
 
 	c.IndentedJSON(http.StatusOK, accounts)
@@ -188,7 +179,7 @@ func login(c *gin.Context) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": account.Username,
-		"id":  account.IdentAccount,
+		"id":  account.ID,
 		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	})
 
@@ -215,6 +206,7 @@ func login(c *gin.Context) {
 // @Id getAccountById
 func getAccount(c *gin.Context) {
 	id := c.Param("id")
+
 	requestingUserID, err := middleware.GetUserIDFromContext(c)
 	if err != nil {
 		c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: err.Error()})
@@ -222,56 +214,50 @@ func getAccount(c *gin.Context) {
 	}
 
 	var targetAccount entities.Account
-	if result := database.DB.Preload("Business").Where("ident_account = ?", id).First(&targetAccount); result.Error != nil {
+	if result := database.DB.First(&targetAccount, id); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: "account not found"})
 		} else {
-			log.Println("Failed to get account:", result.Error)
 			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
 		}
 		return
 	}
 
-	// Rule 1: User can always access their own account
-	if targetAccount.IdentAccount == requestingUserID {
+	// A user can get their own account
+	if targetAccount.ID == requestingUserID {
 		c.IndentedJSON(http.StatusOK, targetAccount)
 		return
 	}
 
 	// Rule 2 & 3: Check business relationship
 	var requestingUserAccount entities.Account
-	if err := database.DB.First(&requestingUserAccount, requestingUserID).Error; err != nil {
+	if err := database.DB.Preload("OwnedBusinesses").Preload("MemberOf.Owner").First(&requestingUserAccount, requestingUserID).Error; err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "could not retrieve requesting user's account"})
 		return
 	}
 
-	// Check if requesting user is a business owner
-	var ownedBusiness entities.Business
-	isOwner := database.DB.Where("ident_owner_account = ?", requestingUserID).First(&ownedBusiness).Error == nil
-
-	if isOwner && targetAccount.IdentBusiness != nil && *targetAccount.IdentBusiness == ownedBusiness.IdentBusiness {
-		// Owner can access employee accounts in their business
-		c.IndentedJSON(http.StatusOK, targetAccount)
-		return
-	}
-
-	// Check if both are employees of the same business
-	if requestingUserAccount.IdentBusiness != nil && targetAccount.IdentBusiness != nil && *requestingUserAccount.IdentBusiness == *targetAccount.IdentBusiness {
-		c.IndentedJSON(http.StatusOK, targetAccount)
-		return
-	}
-
-	// Check if employee is trying to access owner's account
-	if requestingUserAccount.IdentBusiness != nil && targetAccount.IdentBusiness == nil {
-		var business entities.Business
-		if err := database.DB.First(&business, *requestingUserAccount.IdentBusiness).Error; err != nil {
-			if err != gorm.ErrRecordNotFound {
-				log.Println("Failed to get business for employee:", err)
-				c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
+	// Check if requesting user is the owner of a business that the target account belongs to
+	for _, business := range requestingUserAccount.OwnedBusinesses {
+		var employees []entities.Account
+		database.DB.Model(&business).Association("Employees").Find(&employees)
+		for _, emp := range employees {
+			if emp.ID == targetAccount.ID {
+				c.IndentedJSON(http.StatusOK, targetAccount)
 				return
 			}
-		} else {
-			if business.IdentOwnerAccount == targetAccount.IdentAccount {
+		}
+	}
+
+	// Check if requesting user is an employee of a business that the target account belongs to
+	for _, business := range requestingUserAccount.MemberOf {
+		if business.Owner.ID == targetAccount.ID {
+			c.IndentedJSON(http.StatusOK, targetAccount)
+			return
+		}
+		var employees []entities.Account
+		database.DB.Model(&business).Association("Employees").Find(&employees)
+		for _, emp := range employees {
+			if emp.ID == targetAccount.ID {
 				c.IndentedJSON(http.StatusOK, targetAccount)
 				return
 			}
@@ -302,7 +288,7 @@ func deleteAccount(c *gin.Context) {
 	}
 
 	var targetAccount entities.Account
-	if result := database.DB.Where("ident_account = ?", id).First(&targetAccount); result.Error != nil {
+	if result := database.DB.Preload("MemberOf").Where("id = ?", id).First(&targetAccount); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: "account not found"})
 		} else {
@@ -313,14 +299,14 @@ func deleteAccount(c *gin.Context) {
 
 	// A user cannot delete the business owner's account, even their own if they are the owner.
 	var business entities.Business
-	isTargetOwner := database.DB.Where("ident_owner_account = ?", targetAccount.IdentAccount).First(&business).Error == nil
+	isTargetOwner := database.DB.Where("account_id = ?", targetAccount.ID).First(&business).Error == nil
 	if isTargetOwner {
 		c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: "business owner account cannot be deleted"})
 		return
 	}
 
 	// User can delete their own account (if they are not an owner)
-	if targetAccount.IdentAccount == requestingUserID {
+	if targetAccount.ID == requestingUserID {
 		if result := database.DB.Delete(&targetAccount); result.Error != nil {
 			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "failed to delete account"})
 		} else {
@@ -330,16 +316,27 @@ func deleteAccount(c *gin.Context) {
 	}
 
 	// Business owner can delete employee accounts
-	var ownedBusiness entities.Business
-	isRequesterOwner := database.DB.Where("ident_owner_account = ?", requestingUserID).First(&ownedBusiness).Error == nil
-
-	if isRequesterOwner && targetAccount.IdentBusiness != nil && *targetAccount.IdentBusiness == ownedBusiness.IdentBusiness {
-		if result := database.DB.Delete(&targetAccount); result.Error != nil {
-			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "failed to delete account"})
-		} else {
-			c.Status(http.StatusNoContent)
-		}
+	var requestingUserAccount entities.Account
+	if err := database.DB.Preload("OwnedBusinesses").First(&requestingUserAccount, requestingUserID).Error; err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "could not retrieve requesting user's account"})
 		return
+	}
+
+	if len(requestingUserAccount.OwnedBusinesses) > 0 {
+		ownedBusinessID := requestingUserAccount.OwnedBusinesses[0].ID
+		for _, business := range targetAccount.MemberOf {
+			if business.ID == ownedBusinessID {
+				// Dissociate the employee from the business
+				database.DB.Model(&targetAccount).Association("MemberOf").Delete(&business)
+				// Delete the account
+				if result := database.DB.Delete(&targetAccount); result.Error != nil {
+					c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "failed to delete account"})
+				} else {
+					c.Status(http.StatusNoContent)
+				}
+				return
+			}
+		}
 	}
 
 	c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: "access denied"})

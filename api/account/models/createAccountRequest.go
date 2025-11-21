@@ -1,19 +1,16 @@
 package models
 
 import (
-	"errors"
-
 	"github.com/go-playground/validator/v10"
 )
 
 type CreateAccountRequest struct {
-	Name          string `json:"name" validate:"required"`
-	IdentBusiness *uint64 `json:"identBusiness,omitempty" validate:"omitempty,gt=0"`
-	Username      string `json:"username" validate:"required,alphanum,min=4,max=32"`
-	Password      string `json:"password" validate:"required,min=8,password"`
-}
+	Name     string `json:"name" validate:"required"`
+	Username string `json:"username" validate:"required,alphanum,min=4,max=32"`
+	Password string `json:"password" validate:"required,min=8,password"`
 
-type BusinessExistsFunc func(identBusiness uint64) bool
+	BusinessID uint `json:"businessId,omitempty" validate:"omitempty,gt=0"`
+}
 
 func passwordValidator(fl validator.FieldLevel) bool {
 	password := fl.Field().String()
@@ -29,16 +26,11 @@ func passwordValidator(fl validator.FieldLevel) bool {
 	return hasLetter && hasNumber
 }
 
-func (r *CreateAccountRequest) Validate(businessExists BusinessExistsFunc) error {
+func (r *CreateAccountRequest) Validate() error {
 	validate := validator.New()
 	_ = validate.RegisterValidation("password", passwordValidator)
 	if err := validate.Struct(r); err != nil {
 		return err
-	}
-	if r.IdentBusiness != nil {
-		if !businessExists(*r.IdentBusiness) {
-			return errors.New("identBusiness does not exist")
-		}
 	}
 	return nil
 }

@@ -40,11 +40,11 @@ func createBusiness(c *gin.Context) {
 	}
 
 	business := entities.Business{
-		Name:              req.Name,
-		IdentOwnerAccount: ownerID,
-		Address:           req.Address,
-		Phone:             req.Phone,
-		Email:             req.Email,
+		Name:    req.Name,
+		OwnerID: ownerID,
+		Address: req.Address,
+		Phone:   req.Phone,
+		Email:   req.Email,
 	}
 
 	if result := database.DB.Create(&business); result.Error != nil {
@@ -54,23 +54,18 @@ func createBusiness(c *gin.Context) {
 	}
 
 	var createdBusiness entities.Business
-	if result := database.DB.Preload("OwnerAccount").First(&createdBusiness, business.IdentBusiness); result.Error != nil {
+	if result := database.DB.Preload("Owner").First(&createdBusiness, business.ID); result.Error != nil {
 		log.Println("Failed to fetch created business:", result.Error)
 		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
 		return
 	}
 
 	response := businessModels.BusinessResponse{
-		IdentBusiness: createdBusiness.IdentBusiness,
+		IdentBusiness: createdBusiness.ID,
 		Name:          createdBusiness.Name,
 		Address:       createdBusiness.Address,
 		Phone:         createdBusiness.Phone,
 		Email:         createdBusiness.Email,
-		OwnerAccount: businessModels.OwnerAccountResponse{
-			IdentAccount: createdBusiness.OwnerAccount.IdentAccount,
-			Name:         createdBusiness.OwnerAccount.Name,
-			Username:     createdBusiness.OwnerAccount.Username,
-		},
 	}
 
 	c.IndentedJSON(http.StatusCreated, response)
@@ -99,7 +94,7 @@ func getBusiness(c *gin.Context) {
 	}
 
 	var business entities.Business
-	if result := database.DB.Preload("OwnerAccount").First(&business, id); result.Error != nil {
+	if result := database.DB.Preload("Owner").First(&business, id); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: "business not found"})
 		} else {
@@ -110,34 +105,34 @@ func getBusiness(c *gin.Context) {
 	}
 
 	// Check if user is the owner
-	if business.IdentOwnerAccount != userID {
+	if business.OwnerID != userID {
 		// If not owner, check if user is an employee of the business
 		var userAccount entities.Account
-		if err := database.DB.First(&userAccount, userID).Error; err != nil {
+		if err := database.DB.Preload("MemberOf").First(&userAccount, userID).Error; err != nil {
 			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: "user not found"})
 			return
 		}
-		if userAccount.IdentBusiness == nil {
-			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: "user is not associated with any business"})
-			return
+
+		isEmployee := false
+		for _, b := range userAccount.MemberOf {
+			if b.ID == business.ID {
+				isEmployee = true
+				break
+			}
 		}
-		if *userAccount.IdentBusiness != business.IdentBusiness {
+
+		if !isEmployee {
 			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: "user does not belong to this business"})
 			return
 		}
 	}
 
 	response := businessModels.BusinessResponse{
-		IdentBusiness: business.IdentBusiness,
+		IdentBusiness: business.ID,
 		Name:          business.Name,
 		Address:       business.Address,
 		Phone:         business.Phone,
 		Email:         business.Email,
-		OwnerAccount: businessModels.OwnerAccountResponse{
-			IdentAccount: business.OwnerAccount.IdentAccount,
-			Name:         business.OwnerAccount.Name,
-			Username:     business.OwnerAccount.Username,
-		},
 	}
 
 	c.IndentedJSON(http.StatusOK, response)

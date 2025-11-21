@@ -59,7 +59,7 @@ func AuthorizeAndGetClaims(c *gin.Context) (jwt.MapClaims, error) {
 	return nil, fmt.Errorf("invalid token")
 }
 
-func GetUserIDFromContext(c *gin.Context) (uint64, error) {
+func GetUserIDFromContext(c *gin.Context) (uint, error) {
 	userClaims, exists := c.Get("user")
 	if !exists {
 		return 0, fmt.Errorf("user not found in context")
@@ -75,5 +75,5 @@ func GetUserIDFromContext(c *gin.Context) (uint64, error) {
 		return 0, fmt.Errorf("user ID not found in claims or is of invalid type")
 	}
 
-	return uint64(id), nil
+	return uint(id), nil
 }

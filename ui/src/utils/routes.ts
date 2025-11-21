@@ -8,5 +8,7 @@ export const getRoutesForBusinessType = (
     return [];
   }
 
-  return routes.filter((route) => route.businessType === businessType);
+  return routes.filter(
+    (route) => route.businessType === businessType || !route.businessType
+  );
 };

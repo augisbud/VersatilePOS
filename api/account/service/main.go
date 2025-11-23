@@ -16,12 +16,14 @@ import (
 type Service struct {
 	accountRepo  *accountRepository.Repository
 	businessRepo *businessRepository.Repository
+	roleRepo     *accountRepository.RoleRepository
 }
 
 func NewService() *Service {
 	return &Service{
 		accountRepo:  &accountRepository.Repository{},
 		businessRepo: &businessRepository.Repository{},
+		roleRepo:     &accountRepository.RoleRepository{},
 	}
 }
 
@@ -117,10 +119,23 @@ func (s *Service) GetMyAccount(userID uint) (accountModels.AccountDto, error) {
 		return accountModels.AccountDto{}, errors.New("internal server error")
 	}
 
+	roleLinks := make([]accountModels.AccountRoleLinkDto, len(account.AccountRoleLinks))
+	for i, link := range account.AccountRoleLinks {
+		roleLinks[i] = accountModels.AccountRoleLinkDto{
+			ID:     link.ID,
+			Status: link.Status,
+			Role: accountModels.AccountRoleDto{
+				ID:   link.AccountRole.ID,
+				Name: link.AccountRole.Name,
+			},
+		}
+	}
+
 	response := accountModels.AccountDto{
-		ID:       account.ID,
-		Name:     account.Name,
-		Username: account.Username,
+		ID:               account.ID,
+		Name:             account.Name,
+		Username:         account.Username,
+		AccountRoleLinks: roleLinks,
 	}
 
 	if len(account.MemberOf) > 0 {
@@ -167,10 +182,22 @@ func (s *Service) GetAccounts(businessID uint, requestingUserID uint) ([]account
 
 	accountDtos := make([]accountModels.AccountDto, 0)
 	for _, acc := range accounts {
+		roleLinks := make([]accountModels.AccountRoleLinkDto, len(acc.AccountRoleLinks))
+		for i, link := range acc.AccountRoleLinks {
+			roleLinks[i] = accountModels.AccountRoleLinkDto{
+				ID:     link.ID,
+				Status: link.Status,
+				Role: accountModels.AccountRoleDto{
+					ID:   link.AccountRole.ID,
+					Name: link.AccountRole.Name,
+				},
+			}
+		}
 		dto := accountModels.AccountDto{
-			ID:       acc.ID,
-			Name:     acc.Name,
-			Username: acc.Username,
+			ID:               acc.ID,
+			Name:             acc.Name,
+			Username:         acc.Username,
+			AccountRoleLinks: roleLinks,
 		}
 		if len(acc.MemberOf) > 0 {
 			dto.BusinessId = &acc.MemberOf[0].ID
@@ -235,4 +262,102 @@ func (s *Service) DeleteAccount(id string, requestingUserID uint) error {
 	}
 
 	return nil
+}
+
+func (s *Service) AssignRoleToAccount(accountID uint, req accountModels.AssignRoleRequest, claims map[string]interface{}) (accountModels.AccountRoleLinkDto, error) {
+	requestingUserID := uint(claims["id"].(float64))
+
+	targetAccount, err := s.accountRepo.GetAccountByID(accountID)
+	if err != nil {
+		return accountModels.AccountRoleLinkDto{}, errors.New("account not found")
+	}
+
+	role, err := s.roleRepo.GetRoleByID(req.RoleID)
+	if err != nil {
+		return accountModels.AccountRoleLinkDto{}, errors.New("role not found")
+	}
+
+	requestingUser, err := s.accountRepo.GetAccountByID(requestingUserID)
+	if err != nil {
+		return accountModels.AccountRoleLinkDto{}, errors.New("requesting user not found")
+	}
+
+	isOwner := false
+	for _, business := range requestingUser.OwnedBusinesses {
+		if business.ID == role.BusinessID {
+			isOwner = true
+			break
+		}
+	}
+	if !isOwner {
+		return accountModels.AccountRoleLinkDto{}, errors.New("unauthorized to assign this role")
+	}
+
+	isEmployee := false
+	for _, business := range targetAccount.MemberOf {
+		if business.ID == role.BusinessID {
+			isEmployee = true
+			break
+		}
+	}
+	if !isEmployee {
+		return accountModels.AccountRoleLinkDto{}, errors.New("account is not a member of the business")
+	}
+
+	link := &entities.AccountRoleLink{
+		AccountID:     accountID,
+		AccountRoleID: req.RoleID,
+	}
+
+	if err := s.roleRepo.CreateAccountRoleLink(link); err != nil {
+		return accountModels.AccountRoleLinkDto{}, errors.New("failed to assign role")
+	}
+
+	return accountModels.AccountRoleLinkDto{
+		ID:     link.ID,
+		Status: link.Status,
+		Role: accountModels.AccountRoleDto{
+			ID:   role.ID,
+			Name: role.Name,
+		},
+	}, nil
+}
+
+func (s *Service) UpdateAccountRoleLinkStatus(accountID, roleID uint, req accountModels.UpdateAccountRoleLinkRequest, claims map[string]interface{}) (accountModels.AccountRoleLinkDto, error) {
+	requestingUserID := uint(claims["id"].(float64))
+
+	link, err := s.roleRepo.GetAccountRoleLink(accountID, roleID)
+	if err != nil {
+		return accountModels.AccountRoleLinkDto{}, errors.New("role assignment not found")
+	}
+
+	requestingUser, err := s.accountRepo.GetAccountByID(requestingUserID)
+	if err != nil {
+		return accountModels.AccountRoleLinkDto{}, errors.New("requesting user not found")
+	}
+
+	isOwner := false
+	for _, business := range requestingUser.OwnedBusinesses {
+		if business.ID == link.AccountRole.BusinessID {
+			isOwner = true
+			break
+		}
+	}
+	if !isOwner {
+		return accountModels.AccountRoleLinkDto{}, errors.New("unauthorized to update this role assignment")
+	}
+
+	link.Status = req.Status
+	if err := s.roleRepo.UpdateAccountRoleLink(link); err != nil {
+		return accountModels.AccountRoleLinkDto{}, errors.New("failed to update role assignment")
+	}
+
+	return accountModels.AccountRoleLinkDto{
+		ID:     link.ID,
+		Status: link.Status,
+		Role: accountModels.AccountRoleDto{
+			ID:   link.AccountRole.ID,
+			Name: link.AccountRole.Name,
+		},
+	}, nil
 }

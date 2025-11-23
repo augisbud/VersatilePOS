@@ -39,7 +39,7 @@ export const login = createAsyncThunk<
     }
 
     const token = loginResponse.data.token;
-    const userData = user.data as ModelsAccountDto;
+    const userData = user.data;
 
     return {
       ...userData,

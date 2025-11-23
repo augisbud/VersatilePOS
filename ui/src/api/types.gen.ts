@@ -4,35 +4,22 @@ export type ClientOptions = {
     baseURL: 'http://localhost:8080' | (string & {});
 };
 
-export type EntitiesAccount = {
-    business?: EntitiesBusiness;
-    identAccount?: number;
-    identBusiness?: number;
+export type ModelsAccountDto = {
+    id?: number;
     name?: string;
     username?: string;
 };
 
-export type EntitiesBusiness = {
+export type ModelsBusinessDto = {
     address?: string;
     email?: string;
-    identBusiness?: number;
-    identOwnerAccount?: number;
+    id?: number;
     name?: string;
-    ownerAccount?: EntitiesAccount;
     phone?: string;
 };
 
-export type ModelsBusinessResponse = {
-    address: string;
-    email: string;
-    identBusiness: number;
-    name: string;
-    ownerAccount?: ModelsOwnerAccountResponse;
-    phone: string;
-};
-
 export type ModelsCreateAccountRequest = {
-    identBusiness?: number;
+    businessId?: number;
     name: string;
     password: string;
     username: string;
@@ -52,12 +39,6 @@ export type ModelsHttpError = {
 export type ModelsLoginRequest = {
     password: string;
     username: string;
-};
-
-export type ModelsOwnerAccountResponse = {
-    identAccount?: number;
-    name?: string;
-    username?: string;
 };
 
 export type GetAccountsData = {
@@ -84,7 +65,7 @@ export type GetAccountsResponses = {
     /**
      * OK
      */
-    200: Array<EntitiesAccount>;
+    200: Array<ModelsAccountDto>;
 };
 
 export type GetAccountsResponse = GetAccountsResponses[keyof GetAccountsResponses];
@@ -124,7 +105,7 @@ export type CreateAccountResponses = {
     /**
      * Created
      */
-    201: EntitiesAccount;
+    201: ModelsAccountDto;
 };
 
 export type CreateAccountResponse = CreateAccountResponses[keyof CreateAccountResponses];
@@ -236,7 +217,7 @@ export type GetAccountByIdResponses = {
     /**
      * OK
      */
-    200: EntitiesAccount;
+    200: ModelsAccountDto;
 };
 
 export type GetAccountByIdResponse = GetAccountByIdResponses[keyof GetAccountByIdResponses];
@@ -272,7 +253,7 @@ export type CreateBusinessResponses = {
     /**
      * Created
      */
-    201: ModelsBusinessResponse;
+    201: ModelsBusinessDto;
 };
 
 export type CreateBusinessResponse = CreateBusinessResponses[keyof CreateBusinessResponses];
@@ -314,7 +295,7 @@ export type GetBusinessByIdResponses = {
     /**
      * OK
      */
-    200: ModelsBusinessResponse;
+    200: ModelsBusinessDto;
 };
 
 export type GetBusinessByIdResponse = GetBusinessByIdResponses[keyof GetBusinessByIdResponses];

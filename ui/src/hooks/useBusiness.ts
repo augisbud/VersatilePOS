@@ -1,8 +1,7 @@
 import { useAppSelector } from './useAppSelector';
 import { useAppDispatch } from './useAppDispatch';
 import {
-  getBusiness,
-  getBusinessId,
+  getBusinesses,
   hasBusiness,
   isBusinessLoading,
   getBusinessError,
@@ -10,13 +9,13 @@ import {
 import {
   createBusiness as createBusinessAction,
   fetchBusinessById as fetchBusinessByIdAction,
+  fetchBusinesses as fetchBusinessesAction,
 } from '@/actions/business';
 import { ModelsCreateBusinessRequest } from '@/api/types.gen';
 
 export const useBusiness = () => {
   const dispatch = useAppDispatch();
-  const business = useAppSelector(getBusiness);
-  const businessId = useAppSelector(getBusinessId);
+  const businesses = useAppSelector(getBusinesses);
   const businessExists = useAppSelector(hasBusiness);
   const loading = useAppSelector(isBusinessLoading);
   const error = useAppSelector(getBusinessError);
@@ -29,14 +28,17 @@ export const useBusiness = () => {
     return dispatch(fetchBusinessByIdAction(id)).unwrap();
   };
 
+  const fetchAllBusinesses = async () => {
+    return dispatch(fetchBusinessesAction()).unwrap();
+  };
+
   return {
-    business,
-    businessId,
+    businesses,
     businessExists,
     loading,
     error,
     createBusiness,
     fetchBusiness,
+    fetchAllBusinesses,
   };
 };
-

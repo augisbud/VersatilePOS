@@ -37,14 +37,7 @@ export const businessReducer = createReducer(initialState, (builder) => {
       state.error = undefined;
     })
     .addCase(fetchBusinessById.fulfilled, (state, { payload }) => {
-      const existingIndex = state.businesses.findIndex(
-        (b) => b.id === payload.id
-      );
-      if (existingIndex >= 0) {
-        state.businesses[existingIndex] = payload;
-      } else {
-        state.businesses.push(payload);
-      }
+      state.businesses = [payload];
       state.loading = false;
       state.error = undefined;
     })

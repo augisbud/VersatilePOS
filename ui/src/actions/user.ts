@@ -9,6 +9,7 @@ import {
   getMyAccount,
   loginAccount,
 } from '@/api';
+import { setAuthToken } from '@/utils/apiClient';
 
 export const createAccount = createAsyncThunk(
   'user/createAccount',
@@ -30,9 +31,10 @@ export const login = createAsyncThunk<
   const loginResponse = await loginAccount({ body: account });
 
   if (loginResponse.error) {
-    console.log('loginResponse.error', loginResponse.error.error);
     throw new Error(loginResponse.error.error);
   }
+  const token = loginResponse.data.token;
+  setAuthToken(token);
 
   const user = await getMyAccount();
 
@@ -40,7 +42,6 @@ export const login = createAsyncThunk<
     throw new Error('User data is missing');
   }
 
-  const token = loginResponse.data.token;
   const userData = user.data;
 
   return {

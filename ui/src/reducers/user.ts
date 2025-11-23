@@ -12,6 +12,7 @@ export interface UserState {
   name?: string;
   username?: string;
   token?: string;
+  businessId?: number;
 }
 
 const initialState: UserState = loadStateFromLocalStorage();
@@ -22,6 +23,7 @@ export const userReducer = createReducer(initialState, (builder) => {
       state.id = payload?.id;
       state.name = payload?.name;
       state.username = payload?.username;
+      state.businessId = payload?.businessId;
 
       saveStateToLocalStorage(state);
     })
@@ -30,8 +32,8 @@ export const userReducer = createReducer(initialState, (builder) => {
       state.id = payload?.id;
       state.name = payload?.name;
       state.username = payload?.username;
+      state.businessId = payload?.businessId;
 
-      setAuthToken(state.token);
       saveStateToLocalStorage(state);
     })
     .addCase(logout, (state) => {
@@ -39,6 +41,7 @@ export const userReducer = createReducer(initialState, (builder) => {
       state.name = undefined;
       state.username = undefined;
       state.token = undefined;
+      state.businessId = undefined;
 
       setAuthToken(undefined);
       clearStateFromLocalStorage();

@@ -100,6 +100,10 @@ func createAccount(c *gin.Context) {
 		Username: account.Username,
 	}
 
+	if len(account.MemberOf) > 0 {
+		response.BusinessId = &account.MemberOf[0].ID
+	}
+
 	c.IndentedJSON(http.StatusCreated, response)
 }
 
@@ -148,11 +152,15 @@ func getAccounts(c *gin.Context) {
 
 	var accountDtos []accountModels.AccountDto
 	for _, acc := range accounts {
-		accountDtos = append(accountDtos, accountModels.AccountDto{
+		dto := accountModels.AccountDto{
 			ID:       acc.ID,
 			Name:     acc.Name,
 			Username: acc.Username,
-		})
+		}
+		if len(acc.MemberOf) > 0 {
+			dto.BusinessId = &acc.MemberOf[0].ID
+		}
+		accountDtos = append(accountDtos, dto)
 	}
 
 	c.IndentedJSON(http.StatusOK, accountDtos)
@@ -208,28 +216,24 @@ func login(c *gin.Context) {
 }
 
 // @Summary Get account information
-// @Description Get account information. Users can get their own account, or any account within their business if they are an owner or employee.
+// @Description Get account information for the currently authenticated user.
 // @Tags account
 // @Produce  json
-// @Param   id   path      int  true  "Account ID"
 // @Success 200 {object} models.AccountDto
 // @Failure 401 {object} models.HTTPError
-// @Failure 403 {object} models.HTTPError
 // @Failure 404 {object} models.HTTPError
 // @Security BearerAuth
-// @Router /account/{id} [get]
-// @Id getAccountById
-func getAccount(c *gin.Context) {
-	id := c.Param("id")
-
+// @Router /account/me [get]
+// @Id getMyAccount
+func getMyAccount(c *gin.Context) {
 	requestingUserID, err := middleware.GetUserIDFromContext(c)
 	if err != nil {
 		c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: err.Error()})
 		return
 	}
 
-	var targetAccount entities.Account
-	if result := database.DB.First(&targetAccount, id); result.Error != nil {
+	var requestingAccount entities.Account
+	if result := database.DB.Preload("MemberOf").First(&requestingAccount, requestingUserID); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: "account not found"})
 		} else {
@@ -238,64 +242,17 @@ func getAccount(c *gin.Context) {
 		return
 	}
 
-	// A user can get their own account
-	if targetAccount.ID == requestingUserID {
-		c.IndentedJSON(http.StatusOK, accountModels.AccountDto{
-			ID:       targetAccount.ID,
-			Name:     targetAccount.Name,
-			Username: targetAccount.Username,
-		})
-		return
+	response := accountModels.AccountDto{
+		ID:       requestingAccount.ID,
+		Name:     requestingAccount.Name,
+		Username: requestingAccount.Username,
 	}
 
-	// Rule 2 & 3: Check business relationship
-	var requestingUserAccount entities.Account
-	if err := database.DB.Preload("OwnedBusinesses").Preload("MemberOf.Owner").First(&requestingUserAccount, requestingUserID).Error; err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "could not retrieve requesting user's account"})
-		return
+	if len(requestingAccount.MemberOf) > 0 {
+		response.BusinessId = &requestingAccount.MemberOf[0].ID
 	}
 
-	// Check if requesting user is the owner of a business that the target account belongs to
-	for _, business := range requestingUserAccount.OwnedBusinesses {
-		var employees []entities.Account
-		database.DB.Model(&business).Association("Employees").Find(&employees)
-		for _, emp := range employees {
-			if emp.ID == targetAccount.ID {
-				c.IndentedJSON(http.StatusOK, accountModels.AccountDto{
-					ID:       targetAccount.ID,
-					Name:     targetAccount.Name,
-					Username: targetAccount.Username,
-				})
-				return
-			}
-		}
-	}
-
-	// Check if requesting user is an employee of a business that the target account belongs to
-	for _, business := range requestingUserAccount.MemberOf {
-		if business.Owner.ID == targetAccount.ID {
-			c.IndentedJSON(http.StatusOK, accountModels.AccountDto{
-				ID:       targetAccount.ID,
-				Name:     targetAccount.Name,
-				Username: targetAccount.Username,
-			})
-			return
-		}
-		var employees []entities.Account
-		database.DB.Model(&business).Association("Employees").Find(&employees)
-		for _, emp := range employees {
-			if emp.ID == targetAccount.ID {
-				c.IndentedJSON(http.StatusOK, accountModels.AccountDto{
-					ID:       targetAccount.ID,
-					Name:     targetAccount.Name,
-					Username: targetAccount.Username,
-				})
-				return
-			}
-		}
-	}
-
-	c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: "access denied"})
+	c.IndentedJSON(http.StatusOK, response)
 }
 
 // @Summary Delete an account
@@ -383,7 +340,7 @@ func RegisterHandlers(r *gin.Engine) {
 	accountGroup.Use(middleware.AuthMiddleware())
 	{
 		accountGroup.GET("", getAccounts)
-		accountGroup.GET("/:id", getAccount)
+		accountGroup.GET("/me", getMyAccount)
 		accountGroup.DELETE("/:id", deleteAccount)
 	}
 }

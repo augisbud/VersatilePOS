@@ -40,7 +40,7 @@ export const DashboardLayout: FC<PropsWithChildren> = ({ children }) => {
         <Space>
           <Dropdown menu={{ items }} placement="bottomRight">
             <Button type="text" icon={<UserOutlined />} className="user">
-              <Text className="user">{user.username}</Text>
+              <Text className="user">{user.name}</Text>
             </Button>
           </Dropdown>
         </Space>

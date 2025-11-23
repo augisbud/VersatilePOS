@@ -1,4 +1,4 @@
-import { HomeOutlined } from '@ant-design/icons';
+import { HomeOutlined, ShopOutlined } from '@ant-design/icons';
 import { ScreenConfig, RouteId } from '@/types/routes';
 import { UserRole } from '@/types/auth';
 import { Unauthorized } from '@/pages/Unauthorized';
@@ -18,10 +18,10 @@ export const routesConfig: ScreenConfig[] = [
   {
     id: RouteId.BUSINESS,
     path: '/business',
-    title: 'Business',
+    title: 'My Businesses',
     component: Business,
     roles: [UserRole.ADMIN],
-    icon: <HomeOutlined />,
+    icon: <ShopOutlined />,
     showInNav: true,
   },
   {

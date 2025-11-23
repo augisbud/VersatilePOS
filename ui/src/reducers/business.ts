@@ -2,21 +2,17 @@ import { createBusiness, fetchBusinessById } from '@/actions/business';
 import { createReducer } from '@reduxjs/toolkit';
 
 export interface BusinessState {
-  identBusiness?: number;
+  id?: number;
   name?: string;
   email?: string;
   phone?: string;
   address?: string;
-  ownerAccount?: {
-    identAccount?: number;
-    name?: string;
-    username?: string;
-  };
   loading: boolean;
   error?: string;
 }
 
 const initialState: BusinessState = {
+  id: 3,
   loading: false,
 };
 
@@ -26,38 +22,34 @@ export const businessReducer = createReducer(initialState, (builder) => {
       state.loading = true;
       state.error = undefined;
     })
-    .addCase(createBusiness.fulfilled, (state, action) => {
-      const business = action.payload;
-      state.identBusiness = business.identBusiness;
-      state.name = business.name;
-      state.email = business.email;
-      state.phone = business.phone;
-      state.address = business.address;
-      state.ownerAccount = business.ownerAccount;
+    .addCase(createBusiness.fulfilled, (state, { payload }) => {
+      // state.id = payload.id;
+      state.name = payload.name;
+      state.email = payload.email;
+      state.phone = payload.phone;
+      state.address = payload.address;
       state.loading = false;
       state.error = undefined;
     })
-    .addCase(createBusiness.rejected, (state, action) => {
+    .addCase(createBusiness.rejected, (state, { error }) => {
       state.loading = false;
-      state.error = action.error.message || 'Failed to create business';
+      state.error = error.message || 'Failed to create business';
     })
     .addCase(fetchBusinessById.pending, (state) => {
       state.loading = true;
       state.error = undefined;
     })
-    .addCase(fetchBusinessById.fulfilled, (state, action) => {
-      const business = action.payload;
-      state.identBusiness = business.identBusiness;
-      state.name = business.name;
-      state.email = business.email;
-      state.phone = business.phone;
-      state.address = business.address;
-      state.ownerAccount = business.ownerAccount;
+    .addCase(fetchBusinessById.fulfilled, (state, { payload }) => {
+      // state.id = payload.id;
+      state.name = payload.name;
+      state.email = payload.email;
+      state.phone = payload.phone;
+      state.address = payload.address;
       state.loading = false;
       state.error = undefined;
     })
-    .addCase(fetchBusinessById.rejected, (state, action) => {
+    .addCase(fetchBusinessById.rejected, (state, { error }) => {
       state.loading = false;
-      state.error = action.error.message || 'Failed to fetch business';
+      state.error = error.message || 'Failed to fetch business';
     });
 });

@@ -1,4 +1,4 @@
-import { EntitiesAccount } from '@/api';
+import { ModelsAccountDto } from '@/api/types.gen';
 import { BusinessType } from './routes';
 
 export enum UserRole {
@@ -6,7 +6,7 @@ export enum UserRole {
   STAFF = 'staff',
 }
 
-export interface User extends EntitiesAccount {
+export interface User extends ModelsAccountDto {
   role: UserRole;
   businessType: BusinessType;
 }

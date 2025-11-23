@@ -17,6 +17,7 @@ type Service struct {
 	accountRepo  *accountRepository.Repository
 	businessRepo *businessRepository.Repository
 	roleRepo     *accountRepository.RoleRepository
+	functionRepo *accountRepository.FunctionRepository
 }
 
 func NewService() *Service {
@@ -24,6 +25,7 @@ func NewService() *Service {
 		accountRepo:  &accountRepository.Repository{},
 		businessRepo: &businessRepository.Repository{},
 		roleRepo:     &accountRepository.RoleRepository{},
+		functionRepo: &accountRepository.FunctionRepository{},
 	}
 }
 

@@ -331,5 +331,8 @@ func (ctrl *Controller) RegisterRoutes(r *gin.Engine) {
 		accountGroup.POST("/:id/role", ctrl.AssignRoleToAccount)
 		accountGroup.PATCH("/:id/role/:roleId", ctrl.UpdateAccountRoleStatus)
 		accountGroup.POST("/role", ctrl.CreateAccountRole)
+		accountGroup.GET("/functions", ctrl.GetAllFunctions)
+		accountGroup.POST("/role/:id/function", ctrl.AssignFunctionToRole)
+		accountGroup.GET("/role/:id/function", ctrl.GetFunctionsForRole)
 	}
 }

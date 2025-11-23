@@ -23,7 +23,7 @@ import (
 // @Accept  json
 // @Produce  json
 // @Param   account  body  models.CreateAccountRequest  true  "Account to create"
-// @Success 201 {object} entities.Account
+// @Success 201 {object} models.AccountDto
 // @Failure 400 {object} models.HTTPError
 // @Failure 401 {object} models.HTTPError
 // @Failure 403 {object} models.HTTPError
@@ -94,14 +94,20 @@ func createAccount(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusCreated, account)
+	response := accountModels.AccountDto{
+		ID:       account.ID,
+		Name:     account.Name,
+		Username: account.Username,
+	}
+
+	c.IndentedJSON(http.StatusCreated, response)
 }
 
 // @Summary Get accounts
 // @Description Get accounts based on user's role. A business owner or employee sees all accounts for their business. An individual user sees only their own account.
 // @Tags account
 // @Produce  json
-// @Success 200 {array} entities.Account
+// @Success 200 {array} models.AccountDto
 // @Failure 401 {object} models.HTTPError
 // @Failure 500 {object} models.HTTPError
 // @Security BearerAuth
@@ -140,7 +146,16 @@ func getAccounts(c *gin.Context) {
 		accounts = append(accounts, user)
 	}
 
-	c.IndentedJSON(http.StatusOK, accounts)
+	var accountDtos []accountModels.AccountDto
+	for _, acc := range accounts {
+		accountDtos = append(accountDtos, accountModels.AccountDto{
+			ID:       acc.ID,
+			Name:     acc.Name,
+			Username: acc.Username,
+		})
+	}
+
+	c.IndentedJSON(http.StatusOK, accountDtos)
 }
 
 // @Summary Log in to account
@@ -197,7 +212,7 @@ func login(c *gin.Context) {
 // @Tags account
 // @Produce  json
 // @Param   id   path      int  true  "Account ID"
-// @Success 200 {object} entities.Account
+// @Success 200 {object} models.AccountDto
 // @Failure 401 {object} models.HTTPError
 // @Failure 403 {object} models.HTTPError
 // @Failure 404 {object} models.HTTPError
@@ -225,7 +240,11 @@ func getAccount(c *gin.Context) {
 
 	// A user can get their own account
 	if targetAccount.ID == requestingUserID {
-		c.IndentedJSON(http.StatusOK, targetAccount)
+		c.IndentedJSON(http.StatusOK, accountModels.AccountDto{
+			ID:       targetAccount.ID,
+			Name:     targetAccount.Name,
+			Username: targetAccount.Username,
+		})
 		return
 	}
 
@@ -242,7 +261,11 @@ func getAccount(c *gin.Context) {
 		database.DB.Model(&business).Association("Employees").Find(&employees)
 		for _, emp := range employees {
 			if emp.ID == targetAccount.ID {
-				c.IndentedJSON(http.StatusOK, targetAccount)
+				c.IndentedJSON(http.StatusOK, accountModels.AccountDto{
+					ID:       targetAccount.ID,
+					Name:     targetAccount.Name,
+					Username: targetAccount.Username,
+				})
 				return
 			}
 		}
@@ -251,14 +274,22 @@ func getAccount(c *gin.Context) {
 	// Check if requesting user is an employee of a business that the target account belongs to
 	for _, business := range requestingUserAccount.MemberOf {
 		if business.Owner.ID == targetAccount.ID {
-			c.IndentedJSON(http.StatusOK, targetAccount)
+			c.IndentedJSON(http.StatusOK, accountModels.AccountDto{
+				ID:       targetAccount.ID,
+				Name:     targetAccount.Name,
+				Username: targetAccount.Username,
+			})
 			return
 		}
 		var employees []entities.Account
 		database.DB.Model(&business).Association("Employees").Find(&employees)
 		for _, emp := range employees {
 			if emp.ID == targetAccount.ID {
-				c.IndentedJSON(http.StatusOK, targetAccount)
+				c.IndentedJSON(http.StatusOK, accountModels.AccountDto{
+					ID:       targetAccount.ID,
+					Name:     targetAccount.Name,
+					Username: targetAccount.Username,
+				})
 				return
 			}
 		}

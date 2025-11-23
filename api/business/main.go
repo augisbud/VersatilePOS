@@ -19,7 +19,7 @@ import (
 // @Accept  json
 // @Produce  json
 // @Param   business  body  models.CreateBusinessRequest  true  "Business to create"
-// @Success 201 {object} models.BusinessResponse
+// @Success 201 {object} models.BusinessDto
 // @Failure 400 {object} models.HTTPError
 // @Failure 401 {object} models.HTTPError
 // @Failure 500 {object} models.HTTPError
@@ -60,12 +60,12 @@ func createBusiness(c *gin.Context) {
 		return
 	}
 
-	response := businessModels.BusinessResponse{
-		IdentBusiness: createdBusiness.ID,
-		Name:          createdBusiness.Name,
-		Address:       createdBusiness.Address,
-		Phone:         createdBusiness.Phone,
-		Email:         createdBusiness.Email,
+	response := businessModels.BusinessDto{
+		ID:      createdBusiness.ID,
+		Name:    createdBusiness.Name,
+		Address: createdBusiness.Address,
+		Phone:   createdBusiness.Phone,
+		Email:   createdBusiness.Email,
 	}
 
 	c.IndentedJSON(http.StatusCreated, response)
@@ -76,7 +76,7 @@ func createBusiness(c *gin.Context) {
 // @Tags business
 // @Produce  json
 // @Param   id   path      int  true  "Business ID"
-// @Success 200 {object} models.BusinessResponse
+// @Success 200 {object} models.BusinessDto
 // @Failure 401 {object} models.HTTPError
 // @Failure 403 {object} models.HTTPError
 // @Failure 404 {object} models.HTTPError
@@ -127,12 +127,12 @@ func getBusiness(c *gin.Context) {
 		}
 	}
 
-	response := businessModels.BusinessResponse{
-		IdentBusiness: business.ID,
-		Name:          business.Name,
-		Address:       business.Address,
-		Phone:         business.Phone,
-		Email:         business.Email,
+	response := businessModels.BusinessDto{
+		ID:      business.ID,
+		Name:    business.Name,
+		Address: business.Address,
+		Phone:   business.Phone,
+		Email:   business.Email,
 	}
 
 	c.IndentedJSON(http.StatusOK, response)

@@ -12,45 +12,6 @@
     "host": "localhost:8080",
     "paths": {
         "/account": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get accounts based on user's role. A business owner or employee sees all accounts for their business. An individual user sees only their own account.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "account"
-                ],
-                "summary": "Get accounts",
-                "operationId": "getAccounts",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.AccountDto"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPError"
-                        }
-                    }
-                }
-            },
             "post": {
                 "security": [
                     {
@@ -202,6 +163,56 @@
                 }
             }
         },
+        "/account/{businessId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get accounts based on user's role. A business owner or employee sees all accounts for their business. An individual user sees only their own account.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Get accounts",
+                "operationId": "getAccounts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Business ID",
+                        "name": "businessId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.AccountDto"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/account/{id}": {
             "delete": {
                 "security": [
@@ -209,7 +220,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Delete an account. Users can delete their own account. Business owners can delete employee accounts.",
+                "description": "Delete an account. Only business owners can delete employee accounts.",
                 "tags": [
                     "account"
                 ],
@@ -256,6 +267,45 @@
             }
         },
         "/business": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all businesses where the current user is an owner",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "business"
+                ],
+                "summary": "Get all businesses for the current user",
+                "operationId": "getBusinesses",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.BusinessDto"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {

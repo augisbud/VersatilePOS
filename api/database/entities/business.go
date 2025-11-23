@@ -12,7 +12,8 @@ type Business struct {
 	OwnerID uint    `json:"ownerId,omitempty"`
 	Owner   Account `gorm:"foreignKey:OwnerID"`
 
-	Employees []Account `gorm:"many2many:business_employees;"`
+	Employees    []Account `gorm:"many2many:business_employees;"`
+	AccountRoles []AccountRole
 }
 
 type BusinessEmployees struct {

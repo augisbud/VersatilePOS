@@ -54,7 +54,7 @@ func Connect() {
 
 	log.Println("Database connection established.")
 
-	err = DB.AutoMigrate(&entities.Account{}, &entities.Business{})
+	err = DB.AutoMigrate(&entities.Account{}, &entities.Business{}, &entities.AccountRole{}, &entities.AccountRoleLink{})
 	if err != nil {
 		log.Fatal("Failed to migrate database: ", err)
 	}

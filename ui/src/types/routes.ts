@@ -6,9 +6,8 @@ export enum RouteId {
   REGISTER = 'register',
   NOT_FOUND = 'not_found',
   UNAUTHORIZED = 'unauthorized',
-  DASHBOARD = 'dashboard',
-  BOOKINGS = 'bookings',
-  CUSTOMERS = 'customers',
+  BUSINESS = 'business',
+  OVERVIEW = 'overview',
 }
 
 export enum BusinessType {

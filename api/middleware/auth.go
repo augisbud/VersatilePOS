@@ -6,10 +6,26 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	jwt "github.com/golang-jwt/jwt/v5"
 )
+
+func GenerateToken(username string, id uint) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": username,
+		"id":  id,
+		"exp": time.Now().Add(time.Hour * 24).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -42,9 +58,7 @@ func AuthorizeAndGetClaims(c *gin.Context) (jwt.MapClaims, error) {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		secret := os.Getenv("JWT_SECRET")
-		if len(secret) < 16 {
-			return nil, fmt.Errorf("JWT_SECRET environment variable is not set or is too short (must be at least 16 characters)")
-		}
+
 		return []byte(secret), nil
 	})
 
@@ -59,7 +73,7 @@ func AuthorizeAndGetClaims(c *gin.Context) (jwt.MapClaims, error) {
 	return nil, fmt.Errorf("invalid token")
 }
 
-func GetUserIDFromContext(c *gin.Context) (uint64, error) {
+func GetUserIDFromContext(c *gin.Context) (uint, error) {
 	userClaims, exists := c.Get("user")
 	if !exists {
 		return 0, fmt.Errorf("user not found in context")
@@ -75,5 +89,5 @@ func GetUserIDFromContext(c *gin.Context) (uint64, error) {
 		return 0, fmt.Errorf("user ID not found in claims or is of invalid type")
 	}
 
-	return uint64(id), nil
+	return uint(id), nil
 }

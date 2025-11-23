@@ -1,45 +1,28 @@
-import {
-  DashboardOutlined,
-  CalendarOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
-import { ScreenConfig, RouteId, BusinessType } from '@/types/routes';
+import { HomeOutlined, ShopOutlined } from '@ant-design/icons';
+import { ScreenConfig, RouteId } from '@/types/routes';
 import { UserRole } from '@/types/auth';
-import { Dashboard } from '@/pages/Dashboard';
-import { Bookings } from '@/pages/Bookings';
-import { Customers } from '@/pages/Customers';
 import { Unauthorized } from '@/pages/Unauthorized';
+import { Business } from '@/pages/Business';
+import { Overview } from '@/pages/Overview';
 
 export const routesConfig: ScreenConfig[] = [
   {
-    id: RouteId.DASHBOARD,
+    id: RouteId.OVERVIEW,
     path: '/',
-    title: 'Dashboard',
-    component: Dashboard,
+    title: 'Overview',
+    component: Overview,
     roles: [UserRole.ADMIN, UserRole.STAFF],
-    icon: <DashboardOutlined />,
+    icon: <HomeOutlined />,
     showInNav: true,
-    businessType: BusinessType.RESTAURANT,
   },
   {
-    id: RouteId.BOOKINGS,
-    path: '/bookings',
-    title: 'Bookings',
-    component: Bookings,
-    roles: [UserRole.ADMIN, UserRole.STAFF],
-    icon: <CalendarOutlined />,
+    id: RouteId.BUSINESS,
+    path: '/business',
+    title: 'My Businesses',
+    component: Business,
+    roles: [UserRole.ADMIN],
+    icon: <ShopOutlined />,
     showInNav: true,
-    businessType: BusinessType.RESTAURANT,
-  },
-  {
-    id: RouteId.CUSTOMERS,
-    path: '/customers',
-    title: 'Customers',
-    component: Customers,
-    roles: [UserRole.ADMIN, UserRole.STAFF],
-    icon: <UserOutlined />,
-    showInNav: true,
-    businessType: BusinessType.BEAUTY_SALON,
   },
   {
     id: RouteId.UNAUTHORIZED,

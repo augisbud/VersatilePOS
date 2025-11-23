@@ -15,7 +15,7 @@ import (
 // @version 1.0
 // @description VersatilePOS API
 // @host localhost:8080
-// @BasePath 
+// @BasePath
 // @schemes http
 // @securityDefinitions.apikey BearerAuth
 // @in header
@@ -25,6 +25,11 @@ func main() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("Warning: Error loading .env file:", err)
+	}
+
+	secret := os.Getenv("JWT_SECRET")
+	if len(secret) < 16 {
+		log.Fatal("JWT_SECRET environment variable is not set or is too short (must be at least 16 characters)")
 	}
 
 	database.Connect()

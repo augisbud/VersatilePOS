@@ -33,7 +33,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entities.Account"
+                                "$ref": "#/definitions/models.AccountDto"
                             }
                         }
                     },
@@ -84,7 +84,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/entities.Account"
+                            "$ref": "#/definitions/models.AccountDto"
                         }
                     },
                     "400": {
@@ -164,14 +164,14 @@
                 }
             }
         },
-        "/account/{id}": {
+        "/account/me": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get account information. Users can get their own account, or any account within their business if they are an owner or employee.",
+                "description": "Get account information for the currently authenticated user.",
                 "produces": [
                     "application/json"
                 ],
@@ -179,31 +179,16 @@
                     "account"
                 ],
                 "summary": "Get account information",
-                "operationId": "getAccountById",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Account ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "operationId": "getMyAccount",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.Account"
+                            "$ref": "#/definitions/models.AccountDto"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/models.HTTPError"
                         }
@@ -215,7 +200,9 @@
                         }
                     }
                 }
-            },
+            }
+        },
+        "/account/{id}": {
             "delete": {
                 "security": [
                     {
@@ -302,7 +289,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.BusinessResponse"
+                            "$ref": "#/definitions/models.BusinessDto"
                         }
                     },
                     "400": {
@@ -355,7 +342,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.BusinessResponse"
+                            "$ref": "#/definitions/models.BusinessDto"
                         }
                     },
                     "401": {
@@ -387,16 +374,13 @@
         }
     },
     "definitions": {
-        "entities.Account": {
+        "models.AccountDto": {
             "type": "object",
             "properties": {
-                "business": {
-                    "$ref": "#/definitions/entities.Business"
-                },
-                "identAccount": {
+                "businessId": {
                     "type": "integer"
                 },
-                "identBusiness": {
+                "id": {
                     "type": "integer"
                 },
                 "name": {
@@ -407,7 +391,7 @@
                 }
             }
         },
-        "entities.Business": {
+        "models.BusinessDto": {
             "type": "object",
             "properties": {
                 "address": {
@@ -416,47 +400,11 @@
                 "email": {
                     "type": "string"
                 },
-                "identBusiness": {
-                    "type": "integer"
-                },
-                "identOwnerAccount": {
+                "id": {
                     "type": "integer"
                 },
                 "name": {
                     "type": "string"
-                },
-                "ownerAccount": {
-                    "$ref": "#/definitions/entities.Account"
-                },
-                "phone": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.BusinessResponse": {
-            "type": "object",
-            "required": [
-                "address",
-                "email",
-                "identBusiness",
-                "name",
-                "phone"
-            ],
-            "properties": {
-                "address": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "identBusiness": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "ownerAccount": {
-                    "$ref": "#/definitions/models.OwnerAccountResponse"
                 },
                 "phone": {
                     "type": "string"
@@ -471,7 +419,7 @@
                 "username"
             ],
             "properties": {
-                "identBusiness": {
+                "businessId": {
                     "type": "integer"
                 },
                 "name": {
@@ -528,20 +476,6 @@
             ],
             "properties": {
                 "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.OwnerAccountResponse": {
-            "type": "object",
-            "properties": {
-                "identAccount": {
-                    "type": "integer"
-                },
-                "name": {
                     "type": "string"
                 },
                 "username": {

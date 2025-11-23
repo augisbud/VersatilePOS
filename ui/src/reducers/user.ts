@@ -8,7 +8,7 @@ import {
 } from '@/utils/auth';
 
 export interface UserState {
-  identAccount?: number;
+  id?: number;
   name?: string;
   username?: string;
   token?: string;
@@ -18,22 +18,24 @@ const initialState: UserState = loadStateFromLocalStorage();
 
 export const userReducer = createReducer(initialState, (builder) => {
   builder
-    .addCase(createAccount.fulfilled, (state, action) => {
-      state.identAccount = action.payload?.identAccount;
-      state.name = action.payload?.name;
-      state.username = action.payload?.username;
+    .addCase(createAccount.fulfilled, (state, { payload }) => {
+      state.id = payload?.id;
+      state.name = payload?.name;
+      state.username = payload?.username;
 
       saveStateToLocalStorage(state);
     })
-    .addCase(login.fulfilled, (state, action) => {
-      state.token = action.payload?.token;
-      state.username = action.meta.arg.username;
+    .addCase(login.fulfilled, (state, { payload }) => {
+      state.token = payload?.token;
+      state.id = payload?.id;
+      state.name = payload?.name;
+      state.username = payload?.username;
 
       setAuthToken(state.token);
       saveStateToLocalStorage(state);
     })
     .addCase(logout, (state) => {
-      state.identAccount = undefined;
+      state.id = undefined;
       state.name = undefined;
       state.username = undefined;
       state.token = undefined;

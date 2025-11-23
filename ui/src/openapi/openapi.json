@@ -164,14 +164,14 @@
                 }
             }
         },
-        "/account/{id}": {
+        "/account/me": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get account information. Users can get their own account, or any account within their business if they are an owner or employee.",
+                "description": "Get account information for the currently authenticated user.",
                 "produces": [
                     "application/json"
                 ],
@@ -179,16 +179,7 @@
                     "account"
                 ],
                 "summary": "Get account information",
-                "operationId": "getAccountById",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Account ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "operationId": "getMyAccount",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -202,12 +193,6 @@
                             "$ref": "#/definitions/models.HTTPError"
                         }
                     },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPError"
-                        }
-                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -215,7 +200,9 @@
                         }
                     }
                 }
-            },
+            }
+        },
+        "/account/{id}": {
             "delete": {
                 "security": [
                     {
@@ -390,6 +377,9 @@
         "models.AccountDto": {
             "type": "object",
             "properties": {
+                "businessId": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
                 },

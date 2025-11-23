@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateAccountData, CreateAccountErrors, CreateAccountResponses, CreateBusinessData, CreateBusinessErrors, CreateBusinessResponses, DeleteAccountByIdData, DeleteAccountByIdErrors, DeleteAccountByIdResponses, GetAccountByIdData, GetAccountByIdErrors, GetAccountByIdResponses, GetAccountsData, GetAccountsErrors, GetAccountsResponses, GetBusinessByIdData, GetBusinessByIdErrors, GetBusinessByIdResponses, LoginAccountData, LoginAccountErrors, LoginAccountResponses } from './types.gen';
+import type { CreateAccountData, CreateAccountErrors, CreateAccountResponses, CreateBusinessData, CreateBusinessErrors, CreateBusinessResponses, DeleteAccountByIdData, DeleteAccountByIdErrors, DeleteAccountByIdResponses, GetAccountsData, GetAccountsErrors, GetAccountsResponses, GetBusinessByIdData, GetBusinessByIdErrors, GetBusinessByIdResponses, GetMyAccountData, GetMyAccountErrors, GetMyAccountResponses, LoginAccountData, LoginAccountErrors, LoginAccountResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -78,12 +78,12 @@ export const loginAccount = <ThrowOnError extends boolean = false>(options: Opti
 };
 
 /**
- * Delete an account
+ * Get account information
  *
- * Delete an account. Users can delete their own account. Business owners can delete employee accounts.
+ * Get account information for the currently authenticated user.
  */
-export const deleteAccountById = <ThrowOnError extends boolean = false>(options: Options<DeleteAccountByIdData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteAccountByIdResponses, DeleteAccountByIdErrors, ThrowOnError>({
+export const getMyAccount = <ThrowOnError extends boolean = false>(options?: Options<GetMyAccountData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetMyAccountResponses, GetMyAccountErrors, ThrowOnError>({
         responseType: 'json',
         security: [
             {
@@ -91,18 +91,18 @@ export const deleteAccountById = <ThrowOnError extends boolean = false>(options:
                 type: 'apiKey'
             }
         ],
-        url: '/account/{id}',
+        url: '/account/me',
         ...options
     });
 };
 
 /**
- * Get account information
+ * Delete an account
  *
- * Get account information. Users can get their own account, or any account within their business if they are an owner or employee.
+ * Delete an account. Users can delete their own account. Business owners can delete employee accounts.
  */
-export const getAccountById = <ThrowOnError extends boolean = false>(options: Options<GetAccountByIdData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetAccountByIdResponses, GetAccountByIdErrors, ThrowOnError>({
+export const deleteAccountById = <ThrowOnError extends boolean = false>(options: Options<DeleteAccountByIdData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteAccountByIdResponses, DeleteAccountByIdErrors, ThrowOnError>({
         responseType: 'json',
         security: [
             {

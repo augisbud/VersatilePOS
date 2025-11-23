@@ -5,6 +5,7 @@ export type ClientOptions = {
 };
 
 export type ModelsAccountDto = {
+    businessId?: number;
     id?: number;
     name?: string;
     username?: string;
@@ -144,6 +145,35 @@ export type LoginAccountResponses = {
 
 export type LoginAccountResponse = LoginAccountResponses[keyof LoginAccountResponses];
 
+export type GetMyAccountData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/account/me';
+};
+
+export type GetMyAccountErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+};
+
+export type GetMyAccountError = GetMyAccountErrors[keyof GetMyAccountErrors];
+
+export type GetMyAccountResponses = {
+    /**
+     * OK
+     */
+    200: ModelsAccountDto;
+};
+
+export type GetMyAccountResponse = GetMyAccountResponses[keyof GetMyAccountResponses];
+
 export type DeleteAccountByIdData = {
     body?: never;
     path: {
@@ -183,44 +213,6 @@ export type DeleteAccountByIdResponses = {
      */
     204: unknown;
 };
-
-export type GetAccountByIdData = {
-    body?: never;
-    path: {
-        /**
-         * Account ID
-         */
-        id: number;
-    };
-    query?: never;
-    url: '/account/{id}';
-};
-
-export type GetAccountByIdErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ModelsHttpError;
-    /**
-     * Forbidden
-     */
-    403: ModelsHttpError;
-    /**
-     * Not Found
-     */
-    404: ModelsHttpError;
-};
-
-export type GetAccountByIdError = GetAccountByIdErrors[keyof GetAccountByIdErrors];
-
-export type GetAccountByIdResponses = {
-    /**
-     * OK
-     */
-    200: ModelsAccountDto;
-};
-
-export type GetAccountByIdResponse = GetAccountByIdResponses[keyof GetAccountByIdResponses];
 
 export type CreateBusinessData = {
     /**

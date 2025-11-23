@@ -7,7 +7,6 @@ export const getUserToken = (state: State) => state.user.token;
 export const isAuthenticated = (state: State) => !!state.user.token;
 
 export const getUser = (state: State): User => ({
-  identAccount: state.user.identAccount,
   name: state.user.name,
   username: state.user.username,
   role: UserRole.ADMIN,

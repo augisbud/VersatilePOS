@@ -1,9 +1,10 @@
 import {
+  ModelsAccountDto,
   ModelsCreateAccountRequest,
   ModelsLoginRequest,
 } from '@/api/types.gen';
 import { createAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { createAccount as createAccountApi, loginAccount } from '@/api';
+import { createAccount as createAccountApi, getMyAccount, loginAccount } from '@/api';
 
 export const createAccount = createAsyncThunk(
   'user/createAccount',
@@ -18,17 +19,32 @@ export const createAccount = createAsyncThunk(
   }
 );
 
-export const login = createAsyncThunk(
+export const login = createAsyncThunk<
+  ModelsAccountDto & { token: string },
+  ModelsLoginRequest
+>(
   'user/login',
   async (account: ModelsLoginRequest) => {
-    const response = await loginAccount({ body: account });
+    const loginResponse = await loginAccount({ body: account });
 
-    if (response.error) {
-      console.log('response.error', response.error.error);
-      throw new Error(response.error.error);
+    if (loginResponse.error) {
+      console.log('loginResponse.error', loginResponse.error.error);
+      throw new Error(loginResponse.error.error);
     }
 
-    return response.data;
+    const user = await getMyAccount();
+
+    if (!user.data) {
+      throw new Error('User data is missing');
+    }
+
+    const token = loginResponse.data.token;
+    const userData = user.data as ModelsAccountDto;
+
+    return {
+      ...userData,
+      token,
+    };
   }
 );
 

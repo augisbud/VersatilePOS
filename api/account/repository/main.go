@@ -25,7 +25,7 @@ func (r *Repository) GetAccountByUsername(username string) (entities.Account, er
 
 func (r *Repository) GetAccountByID(id uint) (entities.Account, error) {
 	var account entities.Account
-	if err := database.DB.Preload("MemberOf").First(&account, id).Error; err != nil {
+	if err := database.DB.Preload("OwnedBusinesses").Preload("MemberOf").Preload("AccountRoleLinks.AccountRole").First(&account, id).Error; err != nil {
 		return account, err
 	}
 	return account, nil
@@ -41,7 +41,7 @@ func (r *Repository) GetUserWithAssociations(userID uint) (entities.Account, err
 
 func (r *Repository) GetBusinessEmployees(business *entities.Business) ([]entities.Account, error) {
 	var employees []entities.Account
-	err := database.DB.Model(business).Association("Employees").Find(&employees)
+	err := database.DB.Model(business).Preload("AccountRoleLinks.AccountRole").Association("Employees").Find(&employees)
 	return employees, err
 }
 

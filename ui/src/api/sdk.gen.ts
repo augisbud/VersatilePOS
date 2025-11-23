@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateAccountData, CreateAccountErrors, CreateAccountResponses, CreateBusinessData, CreateBusinessErrors, CreateBusinessResponses, DeleteAccountByIdData, DeleteAccountByIdErrors, DeleteAccountByIdResponses, GetAccountsData, GetAccountsErrors, GetAccountsResponses, GetBusinessByIdData, GetBusinessByIdErrors, GetBusinessByIdResponses, GetMyAccountData, GetMyAccountErrors, GetMyAccountResponses, LoginAccountData, LoginAccountErrors, LoginAccountResponses } from './types.gen';
+import type { CreateAccountData, CreateAccountErrors, CreateAccountResponses, CreateBusinessData, CreateBusinessErrors, CreateBusinessResponses, DeleteAccountByIdData, DeleteAccountByIdErrors, DeleteAccountByIdResponses, GetAccountsData, GetAccountsErrors, GetAccountsResponses, GetBusinessByIdData, GetBusinessByIdErrors, GetBusinessByIdResponses, GetBusinessesData, GetBusinessesErrors, GetBusinessesResponses, GetMyAccountData, GetMyAccountErrors, GetMyAccountResponses, LoginAccountData, LoginAccountErrors, LoginAccountResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -16,25 +16,6 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
      * used to access values that aren't defined as part of the SDK function.
      */
     meta?: Record<string, unknown>;
-};
-
-/**
- * Get accounts
- *
- * Get accounts based on user's role. A business owner or employee sees all accounts for their business. An individual user sees only their own account.
- */
-export const getAccounts = <ThrowOnError extends boolean = false>(options?: Options<GetAccountsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetAccountsResponses, GetAccountsErrors, ThrowOnError>({
-        responseType: 'json',
-        security: [
-            {
-                name: 'Authorization',
-                type: 'apiKey'
-            }
-        ],
-        url: '/account',
-        ...options
-    });
 };
 
 /**
@@ -97,9 +78,28 @@ export const getMyAccount = <ThrowOnError extends boolean = false>(options?: Opt
 };
 
 /**
+ * Get accounts
+ *
+ * Get accounts based on user's role. A business owner or employee sees all accounts for their business. An individual user sees only their own account.
+ */
+export const getAccounts = <ThrowOnError extends boolean = false>(options: Options<GetAccountsData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetAccountsResponses, GetAccountsErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/account/{businessId}',
+        ...options
+    });
+};
+
+/**
  * Delete an account
  *
- * Delete an account. Users can delete their own account. Business owners can delete employee accounts.
+ * Delete an account. Only business owners can delete employee accounts.
  */
 export const deleteAccountById = <ThrowOnError extends boolean = false>(options: Options<DeleteAccountByIdData, ThrowOnError>) => {
     return (options.client ?? client).delete<DeleteAccountByIdResponses, DeleteAccountByIdErrors, ThrowOnError>({
@@ -111,6 +111,25 @@ export const deleteAccountById = <ThrowOnError extends boolean = false>(options:
             }
         ],
         url: '/account/{id}',
+        ...options
+    });
+};
+
+/**
+ * Get all businesses for the current user
+ *
+ * Get all businesses where the current user is an owner
+ */
+export const getBusinesses = <ThrowOnError extends boolean = false>(options?: Options<GetBusinessesData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetBusinessesResponses, GetBusinessesErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/business',
         ...options
     });
 };

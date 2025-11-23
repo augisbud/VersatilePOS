@@ -8,6 +8,8 @@ type Account struct {
 	Username     string `json:"username" gorm:"unique"`
 	PasswordHash string `json:"-"`
 
+	AccountRoleLinks []AccountRoleLink `gorm:"foreignKey:AccountID"`
+
 	OwnedBusinesses []Business `gorm:"foreignKey:OwnerID"`
 
 	MemberOf []Business `gorm:"many2many:business_employees;"`

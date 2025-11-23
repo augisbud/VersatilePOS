@@ -137,4 +137,5 @@ func (ctrl *Controller) RegisterRoutes(r *gin.Engine) {
 	businessGroup.POST("", ctrl.CreateBusiness)
 	businessGroup.GET("", ctrl.GetBusinesses)
 	businessGroup.GET("/:id", ctrl.GetBusinessById)
+	ctrl.RegisterRoleRoutes(businessGroup)
 }

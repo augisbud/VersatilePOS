@@ -42,35 +42,6 @@ export type ModelsLoginRequest = {
     username: string;
 };
 
-export type GetAccountsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/account';
-};
-
-export type GetAccountsErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ModelsHttpError;
-    /**
-     * Internal Server Error
-     */
-    500: ModelsHttpError;
-};
-
-export type GetAccountsError = GetAccountsErrors[keyof GetAccountsErrors];
-
-export type GetAccountsResponses = {
-    /**
-     * OK
-     */
-    200: Array<ModelsAccountDto>;
-};
-
-export type GetAccountsResponse = GetAccountsResponses[keyof GetAccountsResponses];
-
 export type CreateAccountData = {
     /**
      * Account to create
@@ -174,6 +145,40 @@ export type GetMyAccountResponses = {
 
 export type GetMyAccountResponse = GetMyAccountResponses[keyof GetMyAccountResponses];
 
+export type GetAccountsData = {
+    body?: never;
+    path: {
+        /**
+         * Business ID
+         */
+        businessId: number;
+    };
+    query?: never;
+    url: '/account/{businessId}';
+};
+
+export type GetAccountsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetAccountsError = GetAccountsErrors[keyof GetAccountsErrors];
+
+export type GetAccountsResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsAccountDto>;
+};
+
+export type GetAccountsResponse = GetAccountsResponses[keyof GetAccountsResponses];
+
 export type DeleteAccountByIdData = {
     body?: never;
     path: {
@@ -213,6 +218,35 @@ export type DeleteAccountByIdResponses = {
      */
     204: unknown;
 };
+
+export type GetBusinessesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/business';
+};
+
+export type GetBusinessesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetBusinessesError = GetBusinessesErrors[keyof GetBusinessesErrors];
+
+export type GetBusinessesResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsBusinessDto>;
+};
+
+export type GetBusinessesResponse = GetBusinessesResponses[keyof GetBusinessesResponses];
 
 export type CreateBusinessData = {
     /**

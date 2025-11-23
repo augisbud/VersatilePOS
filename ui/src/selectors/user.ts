@@ -15,3 +15,6 @@ export const getUser = (state: State): User => ({
 
 export const getBusinessType = (state: State): BusinessType =>
   getUser(state)?.businessType || BusinessType.RESTAURANT;
+
+export const getUserBusinessId = (state: State): number | undefined =>
+  state.user.businessId;

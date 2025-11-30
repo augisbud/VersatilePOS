@@ -74,13 +74,29 @@ func (s *Service) CreateAccount(req accountModels.CreateAccountRequest, claims m
 		if err := s.accountRepo.AddEmployeeToBusiness(&account, business); err != nil {
 			return accountModels.AccountDto{}, err
 		}
+
+		// Assign the default "Employee" role for this business to the new account.
+		// The business creation process should have created an "Employee" role already.
+		employeeRole, err := s.roleRepo.GetRoleByBusinessAndName(req.BusinessID, "Employee")
+		if err != nil {
+			return accountModels.AccountDto{}, errors.New("failed to find employee role for business")
+		}
+
+		// Reuse centralized AssignRoleToAccount which enforces RBAC and membership checks
+		assignReq := accountModels.AssignRoleRequest{RoleID: employeeRole.ID}
+		assignedLink, err := s.AssignRoleToAccount(account.ID, assignReq, claims)
+		if err != nil {
+			return accountModels.AccountDto{}, errors.New("failed to assign employee role to account: " + err.Error())
+		}
+
+		roleLinks := []accountModels.AccountRoleLinkDto{assignedLink}
+		response := accountModels.NewAccountDtoFromEntity(account, roleLinks)
+		response.BusinessId = &req.BusinessID
+
+		return response, nil
 	}
 
-	// build response using model constructor
 	response := accountModels.NewAccountDtoFromEntity(account, nil)
-	if req.BusinessID != 0 {
-		response.BusinessId = &req.BusinessID
-	}
 
 	return response, nil
 }
@@ -180,37 +196,22 @@ func (s *Service) DeleteAccount(id string, requestingUserID uint) error {
 		return errors.New("internal server error")
 	}
 
-	// find the shared business between requesting user (owner) and target
-	requestingUserAccount, err := s.accountRepo.GetUserWithAssociations(requestingUserID)
-	if err != nil {
-		return errors.New("could not retrieve requesting user's account")
-	}
-
+	// allow deletion if requesting user has write access to any business the target belongs to
 	var businessToDeleteFrom *entities.Business
-	for i := range requestingUserAccount.OwnedBusinesses {
-		ownedBusiness := requestingUserAccount.OwnedBusinesses[i]
-		for _, membership := range targetAccount.MemberOf {
-			if membership.ID == ownedBusiness.ID {
-				businessToDeleteFrom = &ownedBusiness
-				break
-			}
+	for i := range targetAccount.MemberOf {
+		biz := targetAccount.MemberOf[i]
+		ok, err := rbac.HasAccess(constants.Accounts, constants.Write, biz.ID, requestingUserID)
+		if err != nil {
+			return errors.New("failed to verify permissions")
 		}
-		if businessToDeleteFrom != nil {
+		if ok {
+			businessToDeleteFrom = &biz
 			break
 		}
 	}
 
 	if businessToDeleteFrom == nil {
-		return errors.New("you can only delete employees of your own business")
-	}
-
-	// RBAC: require write access to accounts in the business
-	ok, err := rbac.HasAccess(constants.Accounts, constants.Write, businessToDeleteFrom.ID, requestingUserID)
-	if err != nil {
-		return errors.New("failed to verify permissions")
-	}
-	if !ok {
-		return errors.New("unauthorized")
+		return errors.New("you are not authorized to delete this account")
 	}
 
 	if err := s.accountRepo.DissociateEmployeeFromBusiness(&targetAccount, businessToDeleteFrom); err != nil {

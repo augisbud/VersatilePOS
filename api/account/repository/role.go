@@ -76,3 +76,11 @@ func (r *RoleRepository) GetRoleDtoByID(id uint) (accountModels.AccountRoleDto, 
 	dto := accountModels.NewAccountRoleDtoFromEntity(*role, funcLinks)
 	return dto, nil
 }
+
+func (r *RoleRepository) GetRoleByBusinessAndName(businessID uint, name string) (*entities.AccountRole, error) {
+	var role entities.AccountRole
+	if err := database.DB.Where("business_id = ? AND name = ?", businessID, name).First(&role).Error; err != nil {
+		return nil, err
+	}
+	return &role, nil
+}

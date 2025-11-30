@@ -184,17 +184,6 @@ export const BusinessRoles = ({ businessId }: BusinessRolesProps) => {
                             {funcLink.function.description}
                           </div>
                         )}
-                        {funcLink.function?.action && (
-                          <div style={{ marginTop: '4px', fontSize: '11px' }}>
-                            Action: {funcLink.function.action}
-                          </div>
-                        )}
-                        {funcLink.accessLevels &&
-                          funcLink.accessLevels.length > 0 && (
-                            <div style={{ marginTop: '4px', fontSize: '11px' }}>
-                              Permissions: {funcLink.accessLevels.join(', ')}
-                            </div>
-                          )}
                       </div>
                     }
                   >

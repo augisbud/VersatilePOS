@@ -69,52 +69,11 @@ export const RoleFunctionFormModal = ({
         >
           <Select
             placeholder="Select a function"
-            showSearch
-            filterOption={(input, option) => {
-              const searchValue = input.toLowerCase();
-              const func = availableFunctions.find(
-                (f) => f.id === option?.value
-              );
-              const name = func?.name?.toLowerCase() ?? '';
-              const description = func?.description?.toLowerCase() ?? '';
-              const action = func?.action?.toLowerCase() ?? '';
-              return (
-                name.includes(searchValue) ||
-                description.includes(searchValue) ||
-                action.includes(searchValue)
-              );
-            }}
-          >
-            {availableFunctions.map((func) => (
-              <Select.Option key={func.id} value={func.id} label={func.name}>
-                <div>
-                  <div style={{ fontWeight: 500 }}>{func.name}</div>
-                  {func.description && (
-                    <div
-                      style={{
-                        fontSize: '12px',
-                        color: '#888',
-                        marginTop: '2px',
-                      }}
-                    >
-                      {func.description}
-                    </div>
-                  )}
-                  {func.action && (
-                    <div
-                      style={{
-                        fontSize: '11px',
-                        color: '#1890ff',
-                        marginTop: '2px',
-                      }}
-                    >
-                      Action: {func.action}
-                    </div>
-                  )}
-                </div>
-              </Select.Option>
-            ))}
-          </Select>
+            options={availableFunctions.map((func) => ({
+              label: `${func.name} - ${func.description}`,
+              value: func.id,
+            }))}
+          />
         </Form.Item>
 
         <Form.Item

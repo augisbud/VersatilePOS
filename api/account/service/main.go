@@ -84,16 +84,19 @@ func (s *Service) CreateAccount(req accountModels.CreateAccountRequest, claims m
 
 		// Reuse centralized AssignRoleToAccount which enforces RBAC and membership checks
 		assignReq := accountModels.AssignRoleRequest{RoleID: employeeRole.ID}
-		if _, err := s.AssignRoleToAccount(account.ID, assignReq, claims); err != nil {
+		assignedLink, err := s.AssignRoleToAccount(account.ID, assignReq, claims)
+		if err != nil {
 			return accountModels.AccountDto{}, errors.New("failed to assign employee role to account: " + err.Error())
 		}
+
+		roleLinks := []accountModels.AccountRoleLinkDto{assignedLink}
+		response := accountModels.NewAccountDtoFromEntity(account, roleLinks)
+		response.BusinessId = &req.BusinessID
+
+		return response, nil
 	}
 
-	// build response using model constructor
 	response := accountModels.NewAccountDtoFromEntity(account, nil)
-	if req.BusinessID != 0 {
-		response.BusinessId = &req.BusinessID
-	}
 
 	return response, nil
 }

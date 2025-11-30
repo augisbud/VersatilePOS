@@ -3,7 +3,10 @@ import { Spin } from 'antd';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { getUserBusinessId } from '@/selectors/user';
-import { ModelsBusinessDto } from '@/api/types.gen';
+import {
+  ModelsBusinessDto,
+  ModelsCreateBusinessRequest,
+} from '@/api/types.gen';
 import { BusinessDetails, BusinessList } from '@/components/Business';
 import { useUser } from '@/hooks/useUser';
 
@@ -16,7 +19,7 @@ export const Business = () => {
     fetchAllBusinesses,
     fetchBusiness,
   } = useBusiness();
-  const { isBusinessOwner } = useUser();
+  const { isBusinessOwner, user, hasRoles, refreshAccount } = useUser();
   const userBusinessId = useAppSelector(getUserBusinessId);
 
   const [selectedBusiness, setSelectedBusiness] =
@@ -32,6 +35,10 @@ export const Business = () => {
 
   useEffect(() => {
     const loadBusinesses = async () => {
+      if (!hasRoles(user?.roles || [])) {
+        return;
+      }
+
       if (isBusinessOwner) {
         await fetchAllBusinesses();
       } else {
@@ -62,13 +69,22 @@ export const Business = () => {
     );
   }
 
-  return isBusinessOwner ? (
+  const handleCreateBusiness = async (
+    businessData: ModelsCreateBusinessRequest
+  ) => {
+    const result = await createBusiness(businessData);
+    await refreshAccount();
+
+    return result;
+  };
+
+  return (
     <BusinessList
       businesses={businesses}
       loading={loading}
       error={error}
-      onCreateBusiness={createBusiness}
+      onCreateBusiness={handleCreateBusiness}
       onManageBusiness={handleManageBusiness}
     />
-  ) : null;
+  );
 };

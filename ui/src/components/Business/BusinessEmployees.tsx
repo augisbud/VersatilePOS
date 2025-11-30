@@ -164,7 +164,7 @@ export const BusinessEmployees = ({
     },
     isBusinessOwner
       ? {
-          title: 'Action',
+          title: '',
           key: 'action',
           width: 100,
           render: (_, record) => (

@@ -50,4 +50,21 @@ export const login = createAsyncThunk<
   };
 });
 
+export const fetchMyAccount = createAsyncThunk<ModelsAccountDto, void>(
+  'user/fetchMyAccount',
+  async () => {
+    const response = await getMyAccount();
+
+    if (response.error) {
+      throw new Error(response.error.error);
+    }
+
+    if (!response.data) {
+      throw new Error('User data is missing');
+    }
+
+    return response.data;
+  }
+);
+
 export const logout = createAction('user/logout');

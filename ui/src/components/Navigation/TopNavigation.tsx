@@ -6,12 +6,10 @@ import { getRoutesForBusinessType } from '@/utils/routes';
 
 export const TopNavigation = () => {
   const location = useLocation();
-  const { hasRole, businessType } = useUser();
+  const { businessType } = useUser();
 
   const availableRoutes = getRoutesForBusinessType(routesConfig, businessType);
-  const visibleRoutes = availableRoutes.filter(
-    (route) => route.showInNav && hasRole(route.roles)
-  );
+  const visibleRoutes = availableRoutes.filter((route) => route.showInNav);
 
   const selectedKey =
     visibleRoutes.find((route) => route.path === location.pathname)?.id ||

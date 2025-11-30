@@ -10,11 +10,12 @@ import {
   login as loginAction,
   createAccount as createAccountAction,
   logout as logoutAction,
+  fetchMyAccount as fetchMyAccountAction,
 } from '@/actions/user';
-import { UserRole } from '@/types/auth';
 import {
   ModelsLoginRequest,
   ModelsCreateAccountRequest,
+  ModelsAccountRoleLinkDto,
 } from '@/api/types.gen';
 
 export const useUser = () => {
@@ -24,13 +25,7 @@ export const useUser = () => {
   const businessType = useAppSelector(getBusinessType);
   const isBusinessOwner = useAppSelector(isBusinessOwnerSelector);
 
-  const hasRole = (roles: UserRole[]): boolean => {
-    if (!user.username) {
-      return false;
-    }
-
-    return roles.includes(user.role);
-  };
+  const hasRoles = (roles: ModelsAccountRoleLinkDto[]) => !!roles.length;
 
   const login = (credentials: ModelsLoginRequest) =>
     dispatch(loginAction(credentials)).unwrap();
@@ -40,14 +35,17 @@ export const useUser = () => {
 
   const logout = () => dispatch(logoutAction());
 
+  const refreshAccount = () => dispatch(fetchMyAccountAction()).unwrap();
+
   return {
     isAuthenticated: authenticated,
     user,
     businessType,
     isBusinessOwner,
-    hasRole,
+    hasRoles,
     login,
     register,
     logout,
+    refreshAccount,
   };
 };

@@ -1,10 +1,14 @@
-import { Modal, Form, Select, Checkbox, Space, Button } from 'antd';
+import { Modal, Form, Select, Checkbox, Space, Button, Tooltip } from 'antd';
 import { useEffect } from 'react';
 import {
   ModelsAccountRoleDto,
   ModelsFunctionDto,
   ConstantsAccessLevel,
 } from '@/api/types.gen';
+import {
+  ACCESS_LEVELS,
+  getAccessLevelDescription,
+} from '@/constants/accessLevels';
 
 interface FunctionFormValues {
   functionId: number;
@@ -65,15 +69,52 @@ export const RoleFunctionFormModal = ({
         >
           <Select
             placeholder="Select a function"
-            options={availableFunctions.map((func) => ({
-              label: func.name,
-              value: func.id,
-            }))}
             showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-          />
+            filterOption={(input, option) => {
+              const searchValue = input.toLowerCase();
+              const func = availableFunctions.find(
+                (f) => f.id === option?.value
+              );
+              const name = func?.name?.toLowerCase() ?? '';
+              const description = func?.description?.toLowerCase() ?? '';
+              const action = func?.action?.toLowerCase() ?? '';
+              return (
+                name.includes(searchValue) ||
+                description.includes(searchValue) ||
+                action.includes(searchValue)
+              );
+            }}
+          >
+            {availableFunctions.map((func) => (
+              <Select.Option key={func.id} value={func.id} label={func.name}>
+                <div>
+                  <div style={{ fontWeight: 500 }}>{func.name}</div>
+                  {func.description && (
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        color: '#888',
+                        marginTop: '2px',
+                      }}
+                    >
+                      {func.description}
+                    </div>
+                  )}
+                  {func.action && (
+                    <div
+                      style={{
+                        fontSize: '11px',
+                        color: '#1890ff',
+                        marginTop: '2px',
+                      }}
+                    >
+                      Action: {func.action}
+                    </div>
+                  )}
+                </div>
+              </Select.Option>
+            ))}
+          </Select>
         </Form.Item>
 
         <Form.Item
@@ -85,11 +126,19 @@ export const RoleFunctionFormModal = ({
               message: 'Please select at least one access level',
             },
           ]}
+          tooltip="Select the permissions this role will have for this function"
         >
           <Checkbox.Group>
             <Space direction="vertical">
-              <Checkbox value="Read">Read</Checkbox>
-              <Checkbox value="Write">Write</Checkbox>
+              {ACCESS_LEVELS.map((level) => (
+                <Tooltip
+                  key={level}
+                  title={getAccessLevelDescription(level)}
+                  placement="right"
+                >
+                  <Checkbox value={level}>{level}</Checkbox>
+                </Tooltip>
+              ))}
             </Space>
           </Checkbox.Group>
         </Form.Item>

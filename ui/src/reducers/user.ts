@@ -1,4 +1,4 @@
-import { createAccount, login, logout } from '@/actions/user';
+import { createAccount, login, logout, fetchMyAccount } from '@/actions/user';
 import { createReducer } from '@reduxjs/toolkit';
 import { setAuthToken } from '@/utils/apiClient';
 import {
@@ -31,6 +31,15 @@ export const userReducer = createReducer(initialState, (builder) => {
     })
     .addCase(login.fulfilled, (state, { payload }) => {
       state.token = payload?.token;
+      state.id = payload?.id;
+      state.name = payload?.name;
+      state.username = payload?.username;
+      state.businessId = payload?.businessId;
+      state.roles = payload?.roles;
+
+      saveStateToLocalStorage(state);
+    })
+    .addCase(fetchMyAccount.fulfilled, (state, { payload }) => {
       state.id = payload?.id;
       state.name = payload?.name;
       state.username = payload?.username;

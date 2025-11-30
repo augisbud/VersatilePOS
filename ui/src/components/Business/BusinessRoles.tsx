@@ -1,4 +1,13 @@
-import { Card, Table, Typography, Button, Popconfirm, Tag, Space } from 'antd';
+import {
+  Card,
+  Table,
+  Typography,
+  Button,
+  Popconfirm,
+  Tag,
+  Space,
+  Tooltip,
+} from 'antd';
 import { DeleteOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import { useRoles } from '@/hooks/useRoles';
@@ -163,15 +172,42 @@ export const BusinessRoles = ({ businessId }: BusinessRolesProps) => {
             <Space size={[0, 4]} wrap style={{ flex: 1 }}>
               {functions.length > 0 ? (
                 functions.map((funcLink) => (
-                  <Tag key={funcLink.id} color="blue">
-                    {funcLink.function?.name}
-                    {funcLink.accessLevels &&
-                      funcLink.accessLevels.length > 0 && (
-                        <span style={{ marginLeft: '4px', opacity: 0.7 }}>
-                          ({funcLink.accessLevels.join(', ')})
-                        </span>
-                      )}
-                  </Tag>
+                  <Tooltip
+                    key={funcLink.id}
+                    title={
+                      <div>
+                        <div>
+                          <strong>{funcLink.function?.name}</strong>
+                        </div>
+                        {funcLink.function?.description && (
+                          <div style={{ marginTop: '4px' }}>
+                            {funcLink.function.description}
+                          </div>
+                        )}
+                        {funcLink.function?.action && (
+                          <div style={{ marginTop: '4px', fontSize: '11px' }}>
+                            Action: {funcLink.function.action}
+                          </div>
+                        )}
+                        {funcLink.accessLevels &&
+                          funcLink.accessLevels.length > 0 && (
+                            <div style={{ marginTop: '4px', fontSize: '11px' }}>
+                              Permissions: {funcLink.accessLevels.join(', ')}
+                            </div>
+                          )}
+                      </div>
+                    }
+                  >
+                    <Tag color="blue">
+                      {funcLink.function?.name}
+                      {funcLink.accessLevels &&
+                        funcLink.accessLevels.length > 0 && (
+                          <span style={{ marginLeft: '4px', opacity: 0.7 }}>
+                            ({funcLink.accessLevels.join(', ')})
+                          </span>
+                        )}
+                    </Tag>
+                  </Tooltip>
                 ))
               ) : (
                 <span style={{ color: '#999' }}>No functions assigned</span>
@@ -191,7 +227,7 @@ export const BusinessRoles = ({ businessId }: BusinessRolesProps) => {
       },
     },
     {
-      title: 'Action',
+      title: '',
       key: 'action',
       width: 100,
       render: (_, record) => (

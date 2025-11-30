@@ -1,6 +1,5 @@
 import { HomeOutlined, ShopOutlined } from '@ant-design/icons';
 import { ScreenConfig, RouteId } from '@/types/routes';
-import { UserRole } from '@/types/auth';
 import { Unauthorized } from '@/pages/Unauthorized';
 import { Business } from '@/pages/Business';
 import { Overview } from '@/pages/Overview';
@@ -11,7 +10,7 @@ export const routesConfig: ScreenConfig[] = [
     path: '/',
     title: 'Overview',
     component: Overview,
-    roles: [UserRole.ADMIN, UserRole.STAFF],
+    roles: [],
     icon: <HomeOutlined />,
     showInNav: true,
   },
@@ -20,7 +19,7 @@ export const routesConfig: ScreenConfig[] = [
     path: '/business',
     title: 'My Businesses',
     component: Business,
-    roles: [UserRole.ADMIN],
+    roles: [],
     icon: <ShopOutlined />,
     showInNav: true,
   },
@@ -29,7 +28,7 @@ export const routesConfig: ScreenConfig[] = [
     path: '/unauthorized',
     title: 'Unauthorized',
     component: Unauthorized,
-    roles: [UserRole.ADMIN, UserRole.STAFF],
+    roles: [],
     showInNav: false,
   },
 ];

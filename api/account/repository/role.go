@@ -24,7 +24,24 @@ func (r *RoleRepository) UpdateRole(role *entities.AccountRole) error {
 }
 
 func (r *RoleRepository) DeleteRole(role *entities.AccountRole) error {
-	return database.DB.Delete(role).Error
+	tx := database.DB.Begin()
+
+	if err := tx.Where("account_role_id = ?", role.ID).Delete(&entities.AccountRoleFunctionLink{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Where("account_role_id = ?", role.ID).Delete(&entities.AccountRoleLink{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Delete(role).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }
 
 func (r *RoleRepository) CreateAccountRoleLink(link *entities.AccountRoleLink) error {

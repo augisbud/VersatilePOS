@@ -1158,6 +1158,12 @@
                 "businessId": {
                     "type": "integer"
                 },
+                "functionLinks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AccountRoleFunctionLinkDto"
+                    }
+                },
                 "id": {
                     "type": "integer"
                 },

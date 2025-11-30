@@ -8,7 +8,7 @@ type Account struct {
 	Username     string `json:"username" gorm:"unique"`
 	PasswordHash string `json:"-"`
 
-	AccountRoleLinks []AccountRoleLink `gorm:"foreignKey:AccountID"`
+	AccountRoleLinks []AccountRoleLink `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:AccountID"`
 
 	OwnedBusinesses []Business `gorm:"foreignKey:OwnerID"`
 

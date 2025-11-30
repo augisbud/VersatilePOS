@@ -21,7 +21,7 @@ type AccountRoleFunctionLink struct {
 	AccessLevels pq.StringArray `gorm:"type:text[]" json:"accessLevels"`
 
 	AccountRoleID uint        `json:"accountRoleId"`
-	AccountRole   AccountRole `gorm:"foreignKey:AccountRoleID"`
+	AccountRole   AccountRole `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:AccountRoleID"`
 
 	FunctionID uint     `json:"functionId"`
 	Function   Function `gorm:"foreignKey:FunctionID"`

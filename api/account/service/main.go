@@ -121,14 +121,13 @@ func (s *Service) GetMyAccount(userID uint) (accountModels.AccountDto, error) {
 
 	roleLinks := make([]accountModels.AccountRoleLinkDto, len(account.AccountRoleLinks))
 	for i, link := range account.AccountRoleLinks {
-		v := link.AccountRole.BusinessID
 		roleLinks[i] = accountModels.AccountRoleLinkDto{
 			ID:     link.ID,
 			Status: link.Status,
 			Role: accountModels.AccountRoleDto{
 				ID:         link.AccountRole.ID,
 				Name:       link.AccountRole.Name,
-				BusinessId: &v,
+				BusinessId: &link.AccountRole.BusinessID,
 			},
 		}
 	}
@@ -178,8 +177,9 @@ func (s *Service) GetAccounts(businessID uint, requestingUserID uint) ([]account
 				ID:     link.ID,
 				Status: link.Status,
 				Role: accountModels.AccountRoleDto{
-					ID:   link.AccountRole.ID,
-					Name: link.AccountRole.Name,
+					ID:         link.AccountRole.ID,
+					Name:       link.AccountRole.Name,
+					BusinessId: &link.AccountRole.BusinessID,
 				},
 			}
 		}
@@ -306,8 +306,9 @@ func (s *Service) AssignRoleToAccount(accountID uint, req accountModels.AssignRo
 		ID:     link.ID,
 		Status: link.Status,
 		Role: accountModels.AccountRoleDto{
-			ID:   role.ID,
-			Name: role.Name,
+			ID:         role.ID,
+			Name:       role.Name,
+			BusinessId: &role.BusinessID,
 		},
 	}, nil
 }
@@ -338,8 +339,9 @@ func (s *Service) UpdateAccountRoleLinkStatus(accountID, roleID uint, req accoun
 		ID:     link.ID,
 		Status: link.Status,
 		Role: accountModels.AccountRoleDto{
-			ID:   link.AccountRole.ID,
-			Name: link.AccountRole.Name,
+			ID:         link.AccountRole.ID,
+			Name:       link.AccountRole.Name,
+			BusinessId: &link.AccountRole.BusinessID,
 		},
 	}, nil
 }

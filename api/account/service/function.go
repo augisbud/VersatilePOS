@@ -17,13 +17,39 @@ func (s *Service) GetAllFunctions(claims map[string]interface{}) ([]models.Funct
 
 	userID := uint(claims["id"].(float64))
 
-	businesses, err := s.businessRepo.GetBusinessesByOwnerID(userID)
+	// Require the user to have Roles:Read in at least one business the user belongs to.
+	// Use the account repo to gather businesses the user owns/is a member of and any roles assigned.
+	account, err := s.accountRepo.GetAccountByID(userID)
 	if err != nil {
-		return nil, errors.New("failed to verify business ownership")
+		return nil, errors.New("failed to retrieve user account")
 	}
 
-	if len(businesses) == 0 {
-		return nil, errors.New("only business owners can view functions")
+	// collect candidate business IDs from OwnedBusinesses, MemberOf and assigned roles
+	var bizIDs []uint
+	for _, b := range account.OwnedBusinesses {
+		bizIDs = append(bizIDs, b.ID)
+	}
+	for _, b := range account.MemberOf {
+		bizIDs = append(bizIDs, b.ID)
+	}
+	for _, rl := range account.AccountRoleLinks {
+		bizIDs = append(bizIDs, rl.AccountRole.BusinessID)
+	}
+
+	allowed := false
+	for _, id := range bizIDs {
+		ok, err := rbac.HasAccess(constants.Roles, constants.Read, id, userID)
+		if err != nil {
+			return nil, errors.New("failed to verify permissions")
+		}
+		if ok {
+			allowed = true
+			break
+		}
+	}
+
+	if !allowed {
+		return nil, errors.New("unauthorized to view functions")
 	}
 
 	functions, err := s.functionRepo.GetAllFunctions()

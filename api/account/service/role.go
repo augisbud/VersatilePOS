@@ -32,11 +32,10 @@ func (s *Service) CreateAccountRole(req models.CreateAccountRoleRequest, claims 
 		return models.AccountRoleDto{}, errors.New("failed to create account role")
 	}
 
-	v := role.BusinessID
 	return models.AccountRoleDto{
 		ID:         role.ID,
 		Name:       role.Name,
-		BusinessId: &v,
+		BusinessId: &role.BusinessID,
 	}, nil
 }
 
@@ -59,11 +58,10 @@ func (s *Service) GetRole(roleID uint, claims map[string]interface{}) (models.Ac
 		return models.AccountRoleDto{}, errors.New("unauthorized")
 	}
 
-	v := role.BusinessID
 	return models.AccountRoleDto{
 		ID:         role.ID,
 		Name:       role.Name,
-		BusinessId: &v,
+		BusinessId: &role.BusinessID,
 	}, nil
 }
 
@@ -92,11 +90,10 @@ func (s *Service) UpdateRole(roleID uint, req models.UpdateAccountRoleRequest, c
 		return models.AccountRoleDto{}, errors.New("failed to update role")
 	}
 
-	v := role.BusinessID
 	return models.AccountRoleDto{
 		ID:         role.ID,
 		Name:       role.Name,
-		BusinessId: &v,
+		BusinessId: &role.BusinessID,
 	}, nil
 }
 

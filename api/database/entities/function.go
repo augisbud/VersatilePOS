@@ -20,9 +20,9 @@ type AccountRoleFunctionLink struct {
 
 	AccessLevels pq.StringArray `gorm:"type:text[]" json:"accessLevels"`
 
-	AccountRoleID uint        `json:"accountRoleId,omitempty"`
+	AccountRoleID uint        `json:"accountRoleId"`
 	AccountRole   AccountRole `gorm:"foreignKey:AccountRoleID"`
 
-	FunctionID uint     `json:"functionId,omitempty"`
+	FunctionID uint     `json:"functionId"`
 	Function   Function `gorm:"foreignKey:FunctionID"`
 }

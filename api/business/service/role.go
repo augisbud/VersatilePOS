@@ -17,9 +17,11 @@ func (s *Service) GetBusinessRoles(businessID uint, userID uint) ([]accountModel
 
 	var roleDtos []accountModels.AccountRoleDto
 	for _, role := range roles {
+		v := role.BusinessID
 		roleDtos = append(roleDtos, accountModels.AccountRoleDto{
-			ID:   role.ID,
-			Name: role.Name,
+			ID:         role.ID,
+			Name:       role.Name,
+			BusinessId: &v,
 		})
 	}
 

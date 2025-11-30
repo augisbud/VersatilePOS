@@ -123,12 +123,14 @@ func (s *Service) GetMyAccount(userID uint) (accountModels.AccountDto, error) {
 
 	roleLinks := make([]accountModels.AccountRoleLinkDto, len(account.AccountRoleLinks))
 	for i, link := range account.AccountRoleLinks {
+		v := link.AccountRole.BusinessID
 		roleLinks[i] = accountModels.AccountRoleLinkDto{
 			ID:     link.ID,
 			Status: link.Status,
 			Role: accountModels.AccountRoleDto{
-				ID:   link.AccountRole.ID,
-				Name: link.AccountRole.Name,
+				ID:         link.AccountRole.ID,
+				Name:       link.AccountRole.Name,
+				BusinessId: &v,
 			},
 		}
 	}

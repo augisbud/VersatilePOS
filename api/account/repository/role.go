@@ -1,6 +1,7 @@
 package repository
 
 import (
+	accountModels "VersatilePOS/account/models"
 	"VersatilePOS/database"
 	"VersatilePOS/database/entities"
 )
@@ -58,4 +59,20 @@ func (r *RoleRepository) GetAccountRoleLink(accountID, roleID uint) (*entities.A
 
 func (r *RoleRepository) UpdateAccountRoleLink(link *entities.AccountRoleLink) error {
 	return database.DB.Save(link).Error
+}
+
+// GetRoleDtoByID builds the AccountRole DTO including its function links.
+// This centralizes conversion logic so callers don't duplicate it.
+func (r *RoleRepository) GetRoleDtoByID(id uint) (accountModels.AccountRoleDto, error) {
+	role, err := r.GetRoleByID(id)
+	if err != nil {
+		return accountModels.AccountRoleDto{}, err
+	}
+
+	funcRepo := &FunctionRepository{}
+	funcLinks, _ := funcRepo.GetFunctionsByRoleID(role.ID)
+
+	// use model constructor to build canonical DTO
+	dto := accountModels.NewAccountRoleDtoFromEntity(*role, funcLinks)
+	return dto, nil
 }

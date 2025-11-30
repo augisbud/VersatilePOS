@@ -84,15 +84,8 @@ func (s *Service) CreateBusiness(req businessModels.CreateBusinessRequest, owner
 		}
 	}
 
-	response := &businessModels.BusinessDto{
-		ID:      createdBusiness.ID,
-		Name:    createdBusiness.Name,
-		Address: createdBusiness.Address,
-		Phone:   createdBusiness.Phone,
-		Email:   createdBusiness.Email,
-	}
-
-	return response, nil
+	dto := businessModels.NewBusinessDtoFromEntity(*createdBusiness)
+	return &dto, nil
 }
 
 func (s *Service) GetBusinesses(ownerID uint) ([]businessModels.BusinessDto, error) {
@@ -103,13 +96,7 @@ func (s *Service) GetBusinesses(ownerID uint) ([]businessModels.BusinessDto, err
 
 	var businessDtos []businessModels.BusinessDto
 	for _, business := range businesses {
-		businessDtos = append(businessDtos, businessModels.BusinessDto{
-			ID:      business.ID,
-			Name:    business.Name,
-			Address: business.Address,
-			Phone:   business.Phone,
-			Email:   business.Email,
-		})
+		businessDtos = append(businessDtos, businessModels.NewBusinessDtoFromEntity(business))
 	}
 
 	return businessDtos, nil
@@ -132,13 +119,6 @@ func (s *Service) GetBusiness(id uint, userID uint) (*businessModels.BusinessDto
 		return nil, errors.New("user does not belong to this business")
 	}
 
-	response := &businessModels.BusinessDto{
-		ID:      business.ID,
-		Name:    business.Name,
-		Address: business.Address,
-		Phone:   business.Phone,
-		Email:   business.Email,
-	}
-
-	return response, nil
+	dto := businessModels.NewBusinessDtoFromEntity(*business)
+	return &dto, nil
 }

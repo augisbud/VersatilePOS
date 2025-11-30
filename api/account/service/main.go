@@ -121,13 +121,35 @@ func (s *Service) GetMyAccount(userID uint) (accountModels.AccountDto, error) {
 
 	roleLinks := make([]accountModels.AccountRoleLinkDto, len(account.AccountRoleLinks))
 	for i, link := range account.AccountRoleLinks {
+		// load function links for this role
+		funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(link.AccountRole.ID)
+		fr := make([]accountModels.AccountRoleFunctionLinkDto, 0, len(funcLinks))
+		for _, fl := range funcLinks {
+			// convert DB string array -> []constants.AccessLevel
+			conv := make([]constants.AccessLevel, len(fl.AccessLevels))
+			for j, v := range fl.AccessLevels {
+				conv[j] = constants.AccessLevel(v)
+			}
+			fr = append(fr, accountModels.AccountRoleFunctionLinkDto{
+				ID:           fl.ID,
+				AccessLevels: conv,
+				Function: accountModels.FunctionDto{
+					ID:          fl.Function.ID,
+					Name:        fl.Function.Name,
+					Action:      fl.Function.Action,
+					Description: fl.Function.Description,
+				},
+			})
+		}
+
 		roleLinks[i] = accountModels.AccountRoleLinkDto{
 			ID:     link.ID,
 			Status: link.Status,
 			Role: accountModels.AccountRoleDto{
-				ID:         link.AccountRole.ID,
-				Name:       link.AccountRole.Name,
-				BusinessId: &link.AccountRole.BusinessID,
+				ID:           link.AccountRole.ID,
+				Name:         link.AccountRole.Name,
+				BusinessId:   &link.AccountRole.BusinessID,
+				FunctionLinks: fr,
 			},
 		}
 	}
@@ -173,13 +195,34 @@ func (s *Service) GetAccounts(businessID uint, requestingUserID uint) ([]account
 	for _, acc := range accounts {
 		roleLinks := make([]accountModels.AccountRoleLinkDto, len(acc.AccountRoleLinks))
 		for i, link := range acc.AccountRoleLinks {
+			// load function links for this role
+			funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(link.AccountRole.ID)
+			fr := make([]accountModels.AccountRoleFunctionLinkDto, 0, len(funcLinks))
+			for _, fl := range funcLinks {
+				conv := make([]constants.AccessLevel, len(fl.AccessLevels))
+				for j, v := range fl.AccessLevels {
+					conv[j] = constants.AccessLevel(v)
+				}
+				fr = append(fr, accountModels.AccountRoleFunctionLinkDto{
+					ID:           fl.ID,
+					AccessLevels: conv,
+					Function: accountModels.FunctionDto{
+						ID:          fl.Function.ID,
+						Name:        fl.Function.Name,
+						Action:      fl.Function.Action,
+						Description: fl.Function.Description,
+					},
+				})
+			}
+
 			roleLinks[i] = accountModels.AccountRoleLinkDto{
 				ID:     link.ID,
 				Status: link.Status,
 				Role: accountModels.AccountRoleDto{
-					ID:         link.AccountRole.ID,
-					Name:       link.AccountRole.Name,
-					BusinessId: &link.AccountRole.BusinessID,
+					ID:           link.AccountRole.ID,
+					Name:         link.AccountRole.Name,
+					BusinessId:   &link.AccountRole.BusinessID,
+					FunctionLinks: fr,
 				},
 			}
 		}
@@ -302,13 +345,34 @@ func (s *Service) AssignRoleToAccount(accountID uint, req accountModels.AssignRo
 		return accountModels.AccountRoleLinkDto{}, errors.New("failed to assign role")
 	}
 
+	// load function links for this role
+	funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(role.ID)
+	fr := make([]accountModels.AccountRoleFunctionLinkDto, 0, len(funcLinks))
+	for _, fl := range funcLinks {
+		conv := make([]constants.AccessLevel, len(fl.AccessLevels))
+		for j, v := range fl.AccessLevels {
+			conv[j] = constants.AccessLevel(v)
+		}
+		fr = append(fr, accountModels.AccountRoleFunctionLinkDto{
+			ID:           fl.ID,
+			AccessLevels: conv,
+			Function: accountModels.FunctionDto{
+				ID:          fl.Function.ID,
+				Name:        fl.Function.Name,
+				Action:      fl.Function.Action,
+				Description: fl.Function.Description,
+			},
+		})
+	}
+
 	return accountModels.AccountRoleLinkDto{
 		ID:     link.ID,
 		Status: link.Status,
 		Role: accountModels.AccountRoleDto{
-			ID:         role.ID,
-			Name:       role.Name,
-			BusinessId: &role.BusinessID,
+			ID:           role.ID,
+			Name:         role.Name,
+			BusinessId:   &role.BusinessID,
+			FunctionLinks: fr,
 		},
 	}, nil
 }
@@ -335,13 +399,34 @@ func (s *Service) UpdateAccountRoleLinkStatus(accountID, roleID uint, req accoun
 		return accountModels.AccountRoleLinkDto{}, errors.New("failed to update role assignment")
 	}
 
+	// load function links for the role
+	funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(link.AccountRole.ID)
+	fr := make([]accountModels.AccountRoleFunctionLinkDto, 0, len(funcLinks))
+	for _, fl := range funcLinks {
+		conv := make([]constants.AccessLevel, len(fl.AccessLevels))
+		for j, v := range fl.AccessLevels {
+			conv[j] = constants.AccessLevel(v)
+		}
+		fr = append(fr, accountModels.AccountRoleFunctionLinkDto{
+			ID:           fl.ID,
+			AccessLevels: conv,
+			Function: accountModels.FunctionDto{
+				ID:          fl.Function.ID,
+				Name:        fl.Function.Name,
+				Action:      fl.Function.Action,
+				Description: fl.Function.Description,
+			},
+		})
+	}
+
 	return accountModels.AccountRoleLinkDto{
 		ID:     link.ID,
 		Status: link.Status,
 		Role: accountModels.AccountRoleDto{
-			ID:         link.AccountRole.ID,
-			Name:       link.AccountRole.Name,
-			BusinessId: &link.AccountRole.BusinessID,
+			ID:           link.AccountRole.ID,
+			Name:         link.AccountRole.Name,
+			BusinessId:   &link.AccountRole.BusinessID,
+			FunctionLinks: fr,
 		},
 	}, nil
 }

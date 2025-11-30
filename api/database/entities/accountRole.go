@@ -19,8 +19,8 @@ type AccountRoleLink struct {
 	Status constants.AccountRoleLinkStatus `gorm:"default:Active"`
 
 	AccountRoleID uint        `json:"accountRoleId"`
-	AccountRole   AccountRole `gorm:"foreignKey:AccountRoleID"`
+	AccountRole   AccountRole `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:AccountRoleID"`
 
 	AccountID uint    `json:"accountId"`
-	Account   Account `gorm:"foreignKey:AccountID"`
+	Account   Account `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:AccountID"`
 }

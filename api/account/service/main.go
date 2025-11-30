@@ -74,6 +74,19 @@ func (s *Service) CreateAccount(req accountModels.CreateAccountRequest, claims m
 		if err := s.accountRepo.AddEmployeeToBusiness(&account, business); err != nil {
 			return accountModels.AccountDto{}, err
 		}
+
+		// Assign the default "Employee" role for this business to the new account.
+		// The business creation process should have created an "Employee" role already.
+		employeeRole, err := s.roleRepo.GetRoleByBusinessAndName(req.BusinessID, "Employee")
+		if err != nil {
+			return accountModels.AccountDto{}, errors.New("failed to find employee role for business")
+		}
+
+		// Reuse centralized AssignRoleToAccount which enforces RBAC and membership checks
+		assignReq := accountModels.AssignRoleRequest{RoleID: employeeRole.ID}
+		if _, err := s.AssignRoleToAccount(account.ID, assignReq, claims); err != nil {
+			return accountModels.AccountDto{}, errors.New("failed to assign employee role to account: " + err.Error())
+		}
 	}
 
 	// build response using model constructor

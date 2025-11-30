@@ -2,6 +2,7 @@ package service
 
 import (
 	accountRepository "VersatilePOS/account/repository"
+	accountService "VersatilePOS/account/service"
 	businessModels "VersatilePOS/business/models"
 	"VersatilePOS/business/repository"
 	"VersatilePOS/database/entities"
@@ -9,7 +10,6 @@ import (
 	"VersatilePOS/generic/rbac"
 	"errors"
 
-	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
@@ -39,52 +39,20 @@ func (s *Service) CreateBusiness(req businessModels.CreateBusinessRequest, owner
 		return nil, err
 	}
 
-	// Create a default "Business Owner" role for the newly created business
-	roleRepo := &accountRepository.RoleRepository{}
-	functionRepo := &accountRepository.FunctionRepository{}
-
-	ownerRole := &entities.AccountRole{
-		Name:       "Business Owner",
-		BusinessID: createdBusiness.ID,
-	}
-
-	if err := roleRepo.CreateRole(ownerRole); err != nil {
-		return nil, err
-	}
-
-	// Assign the owner account to the owner role
-	roleLink := &entities.AccountRoleLink{
-		AccountID:     ownerID,
-		AccountRoleID: ownerRole.ID,
-	}
-
-	if err := roleRepo.CreateAccountRoleLink(roleLink); err != nil {
-		return nil, err
-	}
-
-	functionsToAssign := map[constants.Action]bool{
-		constants.Accounts:   true,
-		constants.Businesses: true,
-		constants.Roles:      true,
-	}
-
-	allFuncs, err := functionRepo.GetAllFunctions()
+	// Create default roles and assign functions/links using account service helper
+	accSvc := accountService.NewService()
+	ownerFuncs := []constants.Action{constants.Accounts, constants.Businesses, constants.Roles}
+	ownerAls := []constants.AccessLevel{constants.Write, constants.Read}
+	_, err = accSvc.CreateRoleWithFunctions("Business Owner", createdBusiness.ID, ownerFuncs, ownerAls, &ownerID)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, fn := range allFuncs {
-		if functionsToAssign[fn.Action] {
-			als := pq.StringArray{string(constants.Write), string(constants.Read)}
-			link := &entities.AccountRoleFunctionLink{
-				AccountRoleID: ownerRole.ID,
-				FunctionID:    fn.ID,
-				AccessLevels:  als,
-			}
-			if err := functionRepo.AssignFunctionToRole(link); err != nil {
-				return nil, err
-			}
-		}
+	employeeFuncs := []constants.Action{constants.Businesses}
+	employeeAls := []constants.AccessLevel{constants.Read}
+	_, err = accSvc.CreateRoleWithFunctions("Employee", createdBusiness.ID, employeeFuncs, employeeAls, nil)
+	if err != nil {
+		return nil, err
 	}
 
 	dto := businessModels.NewBusinessDtoFromEntity(*createdBusiness)

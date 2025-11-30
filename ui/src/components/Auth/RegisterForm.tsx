@@ -13,9 +13,16 @@ export interface RegisterFormValues {
 interface RegisterFormProps {
   onFinish: (values: RegisterFormValues) => Promise<void>;
   loading: boolean;
+  showFooter?: boolean;
+  buttonLabel?: string;
 }
 
-export const RegisterForm = ({ onFinish, loading }: RegisterFormProps) => {
+export const RegisterForm = ({
+  onFinish,
+  loading,
+  showFooter = true,
+  buttonLabel = 'Register',
+}: RegisterFormProps) => {
   const [form] = Form.useForm();
 
   const handleFinish = (values: RegisterFormValues) => {
@@ -36,9 +43,9 @@ export const RegisterForm = ({ onFinish, loading }: RegisterFormProps) => {
       <Password />
       <ConfirmPassword />
 
-      <SubmitButton label="Register" loading={loading} />
+      <SubmitButton label={buttonLabel} loading={loading} />
 
-      <FormFooter state="register" />
+      {showFooter && <FormFooter state="register" />}
     </Form>
   );
 };

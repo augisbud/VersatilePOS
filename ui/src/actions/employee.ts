@@ -1,6 +1,6 @@
-import { ModelsAccountDto } from '@/api/types.gen';
+import { ModelsAccountDto, ModelsCreateAccountRequest } from '@/api/types.gen';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { getAccounts, deleteAccountById } from '@/api';
+import { getAccounts, deleteAccountById, createAccount } from '@/api';
 
 export const fetchEmployees = createAsyncThunk<ModelsAccountDto[], number>(
   'employee/fetchEmployees',
@@ -25,5 +25,25 @@ export const deleteEmployee = createAsyncThunk<number, number>(
     }
 
     return accountId;
+  }
+);
+
+export const createEmployee = createAsyncThunk<
+  ModelsAccountDto,
+  ModelsCreateAccountRequest
+>(
+  'employee/createEmployee',
+  async (employeeData: ModelsCreateAccountRequest) => {
+    const response = await createAccount({ body: employeeData });
+
+    if (response.error) {
+      throw new Error(response.error.error);
+    }
+
+    if (!response.data) {
+      throw new Error('No data returned from createAccount');
+    }
+
+    return response.data;
   }
 );

@@ -4,7 +4,9 @@ import { getEmployees } from '@/selectors/employee';
 import {
   fetchEmployees as fetchEmployeesAction,
   deleteEmployee as deleteEmployeeAction,
+  createEmployee as createEmployeeAction,
 } from '@/actions/employee';
+import { ModelsCreateAccountRequest } from '@/api/types.gen';
 
 export const useEmployees = () => {
   const dispatch = useAppDispatch();
@@ -18,9 +20,14 @@ export const useEmployees = () => {
     return dispatch(deleteEmployeeAction(accountId)).unwrap();
   };
 
+  const createEmployee = async (employeeData: ModelsCreateAccountRequest) => {
+    return dispatch(createEmployeeAction(employeeData)).unwrap();
+  };
+
   return {
     employees,
     fetchEmployees,
     deleteEmployee,
+    createEmployee,
   };
 };

@@ -50,7 +50,7 @@ export const businessReducer = createReducer(initialState, (builder) => {
       state.error = undefined;
     })
     .addCase(fetchBusinesses.fulfilled, (state, { payload }) => {
-      state.businesses = payload;
+      state.businesses = Array.isArray(payload) ? payload : [];
       state.loading = false;
       state.error = undefined;
     })

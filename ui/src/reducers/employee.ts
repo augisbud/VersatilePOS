@@ -1,5 +1,9 @@
 import { createReducer } from '@reduxjs/toolkit';
-import { fetchEmployees, deleteEmployee } from '@/actions/employee';
+import {
+  fetchEmployees,
+  deleteEmployee,
+  createEmployee,
+} from '@/actions/employee';
 import { ModelsAccountDto } from '@/api/types.gen';
 
 export interface EmployeeState {
@@ -38,6 +42,18 @@ export const employeeReducer = createReducer(initialState, (builder) => {
       state.loading = false;
     })
     .addCase(deleteEmployee.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.error.message;
+    })
+    .addCase(createEmployee.pending, (state) => {
+      state.loading = true;
+      state.error = undefined;
+    })
+    .addCase(createEmployee.fulfilled, (state, { payload }) => {
+      state.employees.push(payload);
+      state.loading = false;
+    })
+    .addCase(createEmployee.rejected, (state, action) => {
       state.loading = false;
       state.error = action.error.message;
     });

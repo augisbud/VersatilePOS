@@ -19,7 +19,7 @@ export const Business = () => {
 
   const [selectedBusiness, setSelectedBusiness] =
     useState<ModelsBusinessDto | null>(null);
-  const isStaffEmployee = false;
+  const isBusinessOwner = true;
 
   const handleManageBusiness = (businessRecord: ModelsBusinessDto) => {
     setSelectedBusiness(businessRecord);
@@ -31,12 +31,12 @@ export const Business = () => {
 
   useEffect(() => {
     const loadBusinesses = async () => {
-      if (isStaffEmployee) {
+      if (isBusinessOwner) {
+        await fetchAllBusinesses();
+      } else {
         const business = await fetchBusiness(userBusinessId!);
 
         setSelectedBusiness(business);
-      } else {
-        await fetchAllBusinesses();
       }
     };
 
@@ -55,13 +55,13 @@ export const Business = () => {
     return (
       <BusinessDetails
         business={selectedBusiness}
-        onBack={isStaffEmployee ? undefined : handleBackToTable}
-        isStaffEmployee={isStaffEmployee}
+        onBack={isBusinessOwner ? undefined : handleBackToTable}
+        isBusinessOwner={isBusinessOwner}
       />
     );
   }
 
-  return isStaffEmployee ? null : (
+  return isBusinessOwner ? (
     <BusinessList
       businesses={businesses}
       loading={loading}
@@ -69,5 +69,5 @@ export const Business = () => {
       onCreateBusiness={createBusiness}
       onManageBusiness={handleManageBusiness}
     />
-  );
+  ) : null;
 };

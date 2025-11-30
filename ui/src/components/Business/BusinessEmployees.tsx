@@ -1,32 +1,63 @@
-import { Card, Table, Typography, Button, Popconfirm } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
-import { useEffect } from 'react';
+import { Card, Table, Typography, Button, Popconfirm, Modal } from 'antd';
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { useState, useEffect } from 'react';
 import { useEmployees } from '@/hooks/useEmployees';
 import type { ColumnsType } from 'antd/es/table';
 import { ModelsAccountDto } from '@/api/types.gen';
+import {
+  RegisterForm,
+  RegisterFormValues,
+} from '@/components/Auth/RegisterForm';
 
 const { Title } = Typography;
 
 interface BusinessEmployeesProps {
   businessId: number;
-  isStaffEmployee: boolean;
+  isBusinessOwner: boolean;
 }
 
 export const BusinessEmployees = ({
   businessId,
-  isStaffEmployee,
+  isBusinessOwner,
 }: BusinessEmployeesProps) => {
-  const { employees, fetchEmployees, deleteEmployee } = useEmployees();
+  const { employees, fetchEmployees, deleteEmployee, createEmployee } =
+    useEmployees();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (businessId) {
-      void fetchEmployees(businessId);
-    }
-  }, [fetchEmployees, businessId]);
+    void fetchEmployees(businessId);
+  }, []);
 
   const handleDelete = (accountId: number) => {
     if (accountId) {
       void deleteEmployee(accountId);
+    }
+  };
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setIsSubmitting(false);
+  };
+
+  const handleSubmit = async (values: RegisterFormValues) => {
+    setIsSubmitting(true);
+    try {
+      await createEmployee({
+        name: values.name,
+        username: values.username,
+        password: values.password,
+        businessId,
+      });
+      handleCloseModal();
+    } catch (error) {
+      console.error('Failed to create employee:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -41,9 +72,8 @@ export const BusinessEmployees = ({
       dataIndex: 'username',
       key: 'username',
     },
-    isStaffEmployee
-      ? {}
-      : {
+    isBusinessOwner
+      ? {
           title: 'Action',
           key: 'action',
           width: 100,
@@ -60,23 +90,51 @@ export const BusinessEmployees = ({
               </Button>
             </Popconfirm>
           ),
-        },
+        }
+      : {},
   ];
 
   return (
-    <Card
-      title={
-        <Title level={4} style={{ margin: 0 }}>
-          Employees
-        </Title>
-      }
-    >
-      <Table
-        columns={columns}
-        dataSource={employees}
-        rowKey="id"
-        pagination={false}
-      />
-    </Card>
+    <>
+      <Card
+        title={
+          <Title level={4} style={{ margin: 0 }}>
+            Employees
+          </Title>
+        }
+        extra={
+          isBusinessOwner && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleOpenModal}
+            >
+              Add Employee
+            </Button>
+          )
+        }
+      >
+        <Table
+          columns={columns}
+          dataSource={employees}
+          rowKey="id"
+          pagination={false}
+        />
+      </Card>
+
+      <Modal
+        title="Add New Employee"
+        open={isModalOpen}
+        onCancel={handleCloseModal}
+        footer={null}
+      >
+        <RegisterForm
+          onFinish={handleSubmit}
+          loading={isSubmitting}
+          showFooter={false}
+          buttonLabel="Add Employee"
+        />
+      </Modal>
+    </>
   );
 };

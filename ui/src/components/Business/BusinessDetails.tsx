@@ -6,13 +6,13 @@ import { BusinessEmployees } from './BusinessEmployees';
 interface BusinessDetailsProps {
   business: ModelsBusinessDto;
   onBack?: () => void;
-  isStaffEmployee: boolean;
+  isBusinessOwner: boolean;
 }
 
 export const BusinessDetails = ({
   business,
   onBack,
-  isStaffEmployee,
+  isBusinessOwner,
 }: BusinessDetailsProps) => {
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -25,7 +25,7 @@ export const BusinessDetails = ({
         <BusinessInformation business={business} />
         <BusinessEmployees
           businessId={business.id!}
-          isStaffEmployee={isStaffEmployee}
+          isBusinessOwner={isBusinessOwner}
         />
       </Space>
     </div>

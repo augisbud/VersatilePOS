@@ -4,11 +4,42 @@ export type ClientOptions = {
     baseURL: 'http://localhost:8080' | (string & {});
 };
 
+export type ConstantsAccessLevel = 'View' | 'Initiate';
+
+export type ConstantsAccountRoleLinkStatus = 'Active' | 'Suspended' | 'Deactivated';
+
 export type ModelsAccountDto = {
     businessId?: number;
     id?: number;
     name?: string;
+    roles?: Array<ModelsAccountRoleLinkDto>;
     username?: string;
+};
+
+export type ModelsAccountRoleDto = {
+    id?: number;
+    name?: string;
+};
+
+export type ModelsAccountRoleFunctionLinkDto = {
+    accessLevel?: ConstantsAccessLevel;
+    function?: ModelsFunctionDto;
+    id?: number;
+};
+
+export type ModelsAccountRoleLinkDto = {
+    id?: number;
+    role?: ModelsAccountRoleDto;
+    status?: ConstantsAccountRoleLinkStatus;
+};
+
+export type ModelsAssignFunctionRequest = {
+    accessLevel: ConstantsAccessLevel;
+    functionId: number;
+};
+
+export type ModelsAssignRoleRequest = {
+    roleId: number;
 };
 
 export type ModelsBusinessDto = {
@@ -26,11 +57,22 @@ export type ModelsCreateAccountRequest = {
     username: string;
 };
 
+export type ModelsCreateAccountRoleRequest = {
+    businessId: number;
+    name: string;
+};
+
 export type ModelsCreateBusinessRequest = {
     address: string;
     email: string;
     name: string;
     phone: string;
+};
+
+export type ModelsFunctionDto = {
+    description?: string;
+    id?: number;
+    name?: string;
 };
 
 export type ModelsHttpError = {
@@ -40,6 +82,14 @@ export type ModelsHttpError = {
 export type ModelsLoginRequest = {
     password: string;
     username: string;
+};
+
+export type ModelsUpdateAccountRoleLinkRequest = {
+    status: 'Active' | 'Suspended' | 'Deactivated';
+};
+
+export type ModelsUpdateAccountRoleRequest = {
+    name: string;
 };
 
 export type CreateAccountData = {
@@ -81,6 +131,39 @@ export type CreateAccountResponses = {
 };
 
 export type CreateAccountResponse = CreateAccountResponses[keyof CreateAccountResponses];
+
+export type GetAllFunctionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/account/functions';
+};
+
+export type GetAllFunctionsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetAllFunctionsError = GetAllFunctionsErrors[keyof GetAllFunctionsErrors];
+
+export type GetAllFunctionsResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsFunctionDto>;
+};
+
+export type GetAllFunctionsResponse = GetAllFunctionsResponses[keyof GetAllFunctionsResponses];
 
 export type LoginAccountData = {
     /**
@@ -144,6 +227,278 @@ export type GetMyAccountResponses = {
 };
 
 export type GetMyAccountResponse = GetMyAccountResponses[keyof GetMyAccountResponses];
+
+export type CreateAccountRoleData = {
+    /**
+     * Account role to create
+     */
+    body: ModelsCreateAccountRoleRequest;
+    path?: never;
+    query?: never;
+    url: '/account/role';
+};
+
+export type CreateAccountRoleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type CreateAccountRoleError = CreateAccountRoleErrors[keyof CreateAccountRoleErrors];
+
+export type CreateAccountRoleResponses = {
+    /**
+     * Created
+     */
+    201: ModelsAccountRoleDto;
+};
+
+export type CreateAccountRoleResponse = CreateAccountRoleResponses[keyof CreateAccountRoleResponses];
+
+export type DeleteAccountRoleByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Role ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/account/role/{id}';
+};
+
+export type DeleteAccountRoleByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type DeleteAccountRoleByIdError = DeleteAccountRoleByIdErrors[keyof DeleteAccountRoleByIdErrors];
+
+export type DeleteAccountRoleByIdResponses = {
+    /**
+     * No Content
+     */
+    204: unknown;
+};
+
+export type GetAccountRoleByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Role ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/account/role/{id}';
+};
+
+export type GetAccountRoleByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetAccountRoleByIdError = GetAccountRoleByIdErrors[keyof GetAccountRoleByIdErrors];
+
+export type GetAccountRoleByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsAccountRoleDto;
+};
+
+export type GetAccountRoleByIdResponse = GetAccountRoleByIdResponses[keyof GetAccountRoleByIdResponses];
+
+export type UpdateAccountRoleByIdData = {
+    /**
+     * Role to update
+     */
+    body: ModelsUpdateAccountRoleRequest;
+    path: {
+        /**
+         * Role ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/account/role/{id}';
+};
+
+export type UpdateAccountRoleByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type UpdateAccountRoleByIdError = UpdateAccountRoleByIdErrors[keyof UpdateAccountRoleByIdErrors];
+
+export type UpdateAccountRoleByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsAccountRoleDto;
+};
+
+export type UpdateAccountRoleByIdResponse = UpdateAccountRoleByIdResponses[keyof UpdateAccountRoleByIdResponses];
+
+export type GetFunctionsForRoleData = {
+    body?: never;
+    path: {
+        /**
+         * Role ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/account/role/{id}/function';
+};
+
+export type GetFunctionsForRoleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetFunctionsForRoleError = GetFunctionsForRoleErrors[keyof GetFunctionsForRoleErrors];
+
+export type GetFunctionsForRoleResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsAccountRoleFunctionLinkDto>;
+};
+
+export type GetFunctionsForRoleResponse = GetFunctionsForRoleResponses[keyof GetFunctionsForRoleResponses];
+
+export type AssignFunctionToRoleData = {
+    /**
+     * Function to assign
+     */
+    body: ModelsAssignFunctionRequest;
+    path: {
+        /**
+         * Role ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/account/role/{id}/function';
+};
+
+export type AssignFunctionToRoleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type AssignFunctionToRoleError = AssignFunctionToRoleErrors[keyof AssignFunctionToRoleErrors];
+
+export type AssignFunctionToRoleResponses = {
+    /**
+     * No Content
+     */
+    204: unknown;
+};
 
 export type GetAccountsData = {
     body?: never;
@@ -218,6 +573,108 @@ export type DeleteAccountByIdResponses = {
      */
     204: unknown;
 };
+
+export type AssignRoleToAccountData = {
+    /**
+     * Role to assign
+     */
+    body: ModelsAssignRoleRequest;
+    path: {
+        /**
+         * Account ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/account/{id}/role';
+};
+
+export type AssignRoleToAccountErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type AssignRoleToAccountError = AssignRoleToAccountErrors[keyof AssignRoleToAccountErrors];
+
+export type AssignRoleToAccountResponses = {
+    /**
+     * Created
+     */
+    201: ModelsAccountRoleLinkDto;
+};
+
+export type AssignRoleToAccountResponse = AssignRoleToAccountResponses[keyof AssignRoleToAccountResponses];
+
+export type UpdateAccountRoleStatusData = {
+    /**
+     * New status
+     */
+    body: ModelsUpdateAccountRoleLinkRequest;
+    path: {
+        /**
+         * Account ID
+         */
+        id: number;
+        /**
+         * Role ID
+         */
+        roleId: number;
+    };
+    query?: never;
+    url: '/account/{id}/role/{roleId}';
+};
+
+export type UpdateAccountRoleStatusErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type UpdateAccountRoleStatusError = UpdateAccountRoleStatusErrors[keyof UpdateAccountRoleStatusErrors];
+
+export type UpdateAccountRoleStatusResponses = {
+    /**
+     * OK
+     */
+    200: ModelsAccountRoleLinkDto;
+};
+
+export type UpdateAccountRoleStatusResponse = UpdateAccountRoleStatusResponses[keyof UpdateAccountRoleStatusResponses];
 
 export type GetBusinessesData = {
     body?: never;
@@ -325,3 +782,45 @@ export type GetBusinessByIdResponses = {
 };
 
 export type GetBusinessByIdResponse = GetBusinessByIdResponses[keyof GetBusinessByIdResponses];
+
+export type GetBusinessRolesData = {
+    body?: never;
+    path: {
+        /**
+         * Business ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/business/{id}/roles';
+};
+
+export type GetBusinessRolesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetBusinessRolesError = GetBusinessRolesErrors[keyof GetBusinessRolesErrors];
+
+export type GetBusinessRolesResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsAccountRoleDto>;
+};
+
+export type GetBusinessRolesResponse = GetBusinessRolesResponses[keyof GetBusinessRolesResponses];

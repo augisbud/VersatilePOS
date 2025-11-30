@@ -10,7 +10,6 @@ export const routesConfig: ScreenConfig[] = [
     path: '/',
     title: 'Overview',
     component: Overview,
-    roles: [],
     icon: <HomeOutlined />,
     showInNav: true,
   },
@@ -19,7 +18,6 @@ export const routesConfig: ScreenConfig[] = [
     path: '/business',
     title: 'My Businesses',
     component: Business,
-    roles: [],
     icon: <ShopOutlined />,
     showInNav: true,
   },
@@ -28,7 +26,6 @@ export const routesConfig: ScreenConfig[] = [
     path: '/unauthorized',
     title: 'Unauthorized',
     component: Unauthorized,
-    roles: [],
     showInNav: false,
   },
 ];

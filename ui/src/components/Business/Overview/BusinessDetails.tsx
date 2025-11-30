@@ -1,20 +1,18 @@
 import { Space, Button } from 'antd';
 import { ModelsBusinessDto } from '@/api/types.gen';
 import { BusinessInformation } from './BusinessInformation';
-import { BusinessRoles } from './BusinessRoles';
-import { BusinessEmployees } from './BusinessEmployees';
+import { BusinessRoles } from '../Roles';
+import { BusinessEmployees } from '../Employees';
+import { useUser } from '@/hooks/useUser';
 
 interface BusinessDetailsProps {
   business: ModelsBusinessDto;
   onBack?: () => void;
-  isBusinessOwner: boolean;
 }
 
-export const BusinessDetails = ({
-  business,
-  onBack,
-  isBusinessOwner,
-}: BusinessDetailsProps) => {
+export const BusinessDetails = ({ business, onBack }: BusinessDetailsProps) => {
+  const { canReadRoles, canReadAccounts } = useUser();
+
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       {onBack && (
@@ -24,11 +22,8 @@ export const BusinessDetails = ({
       )}
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <BusinessInformation business={business} />
-        {isBusinessOwner && <BusinessRoles businessId={business.id!} />}
-        <BusinessEmployees
-          businessId={business.id!}
-          isBusinessOwner={isBusinessOwner}
-        />
+        {canReadRoles && <BusinessRoles businessId={business.id!} />}
+        {canReadAccounts && <BusinessEmployees businessId={business.id!} />}
       </Space>
     </div>
   );

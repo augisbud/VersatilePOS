@@ -12,6 +12,7 @@ import { DeleteOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import { useRoles } from '@/hooks/useRoles';
 import { useFunctions } from '@/hooks/useFunctions';
+import { useUser } from '@/hooks/useUser';
 import type { ColumnsType } from 'antd/es/table';
 import { ModelsAccountRoleDto, ConstantsAccessLevel } from '@/api/types.gen';
 import { RoleFormModal } from './RoleFormModal';
@@ -43,6 +44,7 @@ export const BusinessRoles = ({ businessId }: BusinessRolesProps) => {
     assignFunctionToRole,
   } = useRoles();
   const { allFunctions, fetchAllFunctions } = useFunctions();
+  const { canWriteRoles } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingRole, setEditingRole] = useState<ModelsAccountRoleDto | null>(
@@ -150,12 +152,14 @@ export const BusinessRoles = ({ businessId }: BusinessRolesProps) => {
       render: (name, record) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span>{name}</span>
-          <Button
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => handleOpenModal(record)}
-          />
+          {canWriteRoles && (
+            <Button
+              type="link"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => handleOpenModal(record)}
+            />
+          )}
         </div>
       ),
     },
@@ -202,20 +206,25 @@ export const BusinessRoles = ({ businessId }: BusinessRolesProps) => {
                 <span style={{ color: '#999' }}>No functions assigned</span>
               )}
             </Space>
-            <Button
-              type="link"
-              size="small"
-              icon={<PlusOutlined />}
-              onClick={() => handleOpenFunctionModal(record)}
-              disabled={!canAddFunction}
-            >
-              Add
-            </Button>
+            {canWriteRoles && (
+              <Button
+                type="link"
+                size="small"
+                icon={<PlusOutlined />}
+                onClick={() => handleOpenFunctionModal(record)}
+                disabled={!canAddFunction}
+              >
+                Add
+              </Button>
+            )}
           </div>
         );
       },
     },
-    {
+  ];
+
+  if (canWriteRoles) {
+    columns.push({
       title: '',
       key: 'action',
       width: 100,
@@ -232,8 +241,8 @@ export const BusinessRoles = ({ businessId }: BusinessRolesProps) => {
           </Button>
         </Popconfirm>
       ),
-    },
-  ];
+    });
+  }
 
   return (
     <>
@@ -244,13 +253,15 @@ export const BusinessRoles = ({ businessId }: BusinessRolesProps) => {
           </Title>
         }
         extra={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => handleOpenModal()}
-          >
-            Add Role
-          </Button>
+          canWriteRoles && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => handleOpenModal()}
+            >
+              Add Role
+            </Button>
+          )
         }
       >
         <Table

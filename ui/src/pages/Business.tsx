@@ -19,7 +19,13 @@ export const Business = () => {
     fetchAllBusinesses,
     fetchBusiness,
   } = useBusiness();
-  const { isBusinessOwner, user, hasRoles, refreshAccount } = useUser();
+  const {
+    user,
+    hasRoles,
+    refreshAccount,
+    canReadBusinesses,
+    canWriteBusinesses,
+  } = useUser();
   const userBusinessId = useAppSelector(getUserBusinessId);
 
   const [selectedBusiness, setSelectedBusiness] =
@@ -39,17 +45,17 @@ export const Business = () => {
         return;
       }
 
-      if (isBusinessOwner) {
+      if (canWriteBusinesses) {
         await fetchAllBusinesses();
-      } else {
-        const business = await fetchBusiness(userBusinessId!);
+      } else if (canReadBusinesses && userBusinessId) {
+        const business = await fetchBusiness(userBusinessId);
 
         setSelectedBusiness(business);
       }
     };
 
     void loadBusinesses();
-  }, [userBusinessId]);
+  }, [userBusinessId, canReadBusinesses, canWriteBusinesses]);
 
   if (loading && businesses.length === 0) {
     return (
@@ -63,8 +69,7 @@ export const Business = () => {
     return (
       <BusinessDetails
         business={selectedBusiness}
-        onBack={isBusinessOwner ? undefined : handleBackToTable}
-        isBusinessOwner={isBusinessOwner}
+        onBack={canWriteBusinesses ? handleBackToTable : undefined}
       />
     );
   }

@@ -7,6 +7,7 @@ import {
   ModelsCreateBusinessRequest,
 } from '@/api/types.gen';
 import { BusinessCreationForm } from './BusinessCreationForm';
+import { useUser } from '@/hooks/useUser';
 
 interface BusinessListProps {
   businesses: ModelsBusinessDto[];
@@ -25,6 +26,7 @@ export const BusinessList = ({
   onCreateBusiness,
   onManageBusiness,
 }: BusinessListProps) => {
+  const { canWriteBusinesses } = useUser();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handleCreateBusiness = async (values: ModelsCreateBusinessRequest) => {
@@ -77,13 +79,15 @@ export const BusinessList = ({
         }}
       >
         <h2 style={{ margin: 0 }}>Businesses</h2>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setIsCreateModalOpen(true)}
-        >
-          Create Business
-        </Button>
+        {canWriteBusinesses && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            Create Business
+          </Button>
+        )}
       </div>
 
       <Table

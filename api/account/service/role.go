@@ -58,10 +58,32 @@ func (s *Service) GetRole(roleID uint, claims map[string]interface{}) (models.Ac
 		return models.AccountRoleDto{}, errors.New("unauthorized")
 	}
 
+	// load function links for this role
+	funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(role.ID)
+	fr := make([]models.AccountRoleFunctionLinkDto, 0, len(funcLinks))
+	for _, fl := range funcLinks {
+		// convert DB string array -> []constants.AccessLevel
+		conv := make([]constants.AccessLevel, len(fl.AccessLevels))
+		for j, v := range fl.AccessLevels {
+			conv[j] = constants.AccessLevel(v)
+		}
+		fr = append(fr, models.AccountRoleFunctionLinkDto{
+			ID:           fl.ID,
+			AccessLevels: conv,
+			Function: models.FunctionDto{
+				ID:          fl.Function.ID,
+				Name:        fl.Function.Name,
+				Action:      fl.Function.Action,
+				Description: fl.Function.Description,
+			},
+		})
+	}
+
 	return models.AccountRoleDto{
-		ID:         role.ID,
-		Name:       role.Name,
-		BusinessId: &role.BusinessID,
+		ID:            role.ID,
+		Name:          role.Name,
+		BusinessId:    &role.BusinessID,
+		FunctionLinks: fr,
 	}, nil
 }
 
@@ -90,10 +112,32 @@ func (s *Service) UpdateRole(roleID uint, req models.UpdateAccountRoleRequest, c
 		return models.AccountRoleDto{}, errors.New("failed to update role")
 	}
 
+	// load function links for this role
+	funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(role.ID)
+	fr := make([]models.AccountRoleFunctionLinkDto, 0, len(funcLinks))
+	for _, fl := range funcLinks {
+		// convert DB string array -> []constants.AccessLevel
+		conv := make([]constants.AccessLevel, len(fl.AccessLevels))
+		for j, v := range fl.AccessLevels {
+			conv[j] = constants.AccessLevel(v)
+		}
+		fr = append(fr, models.AccountRoleFunctionLinkDto{
+			ID:           fl.ID,
+			AccessLevels: conv,
+			Function: models.FunctionDto{
+				ID:          fl.Function.ID,
+				Name:        fl.Function.Name,
+				Action:      fl.Function.Action,
+				Description: fl.Function.Description,
+			},
+		})
+	}
+
 	return models.AccountRoleDto{
-		ID:         role.ID,
-		Name:       role.Name,
-		BusinessId: &role.BusinessID,
+		ID:            role.ID,
+		Name:          role.Name,
+		BusinessId:    &role.BusinessID,
+		FunctionLinks: fr,
 	}, nil
 }
 

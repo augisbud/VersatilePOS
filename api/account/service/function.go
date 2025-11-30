@@ -59,12 +59,7 @@ func (s *Service) GetAllFunctions(claims map[string]interface{}) ([]models.Funct
 
 	functionDtos := make([]models.FunctionDto, len(functions))
 	for i, f := range functions {
-		functionDtos[i] = models.FunctionDto{
-			ID:          f.ID,
-			Name:        f.Name,
-			Action:      f.Action,
-			Description: f.Description,
-		}
+		functionDtos[i] = models.NewFunctionDtoFromEntity(f)
 	}
 
 	return functionDtos, nil
@@ -108,52 +103,4 @@ func (s *Service) AssignFunctionToRole(roleID uint, req models.AssignFunctionReq
 	}
 
 	return s.functionRepo.AssignFunctionToRole(link)
-}
-
-func (s *Service) GetFunctionsByRoleID(roleID uint, claims map[string]interface{}) ([]models.AccountRoleFunctionLinkDto, error) {
-	if claims == nil {
-		return nil, errors.New("unauthorized")
-	}
-
-	userID := uint(claims["id"].(float64))
-
-	role, err := s.roleRepo.GetRoleByID(roleID)
-	if err != nil {
-		return nil, errors.New("role not found")
-	}
-
-	ok, err := rbac.HasAccess(constants.Roles, constants.Read, role.BusinessID, userID)
-	if err != nil {
-		return nil, errors.New("failed to verify permissions")
-	}
-	if !ok {
-		return nil, errors.New("unauthorized")
-	}
-
-	links, err := s.functionRepo.GetFunctionsByRoleID(roleID)
-	if err != nil {
-		return nil, errors.New("failed to retrieve functions for role")
-	}
-
-	dtos := make([]models.AccountRoleFunctionLinkDto, len(links))
-	for i, link := range links {
-		// convert DB string array -> []constants.AccessLevel
-		conv := make([]constants.AccessLevel, len(link.AccessLevels))
-		for j, v := range link.AccessLevels {
-			conv[j] = constants.AccessLevel(v)
-		}
-
-		dtos[i] = models.AccountRoleFunctionLinkDto{
-			ID:           link.ID,
-			AccessLevels: conv,
-			Function: models.FunctionDto{
-				ID:          link.Function.ID,
-				Name:        link.Function.Name,
-				Action:      link.Function.Action,
-				Description: link.Function.Description,
-			},
-		}
-	}
-
-	return dtos, nil
 }

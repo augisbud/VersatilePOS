@@ -32,18 +32,13 @@ func (s *Service) CreateAccountRole(req models.CreateAccountRoleRequest, claims 
 		return models.AccountRoleDto{}, errors.New("failed to create account role")
 	}
 
-	return models.AccountRoleDto{
-		ID:         role.ID,
-		Name:       role.Name,
-		BusinessId: &role.BusinessID,
-	}, nil
+	return s.GetRole(role.ID, claims)
 }
 
 func (s *Service) GetRole(roleID uint, claims map[string]interface{}) (models.AccountRoleDto, error) {
 	if claims == nil {
 		return models.AccountRoleDto{}, errors.New("unauthorized")
 	}
-
 	role, err := s.roleRepo.GetRoleByID(roleID)
 	if err != nil {
 		return models.AccountRoleDto{}, errors.New("role not found")
@@ -58,33 +53,13 @@ func (s *Service) GetRole(roleID uint, claims map[string]interface{}) (models.Ac
 		return models.AccountRoleDto{}, errors.New("unauthorized")
 	}
 
-	// load function links for this role
-	funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(role.ID)
-	fr := make([]models.AccountRoleFunctionLinkDto, 0, len(funcLinks))
-	for _, fl := range funcLinks {
-		// convert DB string array -> []constants.AccessLevel
-		conv := make([]constants.AccessLevel, len(fl.AccessLevels))
-		for j, v := range fl.AccessLevels {
-			conv[j] = constants.AccessLevel(v)
-		}
-		fr = append(fr, models.AccountRoleFunctionLinkDto{
-			ID:           fl.ID,
-			AccessLevels: conv,
-			Function: models.FunctionDto{
-				ID:          fl.Function.ID,
-				Name:        fl.Function.Name,
-				Action:      fl.Function.Action,
-				Description: fl.Function.Description,
-			},
-		})
+	// delegate DTO construction to repository to avoid duplication
+	dto, err := s.roleRepo.GetRoleDtoByID(role.ID)
+	if err != nil {
+		return models.AccountRoleDto{}, errors.New("failed to build role dto")
 	}
 
-	return models.AccountRoleDto{
-		ID:            role.ID,
-		Name:          role.Name,
-		BusinessId:    &role.BusinessID,
-		FunctionLinks: fr,
-	}, nil
+	return dto, nil
 }
 
 func (s *Service) UpdateRole(roleID uint, req models.UpdateAccountRoleRequest, claims map[string]interface{}) (models.AccountRoleDto, error) {
@@ -112,33 +87,7 @@ func (s *Service) UpdateRole(roleID uint, req models.UpdateAccountRoleRequest, c
 		return models.AccountRoleDto{}, errors.New("failed to update role")
 	}
 
-	// load function links for this role
-	funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(role.ID)
-	fr := make([]models.AccountRoleFunctionLinkDto, 0, len(funcLinks))
-	for _, fl := range funcLinks {
-		// convert DB string array -> []constants.AccessLevel
-		conv := make([]constants.AccessLevel, len(fl.AccessLevels))
-		for j, v := range fl.AccessLevels {
-			conv[j] = constants.AccessLevel(v)
-		}
-		fr = append(fr, models.AccountRoleFunctionLinkDto{
-			ID:           fl.ID,
-			AccessLevels: conv,
-			Function: models.FunctionDto{
-				ID:          fl.Function.ID,
-				Name:        fl.Function.Name,
-				Action:      fl.Function.Action,
-				Description: fl.Function.Description,
-			},
-		})
-	}
-
-	return models.AccountRoleDto{
-		ID:            role.ID,
-		Name:          role.Name,
-		BusinessId:    &role.BusinessID,
-		FunctionLinks: fr,
-	}, nil
+	return s.GetRole(role.ID, claims)
 }
 
 func (s *Service) DeleteRole(roleID uint, claims map[string]interface{}) error {

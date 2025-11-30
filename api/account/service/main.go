@@ -76,14 +76,10 @@ func (s *Service) CreateAccount(req accountModels.CreateAccountRequest, claims m
 		}
 	}
 
-	response := accountModels.AccountDto{
-		ID:       account.ID,
-		Name:     account.Name,
-		Username: account.Username,
-	}
-
-	if len(account.MemberOf) > 0 {
-		response.BusinessId = &account.MemberOf[0].ID
+	// build response using model constructor
+	response := accountModels.NewAccountDtoFromEntity(account, nil)
+	if req.BusinessID != 0 {
+		response.BusinessId = &req.BusinessID
 	}
 
 	return response, nil
@@ -121,50 +117,11 @@ func (s *Service) GetMyAccount(userID uint) (accountModels.AccountDto, error) {
 
 	roleLinks := make([]accountModels.AccountRoleLinkDto, len(account.AccountRoleLinks))
 	for i, link := range account.AccountRoleLinks {
-		// load function links for this role
-		funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(link.AccountRole.ID)
-		fr := make([]accountModels.AccountRoleFunctionLinkDto, 0, len(funcLinks))
-		for _, fl := range funcLinks {
-			// convert DB string array -> []constants.AccessLevel
-			conv := make([]constants.AccessLevel, len(fl.AccessLevels))
-			for j, v := range fl.AccessLevels {
-				conv[j] = constants.AccessLevel(v)
-			}
-			fr = append(fr, accountModels.AccountRoleFunctionLinkDto{
-				ID:           fl.ID,
-				AccessLevels: conv,
-				Function: accountModels.FunctionDto{
-					ID:          fl.Function.ID,
-					Name:        fl.Function.Name,
-					Action:      fl.Function.Action,
-					Description: fl.Function.Description,
-				},
-			})
-		}
-
-		roleLinks[i] = accountModels.AccountRoleLinkDto{
-			ID:     link.ID,
-			Status: link.Status,
-			Role: accountModels.AccountRoleDto{
-				ID:           link.AccountRole.ID,
-				Name:         link.AccountRole.Name,
-				BusinessId:   &link.AccountRole.BusinessID,
-				FunctionLinks: fr,
-			},
-		}
+		roleDto, _ := s.roleRepo.GetRoleDtoByID(link.AccountRole.ID)
+		roleLinks[i] = accountModels.NewAccountRoleLinkDtoFromEntity(link, roleDto)
 	}
 
-	response := accountModels.AccountDto{
-		ID:               account.ID,
-		Name:             account.Name,
-		Username:         account.Username,
-		AccountRoleLinks: roleLinks,
-	}
-
-	if len(account.MemberOf) > 0 {
-		response.BusinessId = &account.MemberOf[0].ID
-	}
-
+	response := accountModels.NewAccountDtoFromEntity(account, roleLinks)
 	return response, nil
 }
 
@@ -195,46 +152,10 @@ func (s *Service) GetAccounts(businessID uint, requestingUserID uint) ([]account
 	for _, acc := range accounts {
 		roleLinks := make([]accountModels.AccountRoleLinkDto, len(acc.AccountRoleLinks))
 		for i, link := range acc.AccountRoleLinks {
-			// load function links for this role
-			funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(link.AccountRole.ID)
-			fr := make([]accountModels.AccountRoleFunctionLinkDto, 0, len(funcLinks))
-			for _, fl := range funcLinks {
-				conv := make([]constants.AccessLevel, len(fl.AccessLevels))
-				for j, v := range fl.AccessLevels {
-					conv[j] = constants.AccessLevel(v)
-				}
-				fr = append(fr, accountModels.AccountRoleFunctionLinkDto{
-					ID:           fl.ID,
-					AccessLevels: conv,
-					Function: accountModels.FunctionDto{
-						ID:          fl.Function.ID,
-						Name:        fl.Function.Name,
-						Action:      fl.Function.Action,
-						Description: fl.Function.Description,
-					},
-				})
-			}
-
-			roleLinks[i] = accountModels.AccountRoleLinkDto{
-				ID:     link.ID,
-				Status: link.Status,
-				Role: accountModels.AccountRoleDto{
-					ID:           link.AccountRole.ID,
-					Name:         link.AccountRole.Name,
-					BusinessId:   &link.AccountRole.BusinessID,
-					FunctionLinks: fr,
-				},
-			}
+			roleDto, _ := s.roleRepo.GetRoleDtoByID(link.AccountRole.ID)
+			roleLinks[i] = accountModels.NewAccountRoleLinkDtoFromEntity(link, roleDto)
 		}
-		dto := accountModels.AccountDto{
-			ID:               acc.ID,
-			Name:             acc.Name,
-			Username:         acc.Username,
-			AccountRoleLinks: roleLinks,
-		}
-		if len(acc.MemberOf) > 0 {
-			dto.BusinessId = &acc.MemberOf[0].ID
-		}
+		dto := accountModels.NewAccountDtoFromEntity(acc, roleLinks)
 		accountDtos = append(accountDtos, dto)
 	}
 
@@ -345,36 +266,10 @@ func (s *Service) AssignRoleToAccount(accountID uint, req accountModels.AssignRo
 		return accountModels.AccountRoleLinkDto{}, errors.New("failed to assign role")
 	}
 
-	// load function links for this role
-	funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(role.ID)
-	fr := make([]accountModels.AccountRoleFunctionLinkDto, 0, len(funcLinks))
-	for _, fl := range funcLinks {
-		conv := make([]constants.AccessLevel, len(fl.AccessLevels))
-		for j, v := range fl.AccessLevels {
-			conv[j] = constants.AccessLevel(v)
-		}
-		fr = append(fr, accountModels.AccountRoleFunctionLinkDto{
-			ID:           fl.ID,
-			AccessLevels: conv,
-			Function: accountModels.FunctionDto{
-				ID:          fl.Function.ID,
-				Name:        fl.Function.Name,
-				Action:      fl.Function.Action,
-				Description: fl.Function.Description,
-			},
-		})
-	}
+	// delegate role DTO construction to repository
+	roleDto, _ := s.roleRepo.GetRoleDtoByID(role.ID)
 
-	return accountModels.AccountRoleLinkDto{
-		ID:     link.ID,
-		Status: link.Status,
-		Role: accountModels.AccountRoleDto{
-			ID:           role.ID,
-			Name:         role.Name,
-			BusinessId:   &role.BusinessID,
-			FunctionLinks: fr,
-		},
-	}, nil
+	return accountModels.NewAccountRoleLinkDtoFromEntity(*link, roleDto), nil
 }
 
 func (s *Service) UpdateAccountRoleLinkStatus(accountID, roleID uint, req accountModels.UpdateAccountRoleLinkRequest, claims map[string]interface{}) (accountModels.AccountRoleLinkDto, error) {
@@ -399,34 +294,8 @@ func (s *Service) UpdateAccountRoleLinkStatus(accountID, roleID uint, req accoun
 		return accountModels.AccountRoleLinkDto{}, errors.New("failed to update role assignment")
 	}
 
-	// load function links for the role
-	funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(link.AccountRole.ID)
-	fr := make([]accountModels.AccountRoleFunctionLinkDto, 0, len(funcLinks))
-	for _, fl := range funcLinks {
-		conv := make([]constants.AccessLevel, len(fl.AccessLevels))
-		for j, v := range fl.AccessLevels {
-			conv[j] = constants.AccessLevel(v)
-		}
-		fr = append(fr, accountModels.AccountRoleFunctionLinkDto{
-			ID:           fl.ID,
-			AccessLevels: conv,
-			Function: accountModels.FunctionDto{
-				ID:          fl.Function.ID,
-				Name:        fl.Function.Name,
-				Action:      fl.Function.Action,
-				Description: fl.Function.Description,
-			},
-		})
-	}
+	// delegate role DTO construction to repository
+	roleDto, _ := s.roleRepo.GetRoleDtoByID(link.AccountRole.ID)
 
-	return accountModels.AccountRoleLinkDto{
-		ID:     link.ID,
-		Status: link.Status,
-		Role: accountModels.AccountRoleDto{
-			ID:           link.AccountRole.ID,
-			Name:         link.AccountRole.Name,
-			BusinessId:   &link.AccountRole.BusinessID,
-			FunctionLinks: fr,
-		},
-	}, nil
+	return accountModels.NewAccountRoleLinkDtoFromEntity(*link, roleDto), nil
 }

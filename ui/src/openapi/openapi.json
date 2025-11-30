@@ -1095,12 +1095,12 @@
         "constants.AccessLevel": {
             "type": "string",
             "enum": [
-                "View",
-                "Initiate"
+                "Read",
+                "Write"
             ],
             "x-enum-varnames": [
-                "View",
-                "Initiate"
+                "Read",
+                "Write"
             ]
         },
         "constants.AccountRoleLinkStatus": {
@@ -1114,6 +1114,19 @@
                 "Active",
                 "Suspended",
                 "Deactivated"
+            ]
+        },
+        "constants.Action": {
+            "type": "string",
+            "enum": [
+                "accounts",
+                "businesses",
+                "roles"
+            ],
+            "x-enum-varnames": [
+                "Accounts",
+                "Businesses",
+                "Roles"
             ]
         },
         "models.AccountDto": {
@@ -1142,6 +1155,9 @@
         "models.AccountRoleDto": {
             "type": "object",
             "properties": {
+                "businessId": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -1153,8 +1169,11 @@
         "models.AccountRoleFunctionLinkDto": {
             "type": "object",
             "properties": {
-                "accessLevel": {
-                    "$ref": "#/definitions/constants.AccessLevel"
+                "accessLevels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/constants.AccessLevel"
+                    }
                 },
                 "function": {
                     "$ref": "#/definitions/models.FunctionDto"
@@ -1181,12 +1200,15 @@
         "models.AssignFunctionRequest": {
             "type": "object",
             "required": [
-                "accessLevel",
+                "accessLevels",
                 "functionId"
             ],
             "properties": {
-                "accessLevel": {
-                    "$ref": "#/definitions/constants.AccessLevel"
+                "accessLevels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/constants.AccessLevel"
+                    }
                 },
                 "functionId": {
                     "type": "integer"
@@ -1290,6 +1312,9 @@
         "models.FunctionDto": {
             "type": "object",
             "properties": {
+                "action": {
+                    "$ref": "#/definitions/constants.Action"
+                },
                 "description": {
                     "type": "string"
                 },

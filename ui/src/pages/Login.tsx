@@ -3,14 +3,14 @@ import { Typography, Card } from 'antd';
 import { useEffect, useState } from 'react';
 import { LoginForm, LoginFormValues } from '@/components/Auth/LoginForm';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@/hooks/useUser';
 
 const { Title } = Typography;
 
 export const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, login } = useUser();
 
   const onFinish = async (values: LoginFormValues) => {
     setLoading(true);

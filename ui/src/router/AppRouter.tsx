@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { routesConfig } from '@/config/routes.config';
-import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@/hooks/useUser';
 import { UserRole } from '@/types/auth';
 import { getRoutesForBusinessType } from '@/utils/routes';
 import { AuthGateway } from '@/layouts/AuthGateway';
@@ -15,7 +15,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ element: Component, roles }: ProtectedRouteProps) => {
-  const { hasRole } = useAuth();
+  const { hasRole } = useUser();
 
   if (!hasRole(roles)) {
     return <Navigate to={RouteId.UNAUTHORIZED} />;
@@ -25,7 +25,7 @@ const ProtectedRoute = ({ element: Component, roles }: ProtectedRouteProps) => {
 };
 
 export const AppRouter = () => {
-  const { businessType } = useAuth();
+  const { businessType } = useUser();
 
   const availableRoutes = getRoutesForBusinessType(routesConfig, businessType);
 

@@ -1,6 +1,11 @@
 import { useAppSelector } from './useAppSelector';
 import { useAppDispatch } from './useAppDispatch';
-import { isAuthenticated, getUser, getBusinessType } from '@/selectors/user';
+import {
+  isAuthenticated,
+  getUser,
+  getBusinessType,
+  isBusinessOwner as isBusinessOwnerSelector,
+} from '@/selectors/user';
 import {
   login as loginAction,
   createAccount as createAccountAction,
@@ -12,11 +17,12 @@ import {
   ModelsCreateAccountRequest,
 } from '@/api/types.gen';
 
-export const useAuth = () => {
+export const useUser = () => {
   const dispatch = useAppDispatch();
   const authenticated = useAppSelector(isAuthenticated);
   const user = useAppSelector(getUser);
   const businessType = useAppSelector(getBusinessType);
+  const isBusinessOwner = useAppSelector(isBusinessOwnerSelector);
 
   const hasRole = (roles: UserRole[]): boolean => {
     if (!user.username) {
@@ -38,6 +44,7 @@ export const useAuth = () => {
     isAuthenticated: authenticated,
     user,
     businessType,
+    isBusinessOwner,
     hasRole,
     login,
     register,

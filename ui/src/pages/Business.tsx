@@ -5,6 +5,7 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { getUserBusinessId } from '@/selectors/user';
 import { ModelsBusinessDto } from '@/api/types.gen';
 import { BusinessDetails, BusinessList } from '@/components/Business';
+import { useUser } from '@/hooks/useUser';
 
 export const Business = () => {
   const {
@@ -15,11 +16,11 @@ export const Business = () => {
     fetchAllBusinesses,
     fetchBusiness,
   } = useBusiness();
+  const { isBusinessOwner } = useUser();
   const userBusinessId = useAppSelector(getUserBusinessId);
 
   const [selectedBusiness, setSelectedBusiness] =
     useState<ModelsBusinessDto | null>(null);
-  const isBusinessOwner = true;
 
   const handleManageBusiness = (businessRecord: ModelsBusinessDto) => {
     setSelectedBusiness(businessRecord);

@@ -1,12 +1,12 @@
 import { Menu } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 import { routesConfig } from '@/config/routes.config';
-import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@/hooks/useUser';
 import { getRoutesForBusinessType } from '@/utils/routes';
 
 export const TopNavigation = () => {
   const location = useLocation();
-  const { hasRole, businessType } = useAuth();
+  const { hasRole, businessType } = useUser();
 
   const availableRoutes = getRoutesForBusinessType(routesConfig, businessType);
   const visibleRoutes = availableRoutes.filter(

@@ -4,9 +4,11 @@ export type ClientOptions = {
     baseURL: 'http://localhost:8080' | (string & {});
 };
 
-export type ConstantsAccessLevel = 'View' | 'Initiate';
+export type ConstantsAccessLevel = 'Read' | 'Write';
 
 export type ConstantsAccountRoleLinkStatus = 'Active' | 'Suspended' | 'Deactivated';
+
+export type ConstantsAction = 'accounts' | 'businesses' | 'roles';
 
 export type ModelsAccountDto = {
     businessId?: number;
@@ -17,12 +19,13 @@ export type ModelsAccountDto = {
 };
 
 export type ModelsAccountRoleDto = {
+    businessId?: number;
     id?: number;
     name?: string;
 };
 
 export type ModelsAccountRoleFunctionLinkDto = {
-    accessLevel?: ConstantsAccessLevel;
+    accessLevels?: Array<ConstantsAccessLevel>;
     function?: ModelsFunctionDto;
     id?: number;
 };
@@ -34,7 +37,7 @@ export type ModelsAccountRoleLinkDto = {
 };
 
 export type ModelsAssignFunctionRequest = {
-    accessLevel: ConstantsAccessLevel;
+    accessLevels: Array<ConstantsAccessLevel>;
     functionId: number;
 };
 
@@ -70,6 +73,7 @@ export type ModelsCreateBusinessRequest = {
 };
 
 export type ModelsFunctionDto = {
+    action?: ConstantsAction;
     description?: string;
     id?: number;
     name?: string;

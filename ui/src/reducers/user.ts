@@ -6,6 +6,7 @@ import {
   loadStateFromLocalStorage,
   saveStateToLocalStorage,
 } from '@/utils/auth';
+import { ModelsAccountRoleLinkDto } from '@/api/types.gen';
 
 export interface UserState {
   id?: number;
@@ -13,6 +14,7 @@ export interface UserState {
   username?: string;
   token?: string;
   businessId?: number;
+  roles?: ModelsAccountRoleLinkDto[];
 }
 
 const initialState: UserState = loadStateFromLocalStorage();
@@ -33,6 +35,7 @@ export const userReducer = createReducer(initialState, (builder) => {
       state.name = payload?.name;
       state.username = payload?.username;
       state.businessId = payload?.businessId;
+      state.roles = payload?.roles;
 
       saveStateToLocalStorage(state);
     })

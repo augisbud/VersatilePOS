@@ -18,3 +18,6 @@ export const getBusinessType = (state: State): BusinessType =>
 
 export const getUserBusinessId = (state: State): number | undefined =>
   state.user.businessId;
+
+export const isBusinessOwner = (state: State) =>
+  !!state.user.roles?.some((role) => role.role?.name === 'Business Owner');

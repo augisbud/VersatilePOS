@@ -6,14 +6,14 @@ import {
   RegisterFormValues,
 } from '@/components/Auth/RegisterForm';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@/hooks/useUser';
 
 const { Title } = Typography;
 
 export const Register = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { register, login, isAuthenticated } = useAuth();
+  const { register, login, isAuthenticated } = useUser();
 
   const onFinish = async (values: RegisterFormValues) => {
     setLoading(true);

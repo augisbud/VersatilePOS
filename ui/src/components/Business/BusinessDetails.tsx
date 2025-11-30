@@ -1,6 +1,7 @@
 import { Space, Button } from 'antd';
 import { ModelsBusinessDto } from '@/api/types.gen';
 import { BusinessInformation } from './BusinessInformation';
+import { BusinessRoles } from './BusinessRoles';
 import { BusinessEmployees } from './BusinessEmployees';
 
 interface BusinessDetailsProps {
@@ -23,6 +24,7 @@ export const BusinessDetails = ({
       )}
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <BusinessInformation business={business} />
+        {isBusinessOwner && <BusinessRoles businessId={business.id!} />}
         <BusinessEmployees
           businessId={business.id!}
           isBusinessOwner={isBusinessOwner}

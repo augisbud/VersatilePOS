@@ -50,7 +50,7 @@ export const BusinessList = ({
       key: 'phone',
     },
     {
-      title: 'Action',
+      title: '',
       key: 'action',
       render: (_: unknown, record: ModelsBusinessDto) => (
         <div style={{ textAlign: 'right' }}>

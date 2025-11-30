@@ -1,10 +1,10 @@
-import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@/hooks/useUser';
 import { DashboardLayout } from './DashboardLayout';
 import { Navigate, Outlet } from 'react-router-dom';
 import { RouteId } from '@/types/routes';
 
 export const AuthGateway = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useUser();
 
   if (!isAuthenticated) {
     return <Navigate to={RouteId.LOGIN} replace />;

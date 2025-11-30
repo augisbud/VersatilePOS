@@ -1,17 +1,15 @@
 import { Menu } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 import { routesConfig } from '@/config/routes.config';
-import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@/hooks/useUser';
 import { getRoutesForBusinessType } from '@/utils/routes';
 
 export const TopNavigation = () => {
   const location = useLocation();
-  const { hasRole, businessType } = useAuth();
+  const { businessType } = useUser();
 
   const availableRoutes = getRoutesForBusinessType(routesConfig, businessType);
-  const visibleRoutes = availableRoutes.filter(
-    (route) => route.showInNav && hasRole(route.roles)
-  );
+  const visibleRoutes = availableRoutes.filter((route) => route.showInNav);
 
   const selectedKey =
     visibleRoutes.find((route) => route.path === location.pathname)?.id ||

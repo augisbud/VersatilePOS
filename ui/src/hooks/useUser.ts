@@ -1,30 +1,31 @@
 import { useAppSelector } from './useAppSelector';
 import { useAppDispatch } from './useAppDispatch';
-import { isAuthenticated, getUser, getBusinessType } from '@/selectors/user';
+import {
+  isAuthenticated,
+  getUser,
+  getBusinessType,
+  isBusinessOwner as isBusinessOwnerSelector,
+} from '@/selectors/user';
 import {
   login as loginAction,
   createAccount as createAccountAction,
   logout as logoutAction,
+  fetchMyAccount as fetchMyAccountAction,
 } from '@/actions/user';
-import { UserRole } from '@/types/auth';
 import {
   ModelsLoginRequest,
   ModelsCreateAccountRequest,
+  ModelsAccountRoleLinkDto,
 } from '@/api/types.gen';
 
-export const useAuth = () => {
+export const useUser = () => {
   const dispatch = useAppDispatch();
   const authenticated = useAppSelector(isAuthenticated);
   const user = useAppSelector(getUser);
   const businessType = useAppSelector(getBusinessType);
+  const isBusinessOwner = useAppSelector(isBusinessOwnerSelector);
 
-  const hasRole = (roles: UserRole[]): boolean => {
-    if (!user.username) {
-      return false;
-    }
-
-    return roles.includes(user.role);
-  };
+  const hasRoles = (roles: ModelsAccountRoleLinkDto[]) => !!roles.length;
 
   const login = (credentials: ModelsLoginRequest) =>
     dispatch(loginAction(credentials)).unwrap();
@@ -34,13 +35,17 @@ export const useAuth = () => {
 
   const logout = () => dispatch(logoutAction());
 
+  const refreshAccount = () => dispatch(fetchMyAccountAction()).unwrap();
+
   return {
     isAuthenticated: authenticated,
     user,
     businessType,
-    hasRole,
+    isBusinessOwner,
+    hasRoles,
     login,
     register,
     logout,
+    refreshAccount,
   };
 };

@@ -2,6 +2,7 @@ package service
 
 import (
 	accountModels "VersatilePOS/account/models"
+	accountRepository "VersatilePOS/account/repository"
 	"VersatilePOS/generic/constants"
 	"VersatilePOS/generic/rbac"
 	"errors"
@@ -33,10 +34,33 @@ func (s *Service) GetBusinessRoles(businessID uint, userID uint) ([]accountModel
 
 	var roleDtos []accountModels.AccountRoleDto
 	for _, role := range roles {
+		// load function links for this role
+		functionRepo := &accountRepository.FunctionRepository{}
+		funcLinks, _ := functionRepo.GetFunctionsByRoleID(role.ID)
+		fr := make([]accountModels.AccountRoleFunctionLinkDto, 0, len(funcLinks))
+		for _, fl := range funcLinks {
+			// convert DB string array -> []constants.AccessLevel
+			conv := make([]constants.AccessLevel, len(fl.AccessLevels))
+			for j, v := range fl.AccessLevels {
+				conv[j] = constants.AccessLevel(v)
+			}
+			fr = append(fr, accountModels.AccountRoleFunctionLinkDto{
+				ID:           fl.ID,
+				AccessLevels: conv,
+				Function: accountModels.FunctionDto{
+					ID:          fl.Function.ID,
+					Name:        fl.Function.Name,
+					Action:      fl.Function.Action,
+					Description: fl.Function.Description,
+				},
+			})
+		}
+
 		roleDtos = append(roleDtos, accountModels.AccountRoleDto{
-			ID:         role.ID,
-			Name:       role.Name,
-			BusinessId: &role.BusinessID,
+			ID:            role.ID,
+			Name:          role.Name,
+			BusinessId:    &role.BusinessID,
+			FunctionLinks: fr,
 		})
 	}
 

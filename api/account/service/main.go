@@ -5,6 +5,8 @@ import (
 	accountRepository "VersatilePOS/account/repository"
 	businessRepository "VersatilePOS/business/repository"
 	"VersatilePOS/database/entities"
+	"VersatilePOS/generic/constants"
+	"VersatilePOS/generic/rbac"
 	"VersatilePOS/middleware"
 	"errors"
 	"strconv"
@@ -37,16 +39,12 @@ func (s *Service) CreateAccount(req accountModels.CreateAccountRequest, claims m
 
 		userID := uint(claims["id"].(float64))
 
-		business, err := s.businessRepo.GetBusinessByID(req.BusinessID)
+		ok, err := rbac.HasAccess(constants.Accounts, constants.Write, req.BusinessID, userID)
 		if err != nil {
-			return accountModels.AccountDto{}, errors.New("failed to verify business ownership")
+			return accountModels.AccountDto{}, errors.New("failed to verify permissions")
 		}
-		if business == nil {
-			return accountModels.AccountDto{}, errors.New("business not found")
-		}
-
-		if business.OwnerID != userID {
-			return accountModels.AccountDto{}, errors.New("only the business owner can add employees")
+		if !ok {
+			return accountModels.AccountDto{}, errors.New("unauthorized")
 		}
 	}
 
@@ -123,14 +121,35 @@ func (s *Service) GetMyAccount(userID uint) (accountModels.AccountDto, error) {
 
 	roleLinks := make([]accountModels.AccountRoleLinkDto, len(account.AccountRoleLinks))
 	for i, link := range account.AccountRoleLinks {
-		v := link.AccountRole.BusinessID
+		// load function links for this role
+		funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(link.AccountRole.ID)
+		fr := make([]accountModels.AccountRoleFunctionLinkDto, 0, len(funcLinks))
+		for _, fl := range funcLinks {
+			// convert DB string array -> []constants.AccessLevel
+			conv := make([]constants.AccessLevel, len(fl.AccessLevels))
+			for j, v := range fl.AccessLevels {
+				conv[j] = constants.AccessLevel(v)
+			}
+			fr = append(fr, accountModels.AccountRoleFunctionLinkDto{
+				ID:           fl.ID,
+				AccessLevels: conv,
+				Function: accountModels.FunctionDto{
+					ID:          fl.Function.ID,
+					Name:        fl.Function.Name,
+					Action:      fl.Function.Action,
+					Description: fl.Function.Description,
+				},
+			})
+		}
+
 		roleLinks[i] = accountModels.AccountRoleLinkDto{
 			ID:     link.ID,
 			Status: link.Status,
 			Role: accountModels.AccountRoleDto{
-				ID:         link.AccountRole.ID,
-				Name:       link.AccountRole.Name,
-				BusinessId: &v,
+				ID:           link.AccountRole.ID,
+				Name:         link.AccountRole.Name,
+				BusinessId:   &link.AccountRole.BusinessID,
+				FunctionLinks: fr,
 			},
 		}
 	}
@@ -150,33 +169,21 @@ func (s *Service) GetMyAccount(userID uint) (accountModels.AccountDto, error) {
 }
 
 func (s *Service) GetAccounts(businessID uint, requestingUserID uint) ([]accountModels.AccountDto, error) {
+	// RBAC check: must have read access to accounts for this business
+	ok, err := rbac.HasAccess(constants.Accounts, constants.Read, businessID, requestingUserID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to view accounts for this business")
+	}
+
 	business, err := s.businessRepo.GetBusinessByID(businessID)
 	if err != nil {
 		return nil, errors.New("failed to get business")
 	}
 	if business == nil {
 		return nil, errors.New("business not found")
-	}
-
-	isOwner := business.OwnerID == requestingUserID
-
-	userAccount, err := s.businessRepo.GetAccountWithMemberships(requestingUserID)
-	if err != nil {
-		return nil, errors.New("failed to get user account details")
-	}
-
-	isEmployee := false
-	if userAccount != nil {
-		for _, b := range userAccount.MemberOf {
-			if b.ID == businessID {
-				isEmployee = true
-				break
-			}
-		}
-	}
-
-	if !isOwner && !isEmployee {
-		return nil, errors.New("unauthorized to view accounts for this business")
 	}
 
 	accounts, err := s.accountRepo.GetBusinessEmployees(business)
@@ -188,12 +195,34 @@ func (s *Service) GetAccounts(businessID uint, requestingUserID uint) ([]account
 	for _, acc := range accounts {
 		roleLinks := make([]accountModels.AccountRoleLinkDto, len(acc.AccountRoleLinks))
 		for i, link := range acc.AccountRoleLinks {
+			// load function links for this role
+			funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(link.AccountRole.ID)
+			fr := make([]accountModels.AccountRoleFunctionLinkDto, 0, len(funcLinks))
+			for _, fl := range funcLinks {
+				conv := make([]constants.AccessLevel, len(fl.AccessLevels))
+				for j, v := range fl.AccessLevels {
+					conv[j] = constants.AccessLevel(v)
+				}
+				fr = append(fr, accountModels.AccountRoleFunctionLinkDto{
+					ID:           fl.ID,
+					AccessLevels: conv,
+					Function: accountModels.FunctionDto{
+						ID:          fl.Function.ID,
+						Name:        fl.Function.Name,
+						Action:      fl.Function.Action,
+						Description: fl.Function.Description,
+					},
+				})
+			}
+
 			roleLinks[i] = accountModels.AccountRoleLinkDto{
 				ID:     link.ID,
 				Status: link.Status,
 				Role: accountModels.AccountRoleDto{
-					ID:   link.AccountRole.ID,
-					Name: link.AccountRole.Name,
+					ID:           link.AccountRole.ID,
+					Name:         link.AccountRole.Name,
+					BusinessId:   &link.AccountRole.BusinessID,
+					FunctionLinks: fr,
 				},
 			}
 		}
@@ -222,21 +251,18 @@ func (s *Service) DeleteAccount(id string, requestingUserID uint) error {
 		return errors.New("you cannot delete your own account")
 	}
 
-	requestingUserAccount, err := s.accountRepo.GetUserWithAssociations(requestingUserID)
-	if err != nil {
-		return errors.New("could not retrieve requesting user's account")
-	}
-
-	if len(requestingUserAccount.OwnedBusinesses) == 0 {
-		return errors.New("only business owners can delete accounts")
-	}
-
 	targetAccount, err := s.accountRepo.GetAccountByID(uint(targetAccountID))
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return errors.New("account not found")
 		}
 		return errors.New("internal server error")
+	}
+
+	// find the shared business between requesting user (owner) and target
+	requestingUserAccount, err := s.accountRepo.GetUserWithAssociations(requestingUserID)
+	if err != nil {
+		return errors.New("could not retrieve requesting user's account")
 	}
 
 	var businessToDeleteFrom *entities.Business
@@ -255,6 +281,15 @@ func (s *Service) DeleteAccount(id string, requestingUserID uint) error {
 
 	if businessToDeleteFrom == nil {
 		return errors.New("you can only delete employees of your own business")
+	}
+
+	// RBAC: require write access to accounts in the business
+	ok, err := rbac.HasAccess(constants.Accounts, constants.Write, businessToDeleteFrom.ID, requestingUserID)
+	if err != nil {
+		return errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return errors.New("unauthorized")
 	}
 
 	if err := s.accountRepo.DissociateEmployeeFromBusiness(&targetAccount, businessToDeleteFrom); err != nil {
@@ -281,19 +316,12 @@ func (s *Service) AssignRoleToAccount(accountID uint, req accountModels.AssignRo
 		return accountModels.AccountRoleLinkDto{}, errors.New("role not found")
 	}
 
-	requestingUser, err := s.accountRepo.GetAccountByID(requestingUserID)
+	// RBAC: require write access to roles in the role's business
+	ok, err := rbac.HasAccess(constants.Roles, constants.Write, role.BusinessID, requestingUserID)
 	if err != nil {
-		return accountModels.AccountRoleLinkDto{}, errors.New("requesting user not found")
+		return accountModels.AccountRoleLinkDto{}, errors.New("failed to verify permissions")
 	}
-
-	isOwner := false
-	for _, business := range requestingUser.OwnedBusinesses {
-		if business.ID == role.BusinessID {
-			isOwner = true
-			break
-		}
-	}
-	if !isOwner {
+	if !ok {
 		return accountModels.AccountRoleLinkDto{}, errors.New("unauthorized to assign this role")
 	}
 
@@ -317,12 +345,34 @@ func (s *Service) AssignRoleToAccount(accountID uint, req accountModels.AssignRo
 		return accountModels.AccountRoleLinkDto{}, errors.New("failed to assign role")
 	}
 
+	// load function links for this role
+	funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(role.ID)
+	fr := make([]accountModels.AccountRoleFunctionLinkDto, 0, len(funcLinks))
+	for _, fl := range funcLinks {
+		conv := make([]constants.AccessLevel, len(fl.AccessLevels))
+		for j, v := range fl.AccessLevels {
+			conv[j] = constants.AccessLevel(v)
+		}
+		fr = append(fr, accountModels.AccountRoleFunctionLinkDto{
+			ID:           fl.ID,
+			AccessLevels: conv,
+			Function: accountModels.FunctionDto{
+				ID:          fl.Function.ID,
+				Name:        fl.Function.Name,
+				Action:      fl.Function.Action,
+				Description: fl.Function.Description,
+			},
+		})
+	}
+
 	return accountModels.AccountRoleLinkDto{
 		ID:     link.ID,
 		Status: link.Status,
 		Role: accountModels.AccountRoleDto{
-			ID:   role.ID,
-			Name: role.Name,
+			ID:           role.ID,
+			Name:         role.Name,
+			BusinessId:   &role.BusinessID,
+			FunctionLinks: fr,
 		},
 	}, nil
 }
@@ -335,19 +385,12 @@ func (s *Service) UpdateAccountRoleLinkStatus(accountID, roleID uint, req accoun
 		return accountModels.AccountRoleLinkDto{}, errors.New("role assignment not found")
 	}
 
-	requestingUser, err := s.accountRepo.GetAccountByID(requestingUserID)
+	// RBAC: require write access to roles in the business
+	ok, err := rbac.HasAccess(constants.Roles, constants.Write, link.AccountRole.BusinessID, requestingUserID)
 	if err != nil {
-		return accountModels.AccountRoleLinkDto{}, errors.New("requesting user not found")
+		return accountModels.AccountRoleLinkDto{}, errors.New("failed to verify permissions")
 	}
-
-	isOwner := false
-	for _, business := range requestingUser.OwnedBusinesses {
-		if business.ID == link.AccountRole.BusinessID {
-			isOwner = true
-			break
-		}
-	}
-	if !isOwner {
+	if !ok {
 		return accountModels.AccountRoleLinkDto{}, errors.New("unauthorized to update this role assignment")
 	}
 
@@ -356,12 +399,34 @@ func (s *Service) UpdateAccountRoleLinkStatus(accountID, roleID uint, req accoun
 		return accountModels.AccountRoleLinkDto{}, errors.New("failed to update role assignment")
 	}
 
+	// load function links for the role
+	funcLinks, _ := s.functionRepo.GetFunctionsByRoleID(link.AccountRole.ID)
+	fr := make([]accountModels.AccountRoleFunctionLinkDto, 0, len(funcLinks))
+	for _, fl := range funcLinks {
+		conv := make([]constants.AccessLevel, len(fl.AccessLevels))
+		for j, v := range fl.AccessLevels {
+			conv[j] = constants.AccessLevel(v)
+		}
+		fr = append(fr, accountModels.AccountRoleFunctionLinkDto{
+			ID:           fl.ID,
+			AccessLevels: conv,
+			Function: accountModels.FunctionDto{
+				ID:          fl.Function.ID,
+				Name:        fl.Function.Name,
+				Action:      fl.Function.Action,
+				Description: fl.Function.Description,
+			},
+		})
+	}
+
 	return accountModels.AccountRoleLinkDto{
 		ID:     link.ID,
 		Status: link.Status,
 		Role: accountModels.AccountRoleDto{
-			ID:   link.AccountRole.ID,
-			Name: link.AccountRole.Name,
+			ID:           link.AccountRole.ID,
+			Name:         link.AccountRole.Name,
+			BusinessId:   &link.AccountRole.BusinessID,
+			FunctionLinks: fr,
 		},
 	}, nil
 }

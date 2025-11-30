@@ -6,6 +6,7 @@ import (
 	"VersatilePOS/business/repository"
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
+	"VersatilePOS/generic/rbac"
 	"errors"
 
 	"github.com/lib/pq"
@@ -123,28 +124,12 @@ func (s *Service) GetBusiness(id uint, userID uint) (*businessModels.BusinessDto
 		return nil, errors.New("business not found")
 	}
 
-	// Check if user is the owner
-	if business.OwnerID != userID {
-		// If not owner, check if user is an employee of the business
-		userAccount, err := s.repo.GetAccountWithMemberships(userID)
-		if err != nil {
-			return nil, err
-		}
-		if userAccount == nil {
-			return nil, errors.New("user not found")
-		}
-
-		isEmployee := false
-		for _, b := range userAccount.MemberOf {
-			if b.ID == business.ID {
-				isEmployee = true
-				break
-			}
-		}
-
-		if !isEmployee {
-			return nil, errors.New("user does not belong to this business")
-		}
+	ok, err := rbac.HasAccess(constants.Businesses, constants.Read, id, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("user does not belong to this business")
 	}
 
 	response := &businessModels.BusinessDto{

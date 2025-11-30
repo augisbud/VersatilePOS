@@ -26,7 +26,7 @@ export const BusinessList = ({
   onCreateBusiness,
   onManageBusiness,
 }: BusinessListProps) => {
-  const { canWriteBusinesses } = useUser();
+  const { canWriteBusinesses, roles } = useUser();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handleCreateBusiness = async (values: ModelsCreateBusinessRequest) => {
@@ -79,7 +79,7 @@ export const BusinessList = ({
         }}
       >
         <h2 style={{ margin: 0 }}>Businesses</h2>
-        {canWriteBusinesses && (
+        {(canWriteBusinesses || !roles?.length) && (
           <Button
             type="primary"
             icon={<PlusOutlined />}

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateAccountData, CreateAccountErrors, CreateAccountResponses, CreateBusinessData, CreateBusinessErrors, CreateBusinessResponses, DeleteAccountByIdData, DeleteAccountByIdErrors, DeleteAccountByIdResponses, GetAccountsData, GetAccountsErrors, GetAccountsResponses, GetBusinessByIdData, GetBusinessByIdErrors, GetBusinessByIdResponses, GetMyAccountData, GetMyAccountErrors, GetMyAccountResponses, LoginAccountData, LoginAccountErrors, LoginAccountResponses } from './types.gen';
+import type { AssignFunctionToRoleData, AssignFunctionToRoleErrors, AssignFunctionToRoleResponses, AssignRoleToAccountData, AssignRoleToAccountErrors, AssignRoleToAccountResponses, CreateAccountData, CreateAccountErrors, CreateAccountResponses, CreateAccountRoleData, CreateAccountRoleErrors, CreateAccountRoleResponses, CreateBusinessData, CreateBusinessErrors, CreateBusinessResponses, DeleteAccountByIdData, DeleteAccountByIdErrors, DeleteAccountByIdResponses, DeleteAccountRoleByIdData, DeleteAccountRoleByIdErrors, DeleteAccountRoleByIdResponses, GetAccountRoleByIdData, GetAccountRoleByIdErrors, GetAccountRoleByIdResponses, GetAccountsData, GetAccountsErrors, GetAccountsResponses, GetAllFunctionsData, GetAllFunctionsErrors, GetAllFunctionsResponses, GetBusinessByIdData, GetBusinessByIdErrors, GetBusinessByIdResponses, GetBusinessesData, GetBusinessesErrors, GetBusinessesResponses, GetBusinessRolesData, GetBusinessRolesErrors, GetBusinessRolesResponses, GetFunctionsForRoleData, GetFunctionsForRoleErrors, GetFunctionsForRoleResponses, GetMyAccountData, GetMyAccountErrors, GetMyAccountResponses, LoginAccountData, LoginAccountErrors, LoginAccountResponses, UpdateAccountRoleByIdData, UpdateAccountRoleByIdErrors, UpdateAccountRoleByIdResponses, UpdateAccountRoleStatusData, UpdateAccountRoleStatusErrors, UpdateAccountRoleStatusResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -16,25 +16,6 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
      * used to access values that aren't defined as part of the SDK function.
      */
     meta?: Record<string, unknown>;
-};
-
-/**
- * Get accounts
- *
- * Get accounts based on user's role. A business owner or employee sees all accounts for their business. An individual user sees only their own account.
- */
-export const getAccounts = <ThrowOnError extends boolean = false>(options?: Options<GetAccountsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetAccountsResponses, GetAccountsErrors, ThrowOnError>({
-        responseType: 'json',
-        security: [
-            {
-                name: 'Authorization',
-                type: 'apiKey'
-            }
-        ],
-        url: '/account',
-        ...options
-    });
 };
 
 /**
@@ -57,6 +38,25 @@ export const createAccount = <ThrowOnError extends boolean = false>(options: Opt
             'Content-Type': 'application/json',
             ...options.headers
         }
+    });
+};
+
+/**
+ * Get all system functions
+ *
+ * Get all available system functions. Only business owners can access this.
+ */
+export const getAllFunctions = <ThrowOnError extends boolean = false>(options?: Options<GetAllFunctionsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetAllFunctionsResponses, GetAllFunctionsErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/account/functions',
+        ...options
     });
 };
 
@@ -97,9 +97,154 @@ export const getMyAccount = <ThrowOnError extends boolean = false>(options?: Opt
 };
 
 /**
+ * Create account role
+ *
+ * Create a new account role for a business.
+ */
+export const createAccountRole = <ThrowOnError extends boolean = false>(options: Options<CreateAccountRoleData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreateAccountRoleResponses, CreateAccountRoleErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/account/role',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Delete an account role by ID
+ *
+ * Delete an account role by ID. Only business owners can delete roles.
+ */
+export const deleteAccountRoleById = <ThrowOnError extends boolean = false>(options: Options<DeleteAccountRoleByIdData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteAccountRoleByIdResponses, DeleteAccountRoleByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/account/role/{id}',
+        ...options
+    });
+};
+
+/**
+ * Get an account role by ID
+ *
+ * Get an account role by ID. Only business owners can get roles.
+ */
+export const getAccountRoleById = <ThrowOnError extends boolean = false>(options: Options<GetAccountRoleByIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetAccountRoleByIdResponses, GetAccountRoleByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/account/role/{id}',
+        ...options
+    });
+};
+
+/**
+ * Update an account role by ID
+ *
+ * Update an account role by ID. Only business owners can update roles.
+ */
+export const updateAccountRoleById = <ThrowOnError extends boolean = false>(options: Options<UpdateAccountRoleByIdData, ThrowOnError>) => {
+    return (options.client ?? client).put<UpdateAccountRoleByIdResponses, UpdateAccountRoleByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/account/role/{id}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get all functions for an account role
+ *
+ * Get all functions assigned to a specific account role.
+ */
+export const getFunctionsForRole = <ThrowOnError extends boolean = false>(options: Options<GetFunctionsForRoleData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetFunctionsForRoleResponses, GetFunctionsForRoleErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/account/role/{id}/function',
+        ...options
+    });
+};
+
+/**
+ * Assign a function to an account role
+ *
+ * Assign a function to an account role. Only business owners can perform this action.
+ */
+export const assignFunctionToRole = <ThrowOnError extends boolean = false>(options: Options<AssignFunctionToRoleData, ThrowOnError>) => {
+    return (options.client ?? client).post<AssignFunctionToRoleResponses, AssignFunctionToRoleErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/account/role/{id}/function',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get accounts
+ *
+ * Get accounts based on user's role. A business owner or employee sees all accounts for their business. An individual user sees only their own account.
+ */
+export const getAccounts = <ThrowOnError extends boolean = false>(options: Options<GetAccountsData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetAccountsResponses, GetAccountsErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/account/{businessId}',
+        ...options
+    });
+};
+
+/**
  * Delete an account
  *
- * Delete an account. Users can delete their own account. Business owners can delete employee accounts.
+ * Delete an account. Only business owners can delete employee accounts.
  */
 export const deleteAccountById = <ThrowOnError extends boolean = false>(options: Options<DeleteAccountByIdData, ThrowOnError>) => {
     return (options.client ?? client).delete<DeleteAccountByIdResponses, DeleteAccountByIdErrors, ThrowOnError>({
@@ -111,6 +256,71 @@ export const deleteAccountById = <ThrowOnError extends boolean = false>(options:
             }
         ],
         url: '/account/{id}',
+        ...options
+    });
+};
+
+/**
+ * Assign a role to an account
+ *
+ * Assign a role to an account. Only business owners can assign roles.
+ */
+export const assignRoleToAccount = <ThrowOnError extends boolean = false>(options: Options<AssignRoleToAccountData, ThrowOnError>) => {
+    return (options.client ?? client).post<AssignRoleToAccountResponses, AssignRoleToAccountErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/account/{id}/role',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Update the status of a role assigned to an account
+ *
+ * Update the status of a role assigned to an account. Only business owners can perform this action.
+ */
+export const updateAccountRoleStatus = <ThrowOnError extends boolean = false>(options: Options<UpdateAccountRoleStatusData, ThrowOnError>) => {
+    return (options.client ?? client).patch<UpdateAccountRoleStatusResponses, UpdateAccountRoleStatusErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/account/{id}/role/{roleId}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get all businesses for the current user
+ *
+ * Get all businesses where the current user is an owner
+ */
+export const getBusinesses = <ThrowOnError extends boolean = false>(options?: Options<GetBusinessesData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetBusinessesResponses, GetBusinessesErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/business',
         ...options
     });
 };
@@ -153,6 +363,25 @@ export const getBusinessById = <ThrowOnError extends boolean = false>(options: O
             }
         ],
         url: '/business/{id}',
+        ...options
+    });
+};
+
+/**
+ * Get all roles for a business
+ *
+ * Get all roles for a business
+ */
+export const getBusinessRoles = <ThrowOnError extends boolean = false>(options: Options<GetBusinessRolesData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetBusinessRolesResponses, GetBusinessRolesErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/business/{id}/roles',
         ...options
     });
 };

@@ -1,23 +1,19 @@
 import { State } from '@/types/redux';
 import { ModelsBusinessDto } from '@/api/types.gen';
 
-export const getBusiness = (state: State): ModelsBusinessDto | null => {
-  if (!state.business.id) {
-    return null;
-  }
-
-  return {
-    id: state.business.id,
-    name: state.business.name || '',
-    email: state.business.email || '',
-    phone: state.business.phone || '',
-    address: state.business.address || '',
-  };
+export const getBusinesses = (state: State): ModelsBusinessDto[] => {
+  return state.business.businesses;
 };
 
-export const getBusinessId = (state: State) => state.business.id!;
+export const getBusinessById = (
+  state: State,
+  id: number
+): ModelsBusinessDto | undefined => {
+  return state.business.businesses.find((b) => b.id === id);
+};
 
-export const hasBusiness = (state: State) => !!state.business.id;
+export const hasBusiness = (state: State) =>
+  state.business.businesses.length > 0;
 
 export const isBusinessLoading = (state: State) => state.business.loading;
 

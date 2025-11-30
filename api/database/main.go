@@ -2,6 +2,7 @@ package database
 
 import (
 	"VersatilePOS/database/entities"
+	"VersatilePOS/generic/constants"
 	"fmt"
 	"log"
 	"os"
@@ -54,10 +55,35 @@ func Connect() {
 
 	log.Println("Database connection established.")
 
-	err = DB.AutoMigrate(&entities.Account{}, &entities.Business{})
+	err = DB.AutoMigrate(&entities.Account{}, &entities.Business{}, &entities.BusinessEmployees{}, &entities.AccountRole{}, &entities.AccountRoleLink{}, &entities.AccountRoleFunctionLink{}, &entities.Function{})
 	if err != nil {
 		log.Fatal("Failed to migrate database: ", err)
 	}
 
 	log.Println("Database migrated.")
+
+	seedFunctions(DB)
+}
+
+func seedFunctions(db *gorm.DB) {
+	functions := []entities.Function{
+		{Name: "Manage Accounts", Action: constants.Accounts, Description: "Create, update, and delete accounts."},
+		{Name: "Manage Businesses", Action: constants.Businesses, Description: "Create, update, and delete businesses."},
+		{Name: "Manage Roles", Action: constants.Roles, Description: "Manage account roles and permissions."},
+	}
+
+	for _, function := range functions {
+		var existingFunction entities.Function
+		if err := db.Where("name = ? AND action = ?", function.Name, function.Action).First(&existingFunction).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				if err := db.Create(&function).Error; err != nil {
+					log.Printf("failed to seed function %s:%s: %v\n", function.Name, function.Action, err)
+				} else {
+					log.Printf("Seeded function: %s:%s\n", function.Name, function.Action)
+				}
+			} else {
+				log.Printf("failed to check for existing function %s:%s: %v\n", function.Name, function.Action, err)
+			}
+		}
+	}
 }

@@ -75,4 +75,3 @@ export const BusinessInformation = ({ business }: BusinessInformationProps) => {
     </Card>
   );
 };
-

@@ -9,10 +9,11 @@ type Business struct {
 	Phone   string `json:"phone"`
 	Email   string `json:"email"`
 
-	OwnerID uint    `json:"ownerId,omitempty"`
+	OwnerID uint    `json:"ownerId"`
 	Owner   Account `gorm:"foreignKey:OwnerID"`
 
-	Employees []Account `gorm:"many2many:business_employees;"`
+	Employees    []Account `gorm:"many2many:business_employees;"`
+	AccountRoles []AccountRole
 }
 
 type BusinessEmployees struct {

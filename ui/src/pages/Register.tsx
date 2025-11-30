@@ -18,20 +18,22 @@ export const Register = () => {
   const onFinish = async (values: RegisterFormValues) => {
     setLoading(true);
 
-    await register({
-      name: values.name,
-      username: values.username,
-      password: values.password,
-    });
+    try {
+      await register({
+        name: values.name,
+        username: values.username,
+        password: values.password,
+      });
 
-    await login({
-      username: values.username,
-      password: values.password,
-    });
+      await login({
+        username: values.username,
+        password: values.password,
+      });
 
-    void navigate('/');
-
-    setLoading(false);
+      void navigate('/');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

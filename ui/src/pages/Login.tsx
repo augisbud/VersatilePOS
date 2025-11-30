@@ -15,13 +15,16 @@ export const Login = () => {
   const onFinish = async (values: LoginFormValues) => {
     setLoading(true);
 
-    await login({
-      username: values.username,
-      password: values.password,
-    });
+    try {
+      await login({
+        username: values.username,
+        password: values.password,
+      });
 
-    void navigate('/');
-    setLoading(false);
+      void navigate('/');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

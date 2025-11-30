@@ -1,5 +1,4 @@
 import { ReactNode } from 'react';
-import { UserRole } from './auth';
 
 export enum RouteId {
   LOGIN = 'login',
@@ -20,7 +19,7 @@ export interface ScreenConfig {
   path: string;
   title: string;
   component: React.ComponentType;
-  roles: UserRole[];
+  roles: string[];
   icon?: ReactNode;
   showInNav?: boolean;
   businessType?: BusinessType;

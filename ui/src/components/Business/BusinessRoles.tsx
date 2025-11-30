@@ -26,18 +26,14 @@ interface FunctionFormValues {
 export const BusinessRoles = ({ businessId }: BusinessRolesProps) => {
   const {
     roles,
+    roleFunctionsMap,
     fetchBusinessRoles,
     createRole,
     updateRole,
     deleteRole,
     assignFunctionToRole,
   } = useRoles();
-  const {
-    roleFunctionsMap,
-    fetchFunctionsForRole,
-    allFunctions,
-    fetchAllFunctions,
-  } = useFunctions();
+  const { allFunctions, fetchAllFunctions } = useFunctions();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingRole, setEditingRole] = useState<ModelsAccountRoleDto | null>(
@@ -52,18 +48,6 @@ export const BusinessRoles = ({ businessId }: BusinessRolesProps) => {
     void fetchBusinessRoles(businessId);
     void fetchAllFunctions();
   }, [businessId]);
-
-  useEffect(() => {
-    const loadFunctionsForRoles = async () => {
-      const fetchPromises = roles
-        .filter((role) => role.id && !roleFunctionsMap[role.id])
-        .map((role) => fetchFunctionsForRole(role.id!));
-
-      await Promise.all(fetchPromises);
-    };
-
-    void loadFunctionsForRoles();
-  }, [roles]);
 
   const handleDelete = (roleId: number) => {
     if (roleId) {
@@ -127,7 +111,7 @@ export const BusinessRoles = ({ businessId }: BusinessRolesProps) => {
           functionId: values.functionId,
           accessLevels: values.accessLevels,
         });
-        await fetchFunctionsForRole(managingRole.id!);
+        await fetchBusinessRoles(businessId);
         handleCloseFunctionModal();
       } catch (error) {
         console.error('Failed to assign function:', error);

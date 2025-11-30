@@ -6,6 +6,7 @@ import {
   getRolesLoading,
   getRolesError,
   getRoleById as getRoleByIdSelector,
+  getRoleFunctionsMap,
 } from '@/selectors/role';
 import {
   fetchBusinessRoles as fetchBusinessRolesAction,
@@ -31,6 +32,7 @@ export const useRoles = () => {
   const currentRole = useAppSelector(getCurrentRole);
   const loading = useAppSelector(getRolesLoading);
   const error = useAppSelector(getRolesError);
+  const roleFunctionsMap = useAppSelector(getRoleFunctionsMap);
 
   const fetchBusinessRoles = async (businessId: number) => {
     return dispatch(fetchBusinessRolesAction(businessId)).unwrap();
@@ -85,11 +87,16 @@ export const useRoles = () => {
     return getRoleByIdSelector(roles, roleId);
   };
 
+  const getFunctionsForRole = (roleId: number) => {
+    return roleFunctionsMap[roleId] || [];
+  };
+
   return {
     roles,
     currentRole,
     loading,
     error,
+    roleFunctionsMap,
     fetchBusinessRoles,
     fetchRoleById,
     createRole,
@@ -99,5 +106,6 @@ export const useRoles = () => {
     updateRoleStatus,
     assignFunctionToRole,
     getRoleById,
+    getFunctionsForRole,
   };
 };

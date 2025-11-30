@@ -20,6 +20,7 @@ export type ModelsAccountDto = {
 
 export type ModelsAccountRoleDto = {
     businessId?: number;
+    functionLinks?: Array<ModelsAccountRoleFunctionLinkDto>;
     id?: number;
     name?: string;
 };

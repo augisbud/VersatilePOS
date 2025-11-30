@@ -4,6 +4,7 @@ import (
 	"VersatilePOS/account/models"
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
+	"VersatilePOS/generic/rbac"
 	"errors"
 
 	"github.com/lib/pq"
@@ -55,8 +56,11 @@ func (s *Service) AssignFunctionToRole(roleID uint, req models.AssignFunctionReq
 		return errors.New("role not found")
 	}
 
-	business, err := s.businessRepo.GetBusinessByID(role.BusinessID)
-	if err != nil || business.OwnerID != userID {
+	ok, err := rbac.HasAccess(constants.Roles, constants.Write, role.BusinessID, userID)
+	if err != nil {
+		return errors.New("failed to verify permissions")
+	}
+	if !ok {
 		return errors.New("unauthorized")
 	}
 
@@ -92,29 +96,11 @@ func (s *Service) GetFunctionsByRoleID(roleID uint, claims map[string]interface{
 		return nil, errors.New("role not found")
 	}
 
-	business, err := s.businessRepo.GetBusinessByID(role.BusinessID)
+	ok, err := rbac.HasAccess(constants.Roles, constants.Read, role.BusinessID, userID)
 	if err != nil {
-		return nil, errors.New("failed to verify business ownership")
+		return nil, errors.New("failed to verify permissions")
 	}
-
-	isOwner := business.OwnerID == userID
-
-	userAccount, err := s.businessRepo.GetAccountWithMemberships(userID)
-	if err != nil {
-		return nil, errors.New("failed to get user account details")
-	}
-
-	isEmployee := false
-	if userAccount != nil {
-		for _, b := range userAccount.MemberOf {
-			if b.ID == business.ID {
-				isEmployee = true
-				break
-			}
-		}
-	}
-
-	if !isOwner && !isEmployee {
+	if !ok {
 		return nil, errors.New("unauthorized")
 	}
 

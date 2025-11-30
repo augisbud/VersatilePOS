@@ -3,6 +3,8 @@ package service
 import (
 	"VersatilePOS/account/models"
 	"VersatilePOS/database/entities"
+	"VersatilePOS/generic/constants"
+	"VersatilePOS/generic/rbac"
 	"errors"
 )
 
@@ -13,15 +15,11 @@ func (s *Service) CreateAccountRole(req models.CreateAccountRoleRequest, claims 
 
 	userID := uint(claims["id"].(float64))
 
-	business, err := s.businessRepo.GetBusinessByID(req.BusinessID)
+	ok, err := rbac.HasAccess(constants.Roles, constants.Write, req.BusinessID, userID)
 	if err != nil {
-		return models.AccountRoleDto{}, errors.New("failed to verify business ownership")
+		return models.AccountRoleDto{}, errors.New("failed to verify permissions")
 	}
-	if business == nil {
-		return models.AccountRoleDto{}, errors.New("business not found")
-	}
-
-	if business.OwnerID != userID {
+	if !ok {
 		return models.AccountRoleDto{}, errors.New("only the business owner can create roles")
 	}
 
@@ -53,8 +51,11 @@ func (s *Service) GetRole(roleID uint, claims map[string]interface{}) (models.Ac
 	}
 
 	userID := uint(claims["id"].(float64))
-	business, err := s.businessRepo.GetBusinessByID(role.BusinessID)
-	if err != nil || business.OwnerID != userID {
+	ok, err := rbac.HasAccess(constants.Roles, constants.Read, role.BusinessID, userID)
+	if err != nil {
+		return models.AccountRoleDto{}, errors.New("failed to verify permissions")
+	}
+	if !ok {
 		return models.AccountRoleDto{}, errors.New("unauthorized")
 	}
 
@@ -77,8 +78,11 @@ func (s *Service) UpdateRole(roleID uint, req models.UpdateAccountRoleRequest, c
 	}
 
 	userID := uint(claims["id"].(float64))
-	business, err := s.businessRepo.GetBusinessByID(role.BusinessID)
-	if err != nil || business.OwnerID != userID {
+	ok, err := rbac.HasAccess(constants.Roles, constants.Write, role.BusinessID, userID)
+	if err != nil {
+		return models.AccountRoleDto{}, errors.New("failed to verify permissions")
+	}
+	if !ok {
 		return models.AccountRoleDto{}, errors.New("unauthorized")
 	}
 
@@ -107,8 +111,11 @@ func (s *Service) DeleteRole(roleID uint, claims map[string]interface{}) error {
 	}
 
 	userID := uint(claims["id"].(float64))
-	business, err := s.businessRepo.GetBusinessByID(role.BusinessID)
-	if err != nil || business.OwnerID != userID {
+	ok, err := rbac.HasAccess(constants.Roles, constants.Write, role.BusinessID, userID)
+	if err != nil {
+		return errors.New("failed to verify permissions")
+	}
+	if !ok {
 		return errors.New("unauthorized")
 	}
 

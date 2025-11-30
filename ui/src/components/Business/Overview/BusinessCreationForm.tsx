@@ -1,10 +1,5 @@
 import { useState } from 'react';
-import {
-  Form,
-  Input,
-  Button,
-  Alert,
-} from 'antd';
+import { Form, Input, Button, Alert } from 'antd';
 import {
   ShopOutlined,
   MailOutlined,
@@ -78,10 +73,7 @@ export const BusinessCreationForm = ({
             { type: 'email', message: 'Please enter a valid email' },
           ]}
         >
-          <Input
-            prefix={<MailOutlined />}
-            placeholder="business@example.com"
-          />
+          <Input prefix={<MailOutlined />} placeholder="business@example.com" />
         </Form.Item>
 
         <Form.Item
@@ -94,10 +86,7 @@ export const BusinessCreationForm = ({
             },
           ]}
         >
-          <Input
-            prefix={<PhoneOutlined />}
-            placeholder="+1 (555) 123-4567"
-          />
+          <Input prefix={<PhoneOutlined />} placeholder="+1 (555) 123-4567" />
         </Form.Item>
 
         <Form.Item
@@ -116,7 +105,9 @@ export const BusinessCreationForm = ({
           />
         </Form.Item>
 
-        <Form.Item style={{ marginTop: 32, marginBottom: 0, textAlign: 'right' }}>
+        <Form.Item
+          style={{ marginTop: 32, marginBottom: 0, textAlign: 'right' }}
+        >
           <Button
             type="primary"
             htmlType="submit"
@@ -143,4 +134,3 @@ export const BusinessCreationForm = ({
     </>
   );
 };
-

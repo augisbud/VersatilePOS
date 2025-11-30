@@ -1,39 +1,33 @@
-import {
-  Card,
-  Table,
-  Typography,
-  Button,
-  Popconfirm,
-  Modal,
-  Tag,
-  Space,
-} from 'antd';
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Card, Table, Typography, Button, Modal } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useRoles } from '@/hooks/useRoles';
-import type { ColumnsType } from 'antd/es/table';
-import { ModelsAccountDto } from '@/api/types.gen';
+import { useUser } from '@/hooks/useUser';
+import {
+  ModelsAccountDto,
+  ConstantsAccountRoleLinkStatus,
+} from '@/api/types.gen';
 import {
   RegisterForm,
   RegisterFormValues,
 } from '@/components/Auth/RegisterForm';
 import { EmployeeRoleFormModal } from './EmployeeRoleFormModal';
+import { getAvailableRoles } from '@/selectors/employee';
+import { getEmployeeColumns } from './EmployeeTableColumns';
 
 const { Title } = Typography;
 
 interface BusinessEmployeesProps {
   businessId: number;
-  isBusinessOwner: boolean;
 }
 
-export const BusinessEmployees = ({
-  businessId,
-  isBusinessOwner,
-}: BusinessEmployeesProps) => {
+export const BusinessEmployees = ({ businessId }: BusinessEmployeesProps) => {
   const { employees, fetchEmployees, deleteEmployee, createEmployee } =
     useEmployees();
-  const { roles, fetchBusinessRoles, assignRole } = useRoles();
+  const { roles, fetchBusinessRoles, assignRole, updateRoleStatus } =
+    useRoles();
+  const { canWriteAccounts } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
@@ -106,83 +100,26 @@ export const BusinessEmployees = ({
     void assignRoleAsync();
   };
 
-  const getAvailableRoles = (employee: ModelsAccountDto) => {
-    const employeeRoles = employee.roles || [];
-    const assignedRoleIds = new Set(
-      employeeRoles.map((roleLink) => roleLink.role?.id).filter(Boolean)
-    );
+  const handleStatusChange = (
+    accountId: number,
+    roleId: number,
+    status: ConstantsAccountRoleLinkStatus
+  ) => {
+    const updateStatus = async () => {
+      await updateRoleStatus(accountId, roleId, { status });
+      await fetchEmployees(businessId);
+    };
 
-    return roles.filter((role) => !assignedRoleIds.has(role.id));
+    void updateStatus();
   };
 
-  const columns: ColumnsType<ModelsAccountDto> = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: 'Username',
-      dataIndex: 'username',
-      key: 'username',
-    },
-    {
-      title: 'Roles',
-      key: 'roles',
-      render: (_, record) => {
-        const employeeRoles = record.roles || [];
-        const availableRoles = getAvailableRoles(record);
-        const canAssignRole = availableRoles.length > 0;
-
-        return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Space size={[0, 4]} wrap style={{ flex: 1 }}>
-              {employeeRoles.length > 0 ? (
-                employeeRoles.map((roleLink) => (
-                  <Tag key={roleLink.id} color="green">
-                    {roleLink.role?.name}
-                  </Tag>
-                ))
-              ) : (
-                <span style={{ color: '#999' }}>No roles assigned</span>
-              )}
-            </Space>
-            {isBusinessOwner && (
-              <Button
-                type="link"
-                size="small"
-                icon={<PlusOutlined />}
-                onClick={() => handleOpenRoleModal(record)}
-                disabled={!canAssignRole}
-              >
-                Add
-              </Button>
-            )}
-          </div>
-        );
-      },
-    },
-    isBusinessOwner
-      ? {
-          title: '',
-          key: 'action',
-          width: 100,
-          render: (_, record) => (
-            <Popconfirm
-              title="Delete employee"
-              description="Are you sure you want to delete this employee?"
-              onConfirm={() => handleDelete(record.id!)}
-              okText="Yes"
-              cancelText="No"
-            >
-              <Button type="link" danger icon={<DeleteOutlined />}>
-                Delete
-              </Button>
-            </Popconfirm>
-          ),
-        }
-      : {},
-  ];
+  const columns = getEmployeeColumns({
+    roles,
+    canWriteAccounts,
+    onAddRole: handleOpenRoleModal,
+    onStatusChange: handleStatusChange,
+    onDelete: handleDelete,
+  });
 
   return (
     <>
@@ -193,7 +130,7 @@ export const BusinessEmployees = ({
           </Title>
         }
         extra={
-          isBusinessOwner && (
+          canWriteAccounts && (
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -230,7 +167,8 @@ export const BusinessEmployees = ({
         open={isRoleModalOpen}
         employee={selectedEmployee}
         availableRoles={getAvailableRoles(
-          selectedEmployee || ({} as ModelsAccountDto)
+          selectedEmployee || ({} as ModelsAccountDto),
+          roles || []
         )}
         isSubmitting={isSubmitting}
         onClose={handleCloseRoleModal}

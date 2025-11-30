@@ -48,6 +48,18 @@ export const RoleFunctionFormModal = ({
     onSubmit(values);
   };
 
+  const handleAccessLevelChange = (checkedValues: string[]) => {
+    const levels = checkedValues as ConstantsAccessLevel[];
+
+    if (levels.includes('Write') && !levels.includes('Read')) {
+      const updatedLevels: ConstantsAccessLevel[] = [...levels, 'Read'];
+
+      form.setFieldsValue({ accessLevels: updatedLevels });
+    } else {
+      form.setFieldsValue({ accessLevels: levels });
+    }
+  };
+
   return (
     <Modal
       title={`Add Function to ${managingRole?.name || 'Role'}`}
@@ -85,15 +97,15 @@ export const RoleFunctionFormModal = ({
               message: 'Please select at least one access level',
             },
           ]}
-          tooltip="Select the permissions this role will have for this function"
+          tooltip="Select the permissions this role will have for this function. Write permission automatically includes Read."
         >
-          <Checkbox.Group>
+          <Checkbox.Group onChange={handleAccessLevelChange}>
             <Space direction="vertical">
               {ACCESS_LEVELS.map((level) => (
                 <Tooltip
                   key={level}
                   title={getAccessLevelDescription(level)}
-                  placement="right"
+                  placement="left"
                 >
                   <Checkbox value={level}>{level}</Checkbox>
                 </Tooltip>

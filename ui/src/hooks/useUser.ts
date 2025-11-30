@@ -3,8 +3,13 @@ import { useAppDispatch } from './useAppDispatch';
 import {
   isAuthenticated,
   getUser,
-  getBusinessType,
-  isBusinessOwner as isBusinessOwnerSelector,
+  getUserRoles,
+  getCanReadAccounts,
+  getCanWriteAccounts,
+  getCanReadBusinesses,
+  getCanWriteBusinesses,
+  getCanReadRoles,
+  getCanWriteRoles,
 } from '@/selectors/user';
 import {
   login as loginAction,
@@ -22,8 +27,14 @@ export const useUser = () => {
   const dispatch = useAppDispatch();
   const authenticated = useAppSelector(isAuthenticated);
   const user = useAppSelector(getUser);
-  const businessType = useAppSelector(getBusinessType);
-  const isBusinessOwner = useAppSelector(isBusinessOwnerSelector);
+  const roles = useAppSelector(getUserRoles);
+
+  const canReadAccounts = useAppSelector(getCanReadAccounts);
+  const canWriteAccounts = useAppSelector(getCanWriteAccounts);
+  const canReadBusinesses = useAppSelector(getCanReadBusinesses);
+  const canWriteBusinesses = useAppSelector(getCanWriteBusinesses);
+  const canReadRoles = useAppSelector(getCanReadRoles);
+  const canWriteRoles = useAppSelector(getCanWriteRoles);
 
   const hasRoles = (roles: ModelsAccountRoleLinkDto[]) => !!roles.length;
 
@@ -40,8 +51,13 @@ export const useUser = () => {
   return {
     isAuthenticated: authenticated,
     user,
-    businessType,
-    isBusinessOwner,
+    canReadAccounts,
+    canWriteAccounts,
+    canReadBusinesses,
+    canWriteBusinesses,
+    canReadRoles,
+    canWriteRoles,
+    roles,
     hasRoles,
     login,
     register,

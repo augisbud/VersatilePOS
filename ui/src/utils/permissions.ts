@@ -14,12 +14,20 @@ export const getUserPermissions = (
   }
 
   roles.forEach((roleLink) => {
+    if (roleLink.status !== 'Active') {
+      return;
+    }
+
     const role = roleLink.role;
-    if (!role || !role.functionLinks) return;
+    if (!role || !role.functionLinks) {
+      return;
+    }
 
     role.functionLinks.forEach((functionLink) => {
       const action = functionLink.function?.action;
-      if (!action) return;
+      if (!action) {
+        return;
+      }
 
       if (!permissions.has(action)) {
         permissions.set(action, new Set<ConstantsAccessLevel>());

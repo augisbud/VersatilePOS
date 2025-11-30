@@ -7,7 +7,7 @@ export const AuthGateway = () => {
   const { isAuthenticated } = useUser();
 
   if (!isAuthenticated) {
-    return <Navigate to={RouteId.LOGIN} replace />;
+    return <Navigate to={`/${RouteId.LOGIN}`} replace />;
   }
 
   return (

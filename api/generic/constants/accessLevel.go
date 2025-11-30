@@ -3,6 +3,6 @@ package constants
 type AccessLevel string
 
 const (
-	View     AccessLevel = "View"
-	Initiate AccessLevel = "Initiate"
+	Read  AccessLevel = "Read"
+	Write AccessLevel = "Write"
 )

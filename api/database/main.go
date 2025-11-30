@@ -2,6 +2,7 @@ package database
 
 import (
 	"VersatilePOS/database/entities"
+	"VersatilePOS/generic/constants"
 	"fmt"
 	"log"
 	"os"
@@ -66,22 +67,22 @@ func Connect() {
 
 func seedFunctions(db *gorm.DB) {
 	functions := []entities.Function{
-		{Name: "Manage Accounts", Description: "Create, update, and delete accounts."},
-		{Name: "Manage Businesses", Description: "Create, update, and delete businesses."},
-		{Name: "Manage Roles", Description: "Manage account roles and permissions."},
+		{Name: "Manage Accounts", Action: constants.Accounts, Description: "Create, update, and delete accounts."},
+		{Name: "Manage Businesses", Action: constants.Businesses, Description: "Create, update, and delete businesses."},
+		{Name: "Manage Roles", Action: constants.Roles, Description: "Manage account roles and permissions."},
 	}
 
 	for _, function := range functions {
 		var existingFunction entities.Function
-		if err := db.Where("name = ?", function.Name).First(&existingFunction).Error; err != nil {
+		if err := db.Where("name = ? AND action = ?", function.Name, function.Action).First(&existingFunction).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				if err := db.Create(&function).Error; err != nil {
-					log.Printf("failed to seed function %s: %v\n", function.Name, err)
+					log.Printf("failed to seed function %s:%s: %v\n", function.Name, function.Action, err)
 				} else {
-					log.Printf("Seeded function: %s\n", function.Name)
+					log.Printf("Seeded function: %s:%s\n", function.Name, function.Action)
 				}
 			} else {
-				log.Printf("failed to check for existing function %s: %v\n", function.Name, err)
+				log.Printf("failed to check for existing function %s:%s: %v\n", function.Name, function.Action, err)
 			}
 		}
 	}

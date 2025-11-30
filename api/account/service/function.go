@@ -3,7 +3,10 @@ package service
 import (
 	"VersatilePOS/account/models"
 	"VersatilePOS/database/entities"
+	"VersatilePOS/generic/constants"
 	"errors"
+
+	"github.com/lib/pq"
 )
 
 func (s *Service) GetAllFunctions(claims map[string]interface{}) ([]models.FunctionDto, error) {
@@ -32,6 +35,7 @@ func (s *Service) GetAllFunctions(claims map[string]interface{}) ([]models.Funct
 		functionDtos[i] = models.FunctionDto{
 			ID:          f.ID,
 			Name:        f.Name,
+			Action:      f.Action,
 			Description: f.Description,
 		}
 	}
@@ -61,10 +65,16 @@ func (s *Service) AssignFunctionToRole(roleID uint, req models.AssignFunctionReq
 		return errors.New("function not found")
 	}
 
+	// convert []constants.AccessLevel -> pq.StringArray for DB storage
+	var als pq.StringArray
+	for _, a := range req.AccessLevels {
+		als = append(als, string(a))
+	}
+
 	link := &entities.AccountRoleFunctionLink{
 		AccountRoleID: role.ID,
 		FunctionID:    function.ID,
-		AccessLevel:   req.AccessLevel,
+		AccessLevels:  als,
 	}
 
 	return s.functionRepo.AssignFunctionToRole(link)
@@ -115,12 +125,19 @@ func (s *Service) GetFunctionsByRoleID(roleID uint, claims map[string]interface{
 
 	dtos := make([]models.AccountRoleFunctionLinkDto, len(links))
 	for i, link := range links {
+		// convert DB string array -> []constants.AccessLevel
+		conv := make([]constants.AccessLevel, len(link.AccessLevels))
+		for j, v := range link.AccessLevels {
+			conv[j] = constants.AccessLevel(v)
+		}
+
 		dtos[i] = models.AccountRoleFunctionLinkDto{
-			ID:          link.ID,
-			AccessLevel: link.AccessLevel,
+			ID:           link.ID,
+			AccessLevels: conv,
 			Function: models.FunctionDto{
 				ID:          link.Function.ID,
 				Name:        link.Function.Name,
+				Action:      link.Function.Action,
 				Description: link.Function.Description,
 			},
 		}

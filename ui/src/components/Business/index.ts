@@ -6,3 +6,4 @@ export { BusinessDetails } from './BusinessDetails';
 export { BusinessList } from './BusinessList';
 export { RoleFormModal } from './RoleFormModal';
 export { RoleFunctionFormModal } from './RoleFunctionFormModal';
+export { EmployeeRoleFormModal } from './EmployeeRoleFormModal';

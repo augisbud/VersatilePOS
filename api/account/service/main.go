@@ -180,37 +180,22 @@ func (s *Service) DeleteAccount(id string, requestingUserID uint) error {
 		return errors.New("internal server error")
 	}
 
-	// find the shared business between requesting user (owner) and target
-	requestingUserAccount, err := s.accountRepo.GetUserWithAssociations(requestingUserID)
-	if err != nil {
-		return errors.New("could not retrieve requesting user's account")
-	}
-
+	// allow deletion if requesting user has write access to any business the target belongs to
 	var businessToDeleteFrom *entities.Business
-	for i := range requestingUserAccount.OwnedBusinesses {
-		ownedBusiness := requestingUserAccount.OwnedBusinesses[i]
-		for _, membership := range targetAccount.MemberOf {
-			if membership.ID == ownedBusiness.ID {
-				businessToDeleteFrom = &ownedBusiness
-				break
-			}
+	for i := range targetAccount.MemberOf {
+		biz := targetAccount.MemberOf[i]
+		ok, err := rbac.HasAccess(constants.Accounts, constants.Write, biz.ID, requestingUserID)
+		if err != nil {
+			return errors.New("failed to verify permissions")
 		}
-		if businessToDeleteFrom != nil {
+		if ok {
+			businessToDeleteFrom = &biz
 			break
 		}
 	}
 
 	if businessToDeleteFrom == nil {
-		return errors.New("you can only delete employees of your own business")
-	}
-
-	// RBAC: require write access to accounts in the business
-	ok, err := rbac.HasAccess(constants.Accounts, constants.Write, businessToDeleteFrom.ID, requestingUserID)
-	if err != nil {
-		return errors.New("failed to verify permissions")
-	}
-	if !ok {
-		return errors.New("unauthorized")
+		return errors.New("you are not authorized to delete this account")
 	}
 
 	if err := s.accountRepo.DissociateEmployeeFromBusiness(&targetAccount, businessToDeleteFrom); err != nil {

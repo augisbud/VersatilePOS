@@ -10,15 +10,18 @@ import (
 	"errors"
 
 	"github.com/lib/pq"
+	"gorm.io/gorm"
 )
 
 type Service struct {
-	repo repository.Repository
+	repo        repository.Repository
+	accountRepo accountRepository.Repository
 }
 
 func NewService() *Service {
 	return &Service{
-		repo: repository.Repository{},
+		repo:        repository.Repository{},
+		accountRepo: accountRepository.Repository{},
 	}
 }
 
@@ -88,15 +91,25 @@ func (s *Service) CreateBusiness(req businessModels.CreateBusinessRequest, owner
 	return &dto, nil
 }
 
-func (s *Service) GetBusinesses(ownerID uint) ([]businessModels.BusinessDto, error) {
-	businesses, err := s.repo.GetBusinessesByOwnerID(ownerID)
+func (s *Service) GetBusinesses(userID uint) ([]businessModels.BusinessDto, error) {
+	var businessDtos []businessModels.BusinessDto
+
+	account, err := s.accountRepo.GetAccountByID(userID)
 	if err != nil {
-		return nil, err
+		if err == gorm.ErrRecordNotFound {
+			return businessDtos, errors.New("account not found")
+		}
+		return businessDtos, errors.New("internal server error")
 	}
 
-	var businessDtos []businessModels.BusinessDto
-	for _, business := range businesses {
-		businessDtos = append(businessDtos, businessModels.NewBusinessDtoFromEntity(business))
+	for _, accountRoleLink := range account.AccountRoleLinks {
+		business, err := s.repo.GetBusinessByID(accountRoleLink.AccountRole.BusinessID)
+		if err != nil {
+			return businessDtos, err
+		}
+		if business != nil {
+			businessDtos = append(businessDtos, businessModels.NewBusinessDtoFromEntity(*business))
+		}
 	}
 
 	return businessDtos, nil

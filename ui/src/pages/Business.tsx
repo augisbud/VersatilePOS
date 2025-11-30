@@ -19,17 +19,13 @@ export const Business = () => {
     fetchAllBusinesses,
     fetchBusiness,
   } = useBusiness();
-  const {
-    user,
-    hasRoles,
-    refreshAccount,
-    canReadBusinesses,
-    canWriteBusinesses,
-  } = useUser();
+  const { refreshAccount, canWriteBusinesses, canReadBusinesses, roles } =
+    useUser();
   const userBusinessId = useAppSelector(getUserBusinessId);
-
   const [selectedBusiness, setSelectedBusiness] =
     useState<ModelsBusinessDto | null>(null);
+
+  const canLoadBusinesses = canReadBusinesses || !roles?.length;
 
   const handleManageBusiness = (businessRecord: ModelsBusinessDto) => {
     setSelectedBusiness(businessRecord);
@@ -41,21 +37,16 @@ export const Business = () => {
 
   useEffect(() => {
     const loadBusinesses = async () => {
-      if (!hasRoles(user?.roles || [])) {
-        return;
-      }
-
-      if (canWriteBusinesses) {
-        await fetchAllBusinesses();
-      } else if (canReadBusinesses && userBusinessId) {
+      if (canLoadBusinesses && userBusinessId) {
         const business = await fetchBusiness(userBusinessId);
-
         setSelectedBusiness(business);
       }
+
+      await fetchAllBusinesses();
     };
 
     void loadBusinesses();
-  }, [userBusinessId, canReadBusinesses, canWriteBusinesses]);
+  }, []);
 
   if (loading && businesses.length === 0) {
     return (

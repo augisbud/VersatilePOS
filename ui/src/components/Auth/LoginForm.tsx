@@ -17,7 +17,12 @@ export const LoginForm = ({ onFinish, loading }: LoginFormProps) => {
   const [form] = Form.useForm();
 
   const handleFinish = (values: LoginFormValues) => {
-    void onFinish(values);
+    try {
+      void onFinish(values);
+      form.resetFields();
+    } catch (err) {
+      console.error('Failed to login:', err);
+    }
   };
 
   return (

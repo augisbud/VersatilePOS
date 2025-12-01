@@ -11,7 +11,7 @@ import { getAvailableRoles } from '@/selectors/employee';
 interface EmployeeRolesCellProps {
   employee: ModelsAccountDto;
   roles: ModelsAccountRoleDto[];
-  canWriteAccounts: boolean;
+  canWriteRoles: boolean;
   onAddRole: (employee: ModelsAccountDto) => void;
   onStatusChange: (
     accountId: number,
@@ -23,7 +23,7 @@ interface EmployeeRolesCellProps {
 export const EmployeeRolesCell = ({
   employee,
   roles,
-  canWriteAccounts,
+  canWriteRoles,
   onAddRole,
   onStatusChange,
 }: EmployeeRolesCellProps) => {
@@ -40,7 +40,7 @@ export const EmployeeRolesCell = ({
               key={roleLink.id}
               roleLink={roleLink}
               accountId={employee.id!}
-              canWriteAccounts={canWriteAccounts}
+              canWriteRoles={canWriteRoles}
               onStatusChange={onStatusChange}
             />
           ))
@@ -48,7 +48,7 @@ export const EmployeeRolesCell = ({
           <span style={{ color: '#999' }}>No roles assigned</span>
         )}
       </Space>
-      {canWriteAccounts && (
+      {canWriteRoles && (
         <Button
           type="link"
           size="small"

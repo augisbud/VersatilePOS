@@ -27,7 +27,7 @@ export const BusinessEmployees = ({ businessId }: BusinessEmployeesProps) => {
     useEmployees();
   const { roles, fetchBusinessRoles, assignRole, updateRoleStatus } =
     useRoles();
-  const { canWriteAccounts } = useUser();
+  const { canWriteAccounts, canWriteRoles } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
@@ -116,6 +116,7 @@ export const BusinessEmployees = ({ businessId }: BusinessEmployeesProps) => {
   const columns = getEmployeeColumns({
     roles,
     canWriteAccounts,
+    canWriteRoles,
     onAddRole: handleOpenRoleModal,
     onStatusChange: handleStatusChange,
     onDelete: handleDelete,

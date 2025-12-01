@@ -9,7 +9,7 @@ import {
 interface EmployeeRoleTagProps {
   roleLink: ModelsAccountRoleLinkDto;
   accountId: number;
-  canWriteAccounts: boolean;
+  canWriteRoles: boolean;
   onStatusChange: (
     accountId: number,
     roleId: number,
@@ -33,7 +33,7 @@ const getStatusColor = (status?: ConstantsAccountRoleLinkStatus) => {
 export const EmployeeRoleTag = ({
   roleLink,
   accountId,
-  canWriteAccounts,
+  canWriteRoles,
   onStatusChange,
 }: EmployeeRoleTagProps) => {
   const statusMenuItems: MenuProps['items'] = [
@@ -74,13 +74,13 @@ export const EmployeeRoleTag = ({
           ({roleLink.status})
         </span>
       )}
-      {canWriteAccounts && (
+      {canWriteRoles && (
         <DownOutlined style={{ marginLeft: '6px', fontSize: '10px' }} />
       )}
     </>
   );
 
-  if (canWriteAccounts) {
+  if (canWriteRoles) {
     return (
       <Dropdown menu={{ items: statusMenuItems }} trigger={['click']}>
         <Tag

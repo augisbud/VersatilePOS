@@ -26,7 +26,12 @@ export const RegisterForm = ({
   const [form] = Form.useForm();
 
   const handleFinish = (values: RegisterFormValues) => {
-    void onFinish(values);
+    try {
+      void onFinish(values);
+      form.resetFields();
+    } catch (err) {
+      console.error('Failed to register:', err);
+    }
   };
 
   return (

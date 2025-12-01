@@ -10,6 +10,7 @@ import { EmployeeRolesCell } from './EmployeeRolesCell';
 
 interface GetEmployeeColumnsParams {
   roles: ModelsAccountRoleDto[];
+  canWriteRoles: boolean;
   canWriteAccounts: boolean;
   onAddRole: (employee: ModelsAccountDto) => void;
   onStatusChange: (
@@ -22,6 +23,7 @@ interface GetEmployeeColumnsParams {
 
 export const getEmployeeColumns = ({
   roles,
+  canWriteRoles,
   canWriteAccounts,
   onAddRole,
   onStatusChange,
@@ -45,7 +47,7 @@ export const getEmployeeColumns = ({
         <EmployeeRolesCell
           employee={record}
           roles={roles}
-          canWriteAccounts={canWriteAccounts}
+          canWriteRoles={canWriteRoles}
           onAddRole={onAddRole}
           onStatusChange={onStatusChange}
         />

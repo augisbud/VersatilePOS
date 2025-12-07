@@ -23,14 +23,13 @@ func NewController() *Controller {
 }
 
 // @Summary Create order
-// @Description Create a new order
+// @Description Create a new order. Authentication is optional - if authenticated, the user's ID will be used as ServicingAccountID if not provided.
 // @Tags order
 // @Accept  json
 // @Produce  json
 // @Param   order  body  models.CreateOrderRequest  true  "Order to create"
 // @Success 201 {object} models.OrderDto
 // @Failure 400 {object} models.HTTPError
-// @Failure 401 {object} models.HTTPError
 // @Failure 500 {object} models.HTTPError
 // @Security BearerAuth
 // @Router /order [post]
@@ -42,10 +41,15 @@ func (ctrl *Controller) CreateOrder(c *gin.Context) {
 		return
 	}
 
-	userID, err := middleware.GetUserIDFromContext(c)
-	if err != nil {
-		c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: err.Error()})
-		return
+	// Authentication is optional - if user is authenticated, we can use their ID
+	// Otherwise, ServicingAccountID can be set in the request or left null
+	var userID uint
+	if userIDFromContext, err := middleware.GetUserIDFromContext(c); err == nil {
+		userID = userIDFromContext
+		// If no ServicingAccountID provided in request, use authenticated user's ID
+		if req.ServicingAccountID == nil {
+			req.ServicingAccountID = &userID
+		}
 	}
 
 	order, err := ctrl.service.CreateOrder(req, userID)

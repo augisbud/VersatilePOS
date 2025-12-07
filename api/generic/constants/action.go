@@ -6,6 +6,6 @@ const (
 	Accounts      	Action = "accounts"
 	Businesses    	Action = "businesses"
 	Roles         	Action = "roles"
-	Items         	Action = "items"
 	Reservations	Action = "reservations"
+	PriceModifiers Action = "priceModifiers"
 )

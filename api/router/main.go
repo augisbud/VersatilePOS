@@ -4,6 +4,8 @@ import (
 	"VersatilePOS/account"
 	"VersatilePOS/business"
 	_ "VersatilePOS/docs"
+	"VersatilePOS/payment"
+	"VersatilePOS/priceModifier"
 	"VersatilePOS/reservation"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +17,8 @@ func RegisterRoutes(r *gin.Engine) {
 	account.RegisterHandlers(r)
 	business.RegisterHandlers(r)
 	reservation.RegisterHandlers(r)
+	payment.RegisterHandlers(r)
+	priceModifier.RegisterHandlers(r)
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

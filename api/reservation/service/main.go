@@ -7,6 +7,7 @@ import (
 	"VersatilePOS/generic/rbac"
 	reservationModels "VersatilePOS/reservation/models"
 	"VersatilePOS/reservation/repository"
+	serviceRepository "VersatilePOS/service/repository"
 	"errors"
 	"time"
 
@@ -16,12 +17,14 @@ import (
 type Service struct {
 	repo        repository.Repository
 	accountRepo accountRepository.Repository
+	serviceRepo serviceRepository.Repository
 }
 
 func NewService() *Service {
 	return &Service{
 		repo:        repository.Repository{},
 		accountRepo: accountRepository.Repository{},
+		serviceRepo: serviceRepository.Repository{},
 	}
 }
 
@@ -52,6 +55,48 @@ func (s *Service) hasReservationAccess(businessID uint, userID uint, level const
 	return ok, nil
 }
 
+func (s *Service) validateProvisionalTime(serviceID uint, dateOfService time.Time, reservationLength uint32) error {
+	service, err := s.serviceRepo.GetServiceByID(serviceID)
+	if err != nil {
+		return errors.New("failed to get service")
+	}
+	if service == nil {
+		return errors.New("service not found")
+	}
+
+	if service.ProvisioningStartTime == nil || service.ProvisioningEndTime == nil {
+		return nil
+	}
+
+	reservationEndTime := dateOfService.Add(time.Duration(reservationLength) * time.Minute)
+
+	startTime := time.Date(0, 1, 1, service.ProvisioningStartTime.Hour(), service.ProvisioningStartTime.Minute(), service.ProvisioningStartTime.Second(), 0, time.UTC)
+	endTime := time.Date(0, 1, 1, service.ProvisioningEndTime.Hour(), service.ProvisioningEndTime.Minute(), service.ProvisioningEndTime.Second(), 0, time.UTC)
+	reservationStartTimeOfDay := time.Date(0, 1, 1, dateOfService.Hour(), dateOfService.Minute(), dateOfService.Second(), 0, time.UTC)
+	reservationEndTimeOfDay := time.Date(0, 1, 1, reservationEndTime.Hour(), reservationEndTime.Minute(), reservationEndTime.Second(), 0, time.UTC)
+
+	if reservationStartTimeOfDay.Before(startTime) || reservationEndTimeOfDay.After(endTime) {
+		return errors.New("reservation time is outside service's provisional time window")
+	}
+
+	return nil
+}
+
+func (s *Service) validateNoOverlap(businessID uint, dateOfService time.Time, reservationLength uint32) error {
+	reservationEndTime := dateOfService.Add(time.Duration(reservationLength) * time.Minute)
+
+	overlapping, err := s.repo.GetOverlappingReservations(businessID, dateOfService, reservationEndTime)
+	if err != nil {
+		return errors.New("failed to check for overlapping reservations")
+	}
+
+	if len(overlapping) > 0 {
+		return errors.New("reservation overlaps with existing reservation for this business")
+	}
+
+	return nil
+}
+
 func (s *Service) CreateReservation(req reservationModels.CreateReservationRequest, userID uint) (*reservationModels.ReservationDto, error) {
 	// Get business ID from the account (employee)
 	businessID, err := s.getBusinessIDFromAccount(req.AccountID)
@@ -66,6 +111,14 @@ func (s *Service) CreateReservation(req reservationModels.CreateReservationReque
 	}
 	if !hasAccess {
 		return nil, errors.New("unauthorized")
+	}
+
+	if err := s.validateProvisionalTime(req.ServiceID, req.DateOfService, req.ReservationLength); err != nil {
+		return nil, err
+	}
+
+	if err := s.validateNoOverlap(businessID, req.DateOfService, req.ReservationLength); err != nil {
+		return nil, err
 	}
 
 	reservation := &entities.Reservation{

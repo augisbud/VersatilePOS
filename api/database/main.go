@@ -55,7 +55,7 @@ func Connect() {
 
 	log.Println("Database connection established.")
 
-	err = DB.AutoMigrate(&entities.Account{}, &entities.Business{}, &entities.BusinessEmployees{}, &entities.AccountRole{}, &entities.AccountRoleLink{}, &entities.AccountRoleFunctionLink{}, &entities.Function{}, &entities.Payment{}, &entities.PriceModifier{}, &entities.PriceModifierOrderLink{}, &entities.PriceModifierReservationLink{}, &entities.Reservation{})
+	err = DB.AutoMigrate(&entities.Account{}, &entities.Business{}, &entities.BusinessEmployees{}, &entities.AccountRole{}, &entities.AccountRoleLink{}, &entities.AccountRoleFunctionLink{}, &entities.Function{}, &entities.Payment{}, &entities.PriceModifier{}, &entities.PriceModifierOrderLink{}, &entities.PriceModifierReservationLink{}, &entities.Reservation{}, &entities.Service{})
 	if err != nil {
 		log.Fatal("Failed to migrate database: ", err)
 	}
@@ -72,6 +72,7 @@ func seedFunctions(db *gorm.DB) {
 		{Name: "Manage Roles", Action: constants.Roles, Description: "Manage account roles and permissions."},
 		{Name: "Manage Reservations", Action: constants.Reservations, Description: "Manage account roles and permissions."},
 		{Name: "Manage Price Modifiers", Action: constants.PriceModifiers, Description: "Create, update, and delete price modifiers (discounts, taxes, etc.)."},
+		{Name: "Manage Services", Action: constants.Services, Description: "Create, update, and delete services."},
 	}
 
 	for _, function := range functions {

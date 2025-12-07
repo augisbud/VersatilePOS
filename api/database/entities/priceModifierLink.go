@@ -10,9 +10,8 @@ type PriceModifierOrderLink struct {
 	PriceModifierID uint          `json:"priceModifierId"`
 	PriceModifier   PriceModifier `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:PriceModifierID"`
 
-	OrderItemID uint `json:"orderItemId"`
-	// OrderItem will be defined when Order entity is created
-	// OrderItem OrderItem `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:OrderItemID"`
+	OrderItemID uint      `json:"orderItemId"`
+	OrderItem   OrderItem `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:OrderItemID"`
 }
 
 // PriceModifierReservationLink links a PriceModifier to a specific ReservationItem

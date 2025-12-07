@@ -55,7 +55,7 @@ func Connect() {
 
 	log.Println("Database connection established.")
 
-	err = DB.AutoMigrate(&entities.Account{}, &entities.Business{}, &entities.BusinessEmployees{}, &entities.AccountRole{}, &entities.AccountRoleLink{}, &entities.AccountRoleFunctionLink{}, &entities.Function{}, &entities.Payment{}, &entities.PriceModifier{}, &entities.PriceModifierOrderLink{}, &entities.PriceModifierReservationLink{})
+	err = DB.AutoMigrate(&entities.Account{}, &entities.Business{}, &entities.BusinessEmployees{}, &entities.AccountRole{}, &entities.AccountRoleLink{}, &entities.AccountRoleFunctionLink{}, &entities.Function{}, &entities.Payment{}, &entities.PriceModifier{}, &entities.PriceModifierOrderLink{}, &entities.PriceModifierReservationLink{}, &entities.Order{}, &entities.OrderItem{}, &entities.OrderPaymentLink{}, &entities.ItemOptionLink{})
 	if err != nil {
 		log.Fatal("Failed to migrate database: ", err)
 	}

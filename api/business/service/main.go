@@ -48,6 +48,15 @@ func (s *Service) CreateBusiness(req businessModels.CreateBusinessRequest, owner
 		return nil, err
 	}
 
+	// Assign owner as employee
+	owner, err := s.accountRepo.GetAccountByID(ownerID)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.accountRepo.AddEmployeeToBusiness(&owner, createdBusiness); err != nil {
+		return nil, err
+	}
+
 	employeeFuncs := []constants.Action{constants.Businesses}
 	employeeAls := []constants.AccessLevel{constants.Read}
 	_, err = accSvc.CreateRoleWithFunctions("Employee", createdBusiness.ID, employeeFuncs, employeeAls, nil)

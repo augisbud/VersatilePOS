@@ -8,4 +8,6 @@ const (
 	Roles         	Action = "roles"
 	Reservations	Action = "reservations"
 	PriceModifiers Action = "priceModifiers"
+	Items          Action = "items"
+	ItemOptions    Action = "itemOptions"
 )

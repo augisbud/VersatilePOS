@@ -3,6 +3,7 @@ package router
 import (
 	"VersatilePOS/account"
 	"VersatilePOS/business"
+	"VersatilePOS/order"
 	_ "VersatilePOS/docs"
 	"VersatilePOS/item"
 	"VersatilePOS/payment"
@@ -18,6 +19,7 @@ import (
 func RegisterRoutes(r *gin.Engine) {
 	account.RegisterHandlers(r)
 	business.RegisterHandlers(r)
+	order.RegisterHandlers(r)
 	reservation.RegisterHandlers(r)
 	item.RegisterHandlers(r)
 	payment.RegisterHandlers(r)

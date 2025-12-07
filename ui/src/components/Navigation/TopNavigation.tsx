@@ -7,13 +7,19 @@ export const TopNavigation = () => {
 
   const visibleRoutes = routesConfig.filter((route) => route.showInNav);
 
-  const currentRoute = routesConfig.find(
-    (route) => route.path === location.pathname
-  );
+  const matchesRoute = (path: string) => {
+    if (path === location.pathname) return true;
+    if (!path.includes('/:')) return false;
+
+    const [basePath] = path.split('/:');
+    return location.pathname.startsWith(`${basePath}/`);
+  };
+
+  const currentRoute = routesConfig.find((route) => matchesRoute(route.path));
 
   const selectedKey =
     currentRoute?.parentPage ||
-    visibleRoutes.find((route) => route.path === location.pathname)?.id ||
+    visibleRoutes.find((route) => matchesRoute(route.path))?.id ||
     visibleRoutes[0]?.id;
 
   const menuItems = visibleRoutes.map((route) => ({

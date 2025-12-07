@@ -149,13 +149,13 @@ func (s *Service) UpdateService(id uint, req serviceModels.UpdateServiceRequest,
 		service.ServiceCharge = *req.ServiceCharge
 	}
 	if req.ProvisioningStartTime != nil {
-		service.ProvisioningStartTime = req.ProvisioningStartTime
+		service.ProvisioningStartTime = *req.ProvisioningStartTime
 	}
 	if req.ProvisioningEndTime != nil {
-		service.ProvisioningEndTime = req.ProvisioningEndTime
+		service.ProvisioningEndTime = *req.ProvisioningEndTime
 	}
 	if req.ProvisioningInterval != nil {
-		service.ProvisioningInterval = req.ProvisioningInterval
+		service.ProvisioningInterval = *req.ProvisioningInterval
 	}
 
 	if err := s.repo.UpdateService(service); err != nil {

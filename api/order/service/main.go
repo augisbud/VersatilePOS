@@ -3,19 +3,27 @@ package service
 import (
 	orderModels "VersatilePOS/order/models"
 	"VersatilePOS/order/repository"
+	itemRepository "VersatilePOS/item/repository"
+	paymentRepository "VersatilePOS/payment/repository"
+	"VersatilePOS/database"
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
 	"errors"
+	"gorm.io/gorm"
 	"time"
 )
 
 type Service struct {
-	repo repository.Repository
+	repo         repository.Repository
+	itemRepo     itemRepository.Repository
+	paymentRepo  paymentRepository.Repository
 }
 
 func NewService() *Service {
 	return &Service{
-		repo: repository.Repository{},
+		repo:        repository.Repository{},
+		itemRepo:    itemRepository.Repository{},
+		paymentRepo: paymentRepository.Repository{},
 	}
 }
 
@@ -130,6 +138,21 @@ func (s *Service) AddItemToOrder(orderID uint, req orderModels.CreateOrderItemRe
 	// Check if order is in final state
 	if isOrderInFinalState(order.Status) {
 		return nil, errors.New("cannot modify order items: order is in final state")
+	}
+
+	// Validate that the item exists and belongs to the same business as the order
+	item, _, err := s.itemRepo.GetItemByID(req.ItemID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.New("item not found")
+		}
+		return nil, err
+	}
+	if item == nil {
+		return nil, errors.New("item not found")
+	}
+	if item.BusinessID != order.BusinessID {
+		return nil, errors.New("item does not belong to the same business as the order")
 	}
 
 	orderItem := &entities.OrderItem{
@@ -276,6 +299,21 @@ func (s *Service) AddOptionToOrderItem(orderID, itemID uint, req orderModels.Cre
 		return nil, errors.New("order item not found")
 	}
 
+	// Validate that the item option exists and belongs to the same item
+	itemOption, _, err := s.itemRepo.GetItemOptionByID(req.ItemOptionID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.New("item option not found")
+		}
+		return nil, err
+	}
+	if itemOption == nil {
+		return nil, errors.New("item option not found")
+	}
+	if itemOption.ItemID != orderItem.ItemID {
+		return nil, errors.New("item option does not belong to the same item as the order item")
+	}
+
 	link := &entities.ItemOptionLink{
 		OrderItemID:  itemID,
 		ItemOptionID: req.ItemOptionID,
@@ -346,4 +384,43 @@ func (s *Service) RemoveOptionFromOrderItem(orderID, itemID, optionID uint) erro
 	}
 
 	return s.repo.DeleteItemOptionLink(link)
+}
+
+func (s *Service) LinkPaymentToOrder(orderID, paymentID uint) error {
+	// Verify order exists
+	order, err := s.repo.GetOrderByID(orderID)
+	if err != nil {
+		return err
+	}
+	if order == nil {
+		return errors.New("order not found")
+	}
+
+	// Verify payment exists
+	payment, err := s.paymentRepo.GetPaymentByID(paymentID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return errors.New("payment not found")
+		}
+		return err
+	}
+	if payment == nil {
+		return errors.New("payment not found")
+	}
+
+	// Check if link already exists
+	var existingLink entities.OrderPaymentLink
+	if result := database.DB.Where("order_id = ? AND payment_id = ?", orderID, paymentID).First(&existingLink); result.Error == nil {
+		return errors.New("payment is already linked to this order")
+	} else if result.Error != nil && result.Error != gorm.ErrRecordNotFound {
+		return result.Error
+	}
+
+	link := &entities.OrderPaymentLink{
+		OrderID:   orderID,
+		PaymentID: paymentID,
+	}
+
+	_, err = s.repo.CreateOrderPaymentLink(link)
+	return err
 }

@@ -45,8 +45,7 @@ type OrderItem struct {
 	Order   Order `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:OrderID"`
 
 	ItemID uint `json:"itemId"`
-	// Item will be defined when Item entity is created
-	// Item Item `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:ItemID"`
+	Item   Item `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:ItemID"`
 
 	Count uint32 `json:"count" gorm:"not null;default:1"`
 
@@ -64,18 +63,4 @@ type OrderPaymentLink struct {
 
 	PaymentID uint    `json:"paymentId"`
 	Payment   Payment `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:PaymentID"`
-}
-
-// ItemOptionLink links specific item options to an order item
-type ItemOptionLink struct {
-	gorm.Model
-
-	OrderItemID uint      `json:"orderItemId"`
-	OrderItem   OrderItem `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:OrderItemID"`
-
-	ItemOptionID uint `json:"itemOptionId"`
-	// ItemOption will be defined when ItemOption entity is created
-	// ItemOption ItemOption `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:ItemOptionID"`
-
-	Count uint32 `json:"count" gorm:"not null;default:1"`
 }

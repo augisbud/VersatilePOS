@@ -18,7 +18,7 @@ func (r *Repository) CreateOrder(order *entities.Order) (*entities.Order, error)
 
 func (r *Repository) GetOrders(businessID uint) ([]entities.Order, error) {
 	var orders []entities.Order
-	query := database.DB.Preload("OrderItems").Preload("OrderPaymentLinks.Payment")
+	query := database.DB.Preload("OrderItems.Item").Preload("OrderItems.ItemOptionLinks.ItemOption").Preload("OrderItems.PriceModifierOrderLinks.PriceModifier").Preload("OrderPaymentLinks.Payment")
 	if businessID != 0 {
 		query = query.Where("business_id = ?", businessID)
 	}
@@ -30,7 +30,7 @@ func (r *Repository) GetOrders(businessID uint) ([]entities.Order, error) {
 
 func (r *Repository) GetOrderByID(id uint) (*entities.Order, error) {
 	var order entities.Order
-	if result := database.DB.Preload("OrderItems").Preload("OrderItems.ItemOptionLinks").Preload("OrderItems.PriceModifierOrderLinks.PriceModifier").Preload("OrderPaymentLinks.Payment").First(&order, id); result.Error != nil {
+	if result := database.DB.Preload("OrderItems.Item").Preload("OrderItems.ItemOptionLinks.ItemOption").Preload("OrderItems.PriceModifierOrderLinks.PriceModifier").Preload("OrderPaymentLinks.Payment").First(&order, id); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -55,7 +55,7 @@ func (r *Repository) CreateOrderItem(orderItem *entities.OrderItem) (*entities.O
 
 func (r *Repository) GetOrderItems(orderID uint) ([]entities.OrderItem, error) {
 	var orderItems []entities.OrderItem
-	if result := database.DB.Where("order_id = ?", orderID).Preload("ItemOptionLinks").Preload("PriceModifierOrderLinks.PriceModifier").Find(&orderItems); result.Error != nil {
+	if result := database.DB.Where("order_id = ?", orderID).Preload("Item").Preload("ItemOptionLinks.ItemOption").Preload("PriceModifierOrderLinks.PriceModifier").Find(&orderItems); result.Error != nil {
 		return nil, result.Error
 	}
 	return orderItems, nil
@@ -63,7 +63,7 @@ func (r *Repository) GetOrderItems(orderID uint) ([]entities.OrderItem, error) {
 
 func (r *Repository) GetOrderItemByID(orderID, itemID uint) (*entities.OrderItem, error) {
 	var orderItem entities.OrderItem
-	if result := database.DB.Where("order_id = ? AND id = ?", orderID, itemID).Preload("ItemOptionLinks").Preload("PriceModifierOrderLinks.PriceModifier").First(&orderItem); result.Error != nil {
+	if result := database.DB.Where("order_id = ? AND id = ?", orderID, itemID).Preload("Item").Preload("ItemOptionLinks.ItemOption").Preload("PriceModifierOrderLinks.PriceModifier").First(&orderItem); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -102,7 +102,7 @@ func (r *Repository) CreateItemOptionLink(link *entities.ItemOptionLink) (*entit
 
 func (r *Repository) GetItemOptionLinks(orderItemID uint) ([]entities.ItemOptionLink, error) {
 	var links []entities.ItemOptionLink
-	if result := database.DB.Where("order_item_id = ?", orderItemID).Find(&links); result.Error != nil {
+	if result := database.DB.Where("order_item_id = ?", orderItemID).Preload("ItemOption").Find(&links); result.Error != nil {
 		return nil, result.Error
 	}
 	return links, nil
@@ -124,4 +124,11 @@ func (r *Repository) DeleteItemOptionLink(link *entities.ItemOptionLink) error {
 		return result.Error
 	}
 	return nil
+}
+
+func (r *Repository) CreateOrderPaymentLink(link *entities.OrderPaymentLink) (*entities.OrderPaymentLink, error) {
+	if result := database.DB.Create(link); result.Error != nil {
+		return nil, result.Error
+	}
+	return link, nil
 }

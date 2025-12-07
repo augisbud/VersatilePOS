@@ -521,6 +521,49 @@ func (ctrl *Controller) RemoveOptionFromOrderItem(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// @Summary Link payment to order
+// @Description Link a payment to an order
+// @Tags order
+// @Param   orderId  path  int  true  "Order ID"
+// @Param   paymentId  path  int  true  "Payment ID"
+// @Success 201
+// @Failure 400 {object} models.HTTPError
+// @Failure 404 {object} models.HTTPError
+// @Failure 409 {object} models.HTTPError
+// @Failure 500 {object} models.HTTPError
+// @Router /order/{orderId}/payment/{paymentId} [post]
+// @Id linkPaymentToOrder
+func (ctrl *Controller) LinkPaymentToOrder(c *gin.Context) {
+	orderID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "invalid order id"})
+		return
+	}
+
+	paymentID, err := strconv.ParseUint(c.Param("paymentId"), 10, 32)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "invalid payment id"})
+		return
+	}
+
+	err = ctrl.service.LinkPaymentToOrder(uint(orderID), uint(paymentID))
+	if err != nil {
+		if err.Error() == "order not found" || err.Error() == "payment not found" {
+			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: err.Error()})
+			return
+		}
+		if err.Error() == "payment is already linked to this order" {
+			c.IndentedJSON(http.StatusConflict, models.HTTPError{Error: err.Error()})
+			return
+		}
+		log.Println("Failed to link payment to order:", err)
+		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
+		return
+	}
+
+	c.Status(http.StatusCreated)
+}
+
 func (ctrl *Controller) RegisterRoutes(r *gin.Engine) {
 	orderGroup := r.Group("/order")
 	{
@@ -533,6 +576,7 @@ func (ctrl *Controller) RegisterRoutes(r *gin.Engine) {
 		orderGroup.PUT("/:id/item/:itemId", ctrl.UpdateOrderItem)
 		orderGroup.DELETE("/:id/item/:itemId", ctrl.RemoveItemFromOrder)
 		orderGroup.POST("/:id/price-modifier", ctrl.ApplyPriceModifierToOrder)
+		orderGroup.POST("/:id/payment/:paymentId", ctrl.LinkPaymentToOrder)
 		orderGroup.POST("/:id/item/:itemId/option", ctrl.AddOptionToOrderItem)
 		orderGroup.GET("/:id/item/:itemId/option", ctrl.GetItemOptionsInOrder)
 		orderGroup.DELETE("/:id/item/:itemId/option/:optionId", ctrl.RemoveOptionFromOrderItem)

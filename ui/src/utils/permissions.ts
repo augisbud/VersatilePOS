@@ -101,3 +101,33 @@ export const canReadServices = (roles?: ModelsAccountRoleLinkDto[]) =>
 
 export const canWriteServices = (roles?: ModelsAccountRoleLinkDto[]) =>
   canWrite(roles, 'services');
+
+export const canReadReservations = (roles?: ModelsAccountRoleLinkDto[]) =>
+  canRead(roles, 'reservations');
+
+export const canWriteReservations = (roles?: ModelsAccountRoleLinkDto[]) =>
+  canWrite(roles, 'reservations');
+
+export const canReadPriceModifiers = (roles?: ModelsAccountRoleLinkDto[]) =>
+  canRead(roles, 'priceModifiers');
+
+export const canWritePriceModifiers = (roles?: ModelsAccountRoleLinkDto[]) =>
+  canWrite(roles, 'priceModifiers');
+
+export const canReadItems = (roles?: ModelsAccountRoleLinkDto[]) =>
+  canRead(roles, 'items');
+
+export const canWriteItems = (roles?: ModelsAccountRoleLinkDto[]) =>
+  canWrite(roles, 'items');
+
+export const canReadItemOptions = (roles?: ModelsAccountRoleLinkDto[]) =>
+  canRead(roles, 'itemOptions');
+
+export const canWriteItemOptions = (roles?: ModelsAccountRoleLinkDto[]) =>
+  canWrite(roles, 'itemOptions');
+
+export const canReadOrders = (roles?: ModelsAccountRoleLinkDto[]) =>
+  canRead(roles, 'orders');
+
+export const canWriteOrders = (roles?: ModelsAccountRoleLinkDto[]) =>
+  canWrite(roles, 'orders');

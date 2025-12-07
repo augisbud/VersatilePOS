@@ -15,7 +15,7 @@ func (r *Repository) CreateService(service *entities.Service) error {
 
 func (r *Repository) GetServiceByID(id uint) (*entities.Service, error) {
 	var service entities.Service
-	if err := database.DB.First(&service, id).Error; err != nil {
+	if err := database.DB.Preload("Employees").First(&service, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -34,7 +34,7 @@ func (r *Repository) GetServices() ([]entities.Service, error) {
 
 func (r *Repository) GetServicesByBusinessID(businessID uint) ([]entities.Service, error) {
 	var services []entities.Service
-	if err := database.DB.Where("business_id = ?", businessID).Find(&services).Error; err != nil {
+	if err := database.DB.Preload("Employees").Where("business_id = ?", businessID).Find(&services).Error; err != nil {
 		return nil, err
 	}
 	return services, nil
@@ -46,5 +46,13 @@ func (r *Repository) UpdateService(service *entities.Service) error {
 
 func (r *Repository) DeleteService(id uint) error {
 	return database.DB.Delete(&entities.Service{}, id).Error
+}
+
+func (r *Repository) AssignServiceToEmployee(service *entities.Service, employee *entities.Account) error {
+	return database.DB.Model(service).Association("Employees").Append(employee)
+}
+
+func (r *Repository) RemoveServiceFromEmployee(service *entities.Service, employee *entities.Account) error {
+	return database.DB.Model(service).Association("Employees").Delete(employee)
 }
 

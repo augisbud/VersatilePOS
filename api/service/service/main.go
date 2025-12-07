@@ -1,21 +1,26 @@
 package service
 
 import (
+	accountRepository "VersatilePOS/account/repository"
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
 	"VersatilePOS/generic/rbac"
 	serviceModels "VersatilePOS/service/models"
 	"VersatilePOS/service/repository"
 	"errors"
+
+	"gorm.io/gorm"
 )
 
 type Service struct {
-	repo repository.Repository
+	repo        repository.Repository
+	accountRepo accountRepository.Repository
 }
 
 func NewService() *Service {
 	return &Service{
-		repo: repository.Repository{},
+		repo:        repository.Repository{},
+		accountRepo: accountRepository.Repository{},
 	}
 }
 
@@ -149,13 +154,13 @@ func (s *Service) UpdateService(id uint, req serviceModels.UpdateServiceRequest,
 		service.ServiceCharge = *req.ServiceCharge
 	}
 	if req.ProvisioningStartTime != nil {
-		service.ProvisioningStartTime = req.ProvisioningStartTime
+		service.ProvisioningStartTime = *req.ProvisioningStartTime
 	}
 	if req.ProvisioningEndTime != nil {
-		service.ProvisioningEndTime = req.ProvisioningEndTime
+		service.ProvisioningEndTime = *req.ProvisioningEndTime
 	}
 	if req.ProvisioningInterval != nil {
-		service.ProvisioningInterval = req.ProvisioningInterval
+		service.ProvisioningInterval = *req.ProvisioningInterval
 	}
 
 	if err := s.repo.UpdateService(service); err != nil {
@@ -195,6 +200,90 @@ func (s *Service) DeleteService(id uint, userID uint) error {
 
 	if err := s.repo.DeleteService(id); err != nil {
 		return errors.New("failed to delete service")
+	}
+
+	return nil
+}
+
+func (s *Service) AssignServiceToEmployee(employeeID uint, req serviceModels.AssignServiceRequest, userID uint) error {
+	// Get the service
+	service, err := s.repo.GetServiceByID(req.ServiceID)
+	if err != nil {
+		return errors.New("failed to get service")
+	}
+	if service == nil {
+		return errors.New("service not found")
+	}
+
+	// Check if user has write access to services for this business
+	hasAccess, err := s.hasServiceAccess(service.BusinessID, userID, constants.Write)
+	if err != nil {
+		return err
+	}
+	if !hasAccess {
+		return errors.New("unauthorized")
+	}
+
+	// Get the employee account
+	employee, err := s.accountRepo.GetAccountByID(employeeID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return errors.New("employee not found")
+		}
+		return errors.New("failed to get employee")
+	}
+
+	// Verify that the employee belongs to the same business as the service
+	isEmployee := false
+	for _, business := range employee.MemberOf {
+		if business.ID == service.BusinessID {
+			isEmployee = true
+			break
+		}
+	}
+	if !isEmployee {
+		return errors.New("employee does not belong to the service's business")
+	}
+
+	// Assign the service to the employee
+	if err := s.repo.AssignServiceToEmployee(service, &employee); err != nil {
+		return errors.New("failed to assign service to employee")
+	}
+
+	return nil
+}
+
+func (s *Service) RemoveServiceFromEmployee(employeeID uint, serviceID uint, userID uint) error {
+	// Get the service
+	service, err := s.repo.GetServiceByID(serviceID)
+	if err != nil {
+		return errors.New("failed to get service")
+	}
+	if service == nil {
+		return errors.New("service not found")
+	}
+
+	// Check if user has write access to services for this business
+	hasAccess, err := s.hasServiceAccess(service.BusinessID, userID, constants.Write)
+	if err != nil {
+		return err
+	}
+	if !hasAccess {
+		return errors.New("unauthorized")
+	}
+
+	// Get the employee account
+	employee, err := s.accountRepo.GetAccountByID(employeeID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return errors.New("employee not found")
+		}
+		return errors.New("failed to get employee")
+	}
+
+	// Remove the service from the employee
+	if err := s.repo.RemoveServiceFromEmployee(service, &employee); err != nil {
+		return errors.New("failed to remove service from employee")
 	}
 
 	return nil

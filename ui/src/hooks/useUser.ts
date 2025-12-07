@@ -12,6 +12,16 @@ import {
   getCanWriteRoles,
   getCanReadServices,
   getCanWriteServices,
+  getCanReadReservations,
+  getCanWriteReservations,
+  getCanReadPriceModifiers,
+  getCanWritePriceModifiers,
+  getCanReadItems,
+  getCanWriteItems,
+  getCanReadItemOptions,
+  getCanWriteItemOptions,
+  getCanReadOrders,
+  getCanWriteOrders,
 } from '@/selectors/user';
 import {
   login as loginAction,
@@ -39,6 +49,16 @@ export const useUser = () => {
   const canWriteRoles = useAppSelector(getCanWriteRoles);
   const canReadServices = useAppSelector(getCanReadServices);
   const canWriteServices = useAppSelector(getCanWriteServices);
+  const canReadReservations = useAppSelector(getCanReadReservations);
+  const canWriteReservations = useAppSelector(getCanWriteReservations);
+  const canReadPriceModifiers = useAppSelector(getCanReadPriceModifiers);
+  const canWritePriceModifiers = useAppSelector(getCanWritePriceModifiers);
+  const canReadItems = useAppSelector(getCanReadItems);
+  const canWriteItems = useAppSelector(getCanWriteItems);
+  const canReadItemOptions = useAppSelector(getCanReadItemOptions);
+  const canWriteItemOptions = useAppSelector(getCanWriteItemOptions);
+  const canReadOrders = useAppSelector(getCanReadOrders);
+  const canWriteOrders = useAppSelector(getCanWriteOrders);
 
   const hasRoles = (roles: ModelsAccountRoleLinkDto[]) => !!roles.length;
 
@@ -63,6 +83,16 @@ export const useUser = () => {
     canWriteRoles,
     canReadServices,
     canWriteServices,
+    canReadReservations,
+    canWriteReservations,
+    canReadPriceModifiers,
+    canWritePriceModifiers,
+    canReadItems,
+    canWriteItems,
+    canReadItemOptions,
+    canWriteItemOptions,
+    canReadOrders,
+    canWriteOrders,
     roles,
     hasRoles,
     login,

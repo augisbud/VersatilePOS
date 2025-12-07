@@ -41,10 +41,19 @@ func (s *Service) CreateBusiness(req businessModels.CreateBusinessRequest, owner
 
 	// Create default roles and assign functions/links using account service helper
 	accSvc := accountService.NewService()
-	ownerFuncs := []constants.Action{constants.Accounts, constants.Businesses, constants.Roles, constants.PriceModifiers, constants.Items, constants.ItemOptions, constants.Orders}
+	ownerFuncs := []constants.Action{constants.Accounts, constants.Businesses, constants.Roles, constants.PriceModifiers, constants.Items, constants.ItemOptions, constants.Orders, constants.Services, constants.Reservations}
 	ownerAls := []constants.AccessLevel{constants.Write, constants.Read}
 	_, err = accSvc.CreateRoleWithFunctions("Business Owner", createdBusiness.ID, ownerFuncs, ownerAls, &ownerID)
 	if err != nil {
+		return nil, err
+	}
+
+	// Assign owner as employee
+	owner, err := s.accountRepo.GetAccountByID(ownerID)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.accountRepo.AddEmployeeToBusiness(&owner, createdBusiness); err != nil {
 		return nil, err
 	}
 

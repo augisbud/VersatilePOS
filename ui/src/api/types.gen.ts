@@ -53,6 +53,10 @@ export type ModelsAssignRoleRequest = {
     roleId: number;
 };
 
+export type ModelsAssignServiceRequest = {
+    serviceId: number;
+};
+
 export type ModelsBusinessDto = {
     address?: string;
     email?: string;
@@ -147,9 +151,9 @@ export type ModelsCreateServiceRequest = {
     businessId: number;
     hourlyPrice: number;
     name: string;
-    provisioningEndTime?: string;
-    provisioningInterval?: number;
-    provisioningStartTime?: string;
+    provisioningEndTime: string;
+    provisioningInterval: number;
+    provisioningStartTime: string;
     serviceCharge?: number;
 };
 
@@ -249,6 +253,7 @@ export type ModelsReservationDto = {
 export type ModelsServiceDto = {
     businessId?: number;
     createdAt?: string;
+    employees?: Array<ModelsAccountDto>;
     hourlyPrice?: number;
     id?: number;
     name?: string;
@@ -2651,6 +2656,53 @@ export type CreateServiceResponses = {
 
 export type CreateServiceResponse = CreateServiceResponses[keyof CreateServiceResponses];
 
+export type AssignServiceToEmployeeData = {
+    /**
+     * Service assignment request
+     */
+    body: ModelsAssignServiceRequest;
+    path: {
+        /**
+         * Employee ID
+         */
+        employeeId: number;
+    };
+    query?: never;
+    url: '/service/employee/{employeeId}';
+};
+
+export type AssignServiceToEmployeeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type AssignServiceToEmployeeError = AssignServiceToEmployeeErrors[keyof AssignServiceToEmployeeErrors];
+
+export type AssignServiceToEmployeeResponses = {
+    /**
+     * No Content
+     */
+    204: unknown;
+};
+
 export type DeleteServiceData = {
     body?: never;
     path: {
@@ -2789,3 +2841,51 @@ export type UpdateServiceResponses = {
 };
 
 export type UpdateServiceResponse = UpdateServiceResponses[keyof UpdateServiceResponses];
+
+export type RemoveServiceFromEmployeeData = {
+    body?: never;
+    path: {
+        /**
+         * Service ID
+         */
+        id: number;
+        /**
+         * Employee ID
+         */
+        employeeId: number;
+    };
+    query?: never;
+    url: '/service/{id}/employee/{employeeId}';
+};
+
+export type RemoveServiceFromEmployeeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type RemoveServiceFromEmployeeError = RemoveServiceFromEmployeeErrors[keyof RemoveServiceFromEmployeeErrors];
+
+export type RemoveServiceFromEmployeeResponses = {
+    /**
+     * No Content
+     */
+    204: unknown;
+};

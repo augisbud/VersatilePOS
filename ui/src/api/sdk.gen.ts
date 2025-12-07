@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AssignFunctionToRoleData, AssignFunctionToRoleErrors, AssignFunctionToRoleResponses, AssignRoleToAccountData, AssignRoleToAccountErrors, AssignRoleToAccountResponses, CreateAccountData, CreateAccountErrors, CreateAccountResponses, CreateAccountRoleData, CreateAccountRoleErrors, CreateAccountRoleResponses, CreateBusinessData, CreateBusinessErrors, CreateBusinessResponses, DeleteAccountByIdData, DeleteAccountByIdErrors, DeleteAccountByIdResponses, DeleteAccountRoleByIdData, DeleteAccountRoleByIdErrors, DeleteAccountRoleByIdResponses, GetAccountRoleByIdData, GetAccountRoleByIdErrors, GetAccountRoleByIdResponses, GetAccountsData, GetAccountsErrors, GetAccountsResponses, GetAllFunctionsData, GetAllFunctionsErrors, GetAllFunctionsResponses, GetBusinessByIdData, GetBusinessByIdErrors, GetBusinessByIdResponses, GetBusinessesData, GetBusinessesErrors, GetBusinessesResponses, GetBusinessRolesData, GetBusinessRolesErrors, GetBusinessRolesResponses, GetFunctionsForRoleData, GetFunctionsForRoleErrors, GetFunctionsForRoleResponses, GetMyAccountData, GetMyAccountErrors, GetMyAccountResponses, LoginAccountData, LoginAccountErrors, LoginAccountResponses, UpdateAccountRoleByIdData, UpdateAccountRoleByIdErrors, UpdateAccountRoleByIdResponses, UpdateAccountRoleStatusData, UpdateAccountRoleStatusErrors, UpdateAccountRoleStatusResponses } from './types.gen';
+import type { AddItemToOrderData, AddItemToOrderErrors, AddItemToOrderResponses, AddOptionToOrderItemData, AddOptionToOrderItemErrors, AddOptionToOrderItemResponses, ApplyPriceModifierToOrderData, ApplyPriceModifierToOrderErrors, ApplyPriceModifierToOrderResponses, AssignFunctionToRoleData, AssignFunctionToRoleErrors, AssignFunctionToRoleResponses, AssignRoleToAccountData, AssignRoleToAccountErrors, AssignRoleToAccountResponses, AssignServiceToEmployeeData, AssignServiceToEmployeeErrors, AssignServiceToEmployeeResponses, CreateAccountData, CreateAccountErrors, CreateAccountResponses, CreateAccountRoleData, CreateAccountRoleErrors, CreateAccountRoleResponses, CreateBusinessData, CreateBusinessErrors, CreateBusinessResponses, CreateOrderData, CreateOrderErrors, CreateOrderResponses, CreatePaymentData, CreatePaymentErrors, CreatePaymentResponses, CreatePriceModifierData, CreatePriceModifierErrors, CreatePriceModifierResponses, CreateReservationData, CreateReservationErrors, CreateReservationResponses, CreateServiceData, CreateServiceErrors, CreateServiceResponses, DeleteAccountByIdData, DeleteAccountByIdErrors, DeleteAccountByIdResponses, DeleteAccountRoleByIdData, DeleteAccountRoleByIdErrors, DeleteAccountRoleByIdResponses, DeleteItemByIdData, DeleteItemByIdErrors, DeleteItemByIdResponses, DeleteItemOptionByIdData, DeleteItemOptionByIdErrors, DeleteItemOptionByIdResponses, DeletePriceModifierData, DeletePriceModifierErrors, DeletePriceModifierResponses, DeleteServiceData, DeleteServiceErrors, DeleteServiceResponses, GetAccountRoleByIdData, GetAccountRoleByIdErrors, GetAccountRoleByIdResponses, GetAccountsData, GetAccountsErrors, GetAccountsResponses, GetAllFunctionsData, GetAllFunctionsErrors, GetAllFunctionsResponses, GetBusinessByIdData, GetBusinessByIdErrors, GetBusinessByIdResponses, GetBusinessesData, GetBusinessesErrors, GetBusinessesResponses, GetBusinessRolesData, GetBusinessRolesErrors, GetBusinessRolesResponses, GetItemByIdData, GetItemByIdErrors, GetItemByIdResponses, GetItemData, GetItemErrors, GetItemOptionByIdData, GetItemOptionByIdErrors, GetItemOptionByIdResponses, GetItemOptionData, GetItemOptionErrors, GetItemOptionResponses, GetItemOptionsInOrderData, GetItemOptionsInOrderErrors, GetItemOptionsInOrderResponses, GetItemResponses, GetMyAccountData, GetMyAccountErrors, GetMyAccountResponses, GetOrderByIdData, GetOrderByIdErrors, GetOrderByIdResponses, GetOrderItemsData, GetOrderItemsErrors, GetOrderItemsResponses, GetOrdersData, GetOrdersErrors, GetOrdersResponses, GetPaymentsData, GetPaymentsErrors, GetPaymentsResponses, GetPriceModifierByIdData, GetPriceModifierByIdErrors, GetPriceModifierByIdResponses, GetPriceModifiersData, GetPriceModifiersErrors, GetPriceModifiersResponses, GetReservationByIdData, GetReservationByIdErrors, GetReservationByIdResponses, GetReservationsData, GetReservationsErrors, GetReservationsResponses, GetServiceByIdData, GetServiceByIdErrors, GetServiceByIdResponses, GetServicesData, GetServicesErrors, GetServicesResponses, LinkPaymentToOrderData, LinkPaymentToOrderErrors, LinkPaymentToOrderResponses, LoginAccountData, LoginAccountErrors, LoginAccountResponses, PostItemData, PostItemErrors, PostItemOptionData, PostItemOptionErrors, PostItemOptionResponses, PostItemResponses, PutItemByIdData, PutItemByIdErrors, PutItemByIdResponses, PutItemOptionByIdData, PutItemOptionByIdErrors, PutItemOptionByIdResponses, RemoveItemFromOrderData, RemoveItemFromOrderErrors, RemoveItemFromOrderResponses, RemoveOptionFromOrderItemData, RemoveOptionFromOrderItemErrors, RemoveOptionFromOrderItemResponses, RemoveServiceFromEmployeeData, RemoveServiceFromEmployeeErrors, RemoveServiceFromEmployeeResponses, UpdateAccountRoleByIdData, UpdateAccountRoleByIdErrors, UpdateAccountRoleByIdResponses, UpdateAccountRoleStatusData, UpdateAccountRoleStatusErrors, UpdateAccountRoleStatusResponses, UpdateOrderData, UpdateOrderErrors, UpdateOrderItemData, UpdateOrderItemErrors, UpdateOrderItemResponses, UpdateOrderResponses, UpdatePriceModifierData, UpdatePriceModifierErrors, UpdatePriceModifierResponses, UpdateReservationData, UpdateReservationErrors, UpdateReservationResponses, UpdateServiceData, UpdateServiceErrors, UpdateServiceResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -177,25 +177,6 @@ export const updateAccountRoleById = <ThrowOnError extends boolean = false>(opti
             'Content-Type': 'application/json',
             ...options.headers
         }
-    });
-};
-
-/**
- * Get all functions for an account role
- *
- * Get all functions assigned to a specific account role.
- */
-export const getFunctionsForRole = <ThrowOnError extends boolean = false>(options: Options<GetFunctionsForRoleData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetFunctionsForRoleResponses, GetFunctionsForRoleErrors, ThrowOnError>({
-        responseType: 'json',
-        security: [
-            {
-                name: 'Authorization',
-                type: 'apiKey'
-            }
-        ],
-        url: '/account/role/{id}/function',
-        ...options
     });
 };
 
@@ -382,6 +363,845 @@ export const getBusinessRoles = <ThrowOnError extends boolean = false>(options: 
             }
         ],
         url: '/business/{id}/roles',
+        ...options
+    });
+};
+
+/**
+ * Get all items
+ *
+ * Get all items of current business
+ */
+export const getItem = <ThrowOnError extends boolean = false>(options: Options<GetItemData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetItemResponses, GetItemErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/item',
+        ...options
+    });
+};
+
+/**
+ * Create an item
+ *
+ * Create an item for current business
+ */
+export const postItem = <ThrowOnError extends boolean = false>(options: Options<PostItemData, ThrowOnError>) => {
+    return (options.client ?? client).post<PostItemResponses, PostItemErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/item',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get all item options
+ *
+ * Get all item options
+ */
+export const getItemOption = <ThrowOnError extends boolean = false>(options: Options<GetItemOptionData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetItemOptionResponses, GetItemOptionErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/item-option',
+        ...options
+    });
+};
+
+/**
+ * Create item option
+ *
+ * Create a new item option
+ */
+export const postItemOption = <ThrowOnError extends boolean = false>(options: Options<PostItemOptionData, ThrowOnError>) => {
+    return (options.client ?? client).post<PostItemOptionResponses, PostItemOptionErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/item-option',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Delete item option
+ *
+ * Delete an item option
+ */
+export const deleteItemOptionById = <ThrowOnError extends boolean = false>(options: Options<DeleteItemOptionByIdData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteItemOptionByIdResponses, DeleteItemOptionByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/item-option/{id}',
+        ...options
+    });
+};
+
+/**
+ * Get item option by ID
+ *
+ * Get item option by id
+ */
+export const getItemOptionById = <ThrowOnError extends boolean = false>(options: Options<GetItemOptionByIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetItemOptionByIdResponses, GetItemOptionByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/item-option/{id}',
+        ...options
+    });
+};
+
+/**
+ * Update item option
+ *
+ * Update an item option
+ */
+export const putItemOptionById = <ThrowOnError extends boolean = false>(options: Options<PutItemOptionByIdData, ThrowOnError>) => {
+    return (options.client ?? client).put<PutItemOptionByIdResponses, PutItemOptionByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/item-option/{id}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Delete item
+ *
+ * Delete an item
+ */
+export const deleteItemById = <ThrowOnError extends boolean = false>(options: Options<DeleteItemByIdData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteItemByIdResponses, DeleteItemByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/item/{id}',
+        ...options
+    });
+};
+
+/**
+ * Get item by ID
+ *
+ * Get item by id
+ */
+export const getItemById = <ThrowOnError extends boolean = false>(options: Options<GetItemByIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetItemByIdResponses, GetItemByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/item/{id}',
+        ...options
+    });
+};
+
+/**
+ * Update item
+ *
+ * Edit item
+ */
+export const putItemById = <ThrowOnError extends boolean = false>(options: Options<PutItemByIdData, ThrowOnError>) => {
+    return (options.client ?? client).put<PutItemByIdResponses, PutItemByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/item/{id}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get orders
+ *
+ * Get all orders for a business. Requires authentication and Orders Read permission.
+ */
+export const getOrders = <ThrowOnError extends boolean = false>(options: Options<GetOrdersData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetOrdersResponses, GetOrdersErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/order',
+        ...options
+    });
+};
+
+/**
+ * Create order
+ *
+ * Create a new order. Requires authentication and Orders Write permission for the business.
+ */
+export const createOrder = <ThrowOnError extends boolean = false>(options: Options<CreateOrderData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreateOrderResponses, CreateOrderErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/order',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get order by id
+ *
+ * Get a specific order by its ID. Requires authentication and Orders Read permission.
+ */
+export const getOrderById = <ThrowOnError extends boolean = false>(options: Options<GetOrderByIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetOrderByIdResponses, GetOrderByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/order/{id}',
+        ...options
+    });
+};
+
+/**
+ * Update order
+ *
+ * Update order details (status, etc.). Requires authentication and Orders Write permission.
+ */
+export const updateOrder = <ThrowOnError extends boolean = false>(options: Options<UpdateOrderData, ThrowOnError>) => {
+    return (options.client ?? client).put<UpdateOrderResponses, UpdateOrderErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/order/{id}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get order items
+ *
+ * Get all items in an order. Requires authentication and Orders Read permission.
+ */
+export const getOrderItems = <ThrowOnError extends boolean = false>(options: Options<GetOrderItemsData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetOrderItemsResponses, GetOrderItemsErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/order/{id}/item',
+        ...options
+    });
+};
+
+/**
+ * Add item to order
+ *
+ * Add an item to an order. Requires authentication and Orders Write permission.
+ */
+export const addItemToOrder = <ThrowOnError extends boolean = false>(options: Options<AddItemToOrderData, ThrowOnError>) => {
+    return (options.client ?? client).post<AddItemToOrderResponses, AddItemToOrderErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/order/{id}/item',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Remove item from order
+ *
+ * Remove an item from an order. Requires authentication and Orders Write permission.
+ */
+export const removeItemFromOrder = <ThrowOnError extends boolean = false>(options: Options<RemoveItemFromOrderData, ThrowOnError>) => {
+    return (options.client ?? client).delete<RemoveItemFromOrderResponses, RemoveItemFromOrderErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/order/{orderId}/item/{itemId}',
+        ...options
+    });
+};
+
+/**
+ * Update order item
+ *
+ * Update an order item. Requires authentication and Orders Write permission.
+ */
+export const updateOrderItem = <ThrowOnError extends boolean = false>(options: Options<UpdateOrderItemData, ThrowOnError>) => {
+    return (options.client ?? client).put<UpdateOrderItemResponses, UpdateOrderItemErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/order/{orderId}/item/{itemId}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get item options in order
+ *
+ * Get all options for an order item. Requires authentication and Orders Read permission.
+ */
+export const getItemOptionsInOrder = <ThrowOnError extends boolean = false>(options: Options<GetItemOptionsInOrderData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetItemOptionsInOrderResponses, GetItemOptionsInOrderErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/order/{orderId}/item/{itemId}/option',
+        ...options
+    });
+};
+
+/**
+ * Add option to order item
+ *
+ * Add an option to an order item. Requires authentication and Orders Write permission.
+ */
+export const addOptionToOrderItem = <ThrowOnError extends boolean = false>(options: Options<AddOptionToOrderItemData, ThrowOnError>) => {
+    return (options.client ?? client).post<AddOptionToOrderItemResponses, AddOptionToOrderItemErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/order/{orderId}/item/{itemId}/option',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Remove option from order item
+ *
+ * Remove an option from an order item. Requires authentication and Orders Write permission.
+ */
+export const removeOptionFromOrderItem = <ThrowOnError extends boolean = false>(options: Options<RemoveOptionFromOrderItemData, ThrowOnError>) => {
+    return (options.client ?? client).delete<RemoveOptionFromOrderItemResponses, RemoveOptionFromOrderItemErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/order/{orderId}/item/{itemId}/option/{optionId}',
+        ...options
+    });
+};
+
+/**
+ * Link payment to order
+ *
+ * Link a payment to an order. Requires authentication and Orders Write permission.
+ */
+export const linkPaymentToOrder = <ThrowOnError extends boolean = false>(options: Options<LinkPaymentToOrderData, ThrowOnError>) => {
+    return (options.client ?? client).post<LinkPaymentToOrderResponses, LinkPaymentToOrderErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/order/{orderId}/payment/{paymentId}',
+        ...options
+    });
+};
+
+/**
+ * Apply price modifier to order
+ *
+ * Apply a price modifier to an order item. Requires authentication and Orders Write permission.
+ */
+export const applyPriceModifierToOrder = <ThrowOnError extends boolean = false>(options: Options<ApplyPriceModifierToOrderData, ThrowOnError>) => {
+    return (options.client ?? client).post<ApplyPriceModifierToOrderResponses, ApplyPriceModifierToOrderErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/order/{orderId}/price-modifier',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get all payments
+ *
+ * Get all payments
+ */
+export const getPayments = <ThrowOnError extends boolean = false>(options?: Options<GetPaymentsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetPaymentsResponses, GetPaymentsErrors, ThrowOnError>({
+        responseType: 'json',
+        url: '/payment',
+        ...options
+    });
+};
+
+/**
+ * Create a payment
+ *
+ * Create a payment with the provided details
+ */
+export const createPayment = <ThrowOnError extends boolean = false>(options: Options<CreatePaymentData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreatePaymentResponses, CreatePaymentErrors, ThrowOnError>({
+        responseType: 'json',
+        url: '/payment',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get all price modifiers
+ *
+ * Get all price modifiers
+ */
+export const getPriceModifiers = <ThrowOnError extends boolean = false>(options: Options<GetPriceModifiersData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetPriceModifiersResponses, GetPriceModifiersErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/price-modifier',
+        ...options
+    });
+};
+
+/**
+ * Create a price modifier
+ *
+ * Create a price modifier with the provided details
+ */
+export const createPriceModifier = <ThrowOnError extends boolean = false>(options: Options<CreatePriceModifierData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreatePriceModifierResponses, CreatePriceModifierErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/price-modifier',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Delete price modifier
+ *
+ * Delete price modifier by id
+ */
+export const deletePriceModifier = <ThrowOnError extends boolean = false>(options: Options<DeletePriceModifierData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeletePriceModifierResponses, DeletePriceModifierErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/price-modifier/{id}',
+        ...options
+    });
+};
+
+/**
+ * Get price modifier by id
+ *
+ * Get price modifier information by id
+ */
+export const getPriceModifierById = <ThrowOnError extends boolean = false>(options: Options<GetPriceModifierByIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetPriceModifierByIdResponses, GetPriceModifierByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/price-modifier/{id}',
+        ...options
+    });
+};
+
+/**
+ * Update price modifier details
+ *
+ * Update price modifier details
+ */
+export const updatePriceModifier = <ThrowOnError extends boolean = false>(options: Options<UpdatePriceModifierData, ThrowOnError>) => {
+    return (options.client ?? client).put<UpdatePriceModifierResponses, UpdatePriceModifierErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/price-modifier/{id}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get reservations
+ *
+ * Get all reservations
+ */
+export const getReservations = <ThrowOnError extends boolean = false>(options?: Options<GetReservationsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetReservationsResponses, GetReservationsErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/reservation',
+        ...options
+    });
+};
+
+/**
+ * Create reservation
+ *
+ * Create a new reservation
+ */
+export const createReservation = <ThrowOnError extends boolean = false>(options: Options<CreateReservationData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreateReservationResponses, CreateReservationErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/reservation',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get reservation by id
+ *
+ * Get a reservation by its ID
+ */
+export const getReservationById = <ThrowOnError extends boolean = false>(options: Options<GetReservationByIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetReservationByIdResponses, GetReservationByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/reservation/{id}',
+        ...options
+    });
+};
+
+/**
+ * Update reservation details
+ *
+ * Update reservation details
+ */
+export const updateReservation = <ThrowOnError extends boolean = false>(options: Options<UpdateReservationData, ThrowOnError>) => {
+    return (options.client ?? client).put<UpdateReservationResponses, UpdateReservationErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/reservation/{id}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get services
+ *
+ * Get all services of current business
+ */
+export const getServices = <ThrowOnError extends boolean = false>(options: Options<GetServicesData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetServicesResponses, GetServicesErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/service',
+        ...options
+    });
+};
+
+/**
+ * Create service
+ *
+ * Create a service with the provided details
+ */
+export const createService = <ThrowOnError extends boolean = false>(options: Options<CreateServiceData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreateServiceResponses, CreateServiceErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/service',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Assign a service to an employee
+ *
+ * Assign a service to an employee. The employee must belong to the same business as the service.
+ */
+export const assignServiceToEmployee = <ThrowOnError extends boolean = false>(options: Options<AssignServiceToEmployeeData, ThrowOnError>) => {
+    return (options.client ?? client).post<AssignServiceToEmployeeResponses, AssignServiceToEmployeeErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/service/employee/{employeeId}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Delete service
+ *
+ * Delete a service
+ */
+export const deleteService = <ThrowOnError extends boolean = false>(options: Options<DeleteServiceData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteServiceResponses, DeleteServiceErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/service/{id}',
+        ...options
+    });
+};
+
+/**
+ * Get service by id
+ *
+ * Get a service by its ID
+ */
+export const getServiceById = <ThrowOnError extends boolean = false>(options: Options<GetServiceByIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetServiceByIdResponses, GetServiceByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/service/{id}',
+        ...options
+    });
+};
+
+/**
+ * Update service details
+ *
+ * Update service details
+ */
+export const updateService = <ThrowOnError extends boolean = false>(options: Options<UpdateServiceData, ThrowOnError>) => {
+    return (options.client ?? client).put<UpdateServiceResponses, UpdateServiceErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/service/{id}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Remove a service from an employee
+ *
+ * Remove a service from an employee.
+ */
+export const removeServiceFromEmployee = <ThrowOnError extends boolean = false>(options: Options<RemoveServiceFromEmployeeData, ThrowOnError>) => {
+    return (options.client ?? client).delete<RemoveServiceFromEmployeeResponses, RemoveServiceFromEmployeeErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/service/{id}/employee/{employeeId}',
         ...options
     });
 };

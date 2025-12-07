@@ -8,7 +8,9 @@ export type ConstantsAccessLevel = 'Read' | 'Write';
 
 export type ConstantsAccountRoleLinkStatus = 'Active' | 'Suspended' | 'Deactivated';
 
-export type ConstantsAction = 'accounts' | 'businesses' | 'roles';
+export type ConstantsAction = 'accounts' | 'businesses' | 'roles' | 'reservations' | 'priceModifiers' | 'services' | 'items' | 'itemOptions' | 'orders';
+
+export type ConstantsReservationStatus = 'Confirmed' | 'Completed' | 'Cancelled' | 'NoShow';
 
 export type ModelsAccountDto = {
     businessId?: number;
@@ -37,6 +39,11 @@ export type ModelsAccountRoleLinkDto = {
     status?: ConstantsAccountRoleLinkStatus;
 };
 
+export type ModelsApplyPriceModifierRequest = {
+    orderItemId: number;
+    priceModifierId: number;
+};
+
 export type ModelsAssignFunctionRequest = {
     accessLevels: Array<ConstantsAccessLevel>;
     functionId: number;
@@ -44,6 +51,10 @@ export type ModelsAssignFunctionRequest = {
 
 export type ModelsAssignRoleRequest = {
     roleId: number;
+};
+
+export type ModelsAssignServiceRequest = {
+    serviceId: number;
 };
 
 export type ModelsBusinessDto = {
@@ -73,6 +84,79 @@ export type ModelsCreateBusinessRequest = {
     phone: string;
 };
 
+export type ModelsCreateItemOptionLinkRequest = {
+    count: number;
+    itemOptionId: number;
+};
+
+export type ModelsCreateItemOptionRequest = {
+    itemId: number;
+    name: string;
+    priceModifierId: number;
+    quantityInStock?: number;
+    trackInventory?: boolean;
+};
+
+export type ModelsCreateItemRequest = {
+    businessId: number;
+    name: string;
+    price: number;
+    quantityInStock?: number;
+    trackInventory?: boolean;
+};
+
+export type ModelsCreateOrderItemRequest = {
+    count: number;
+    itemId: number;
+};
+
+export type ModelsCreateOrderRequest = {
+    businessId: number;
+    customer?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    serviceCharge?: number;
+    servicingAccountId?: number;
+    tipAmount?: number;
+};
+
+export type ModelsCreatePaymentRequest = {
+    amount: number;
+    status?: string;
+    type: string;
+};
+
+export type ModelsCreatePriceModifierRequest = {
+    businessId: number;
+    isPercentage?: boolean;
+    modifierType: string;
+    name: string;
+    value: number;
+};
+
+export type ModelsCreateReservationRequest = {
+    accountId: number;
+    customer: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    dateOfService: string;
+    datePlaced: string;
+    reservationLength: number;
+    serviceId: number;
+    status?: ConstantsReservationStatus;
+    tipAmount?: number;
+};
+
+export type ModelsCreateServiceRequest = {
+    businessId: number;
+    hourlyPrice: number;
+    name: string;
+    provisioningEndTime: string;
+    provisioningInterval: number;
+    provisioningStartTime: string;
+    serviceCharge?: number;
+};
+
 export type ModelsFunctionDto = {
     action?: ConstantsAction;
     description?: string;
@@ -84,9 +168,100 @@ export type ModelsHttpError = {
     error?: string;
 };
 
+export type ModelsItemDto = {
+    businessId?: number;
+    id?: number;
+    name?: string;
+    price?: number;
+    quantityInStock?: number;
+};
+
+export type ModelsItemOptionDto = {
+    id?: number;
+    itemId?: number;
+    name?: string;
+    priceModifierId?: number;
+    quantityInStock?: number;
+};
+
+export type ModelsItemOptionLinkDto = {
+    count?: number;
+    id?: number;
+    itemOptionId?: number;
+    orderItemId?: number;
+};
+
 export type ModelsLoginRequest = {
     password: string;
     username: string;
+};
+
+export type ModelsOrderDto = {
+    businessId?: number;
+    customer?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    datePlaced?: string;
+    id?: number;
+    serviceCharge?: number;
+    servicingAccountId?: number;
+    status?: string;
+    tipAmount?: number;
+    validFrom?: string;
+    validTo?: string;
+};
+
+export type ModelsOrderItemDto = {
+    count?: number;
+    id?: number;
+    itemId?: number;
+    orderId?: number;
+};
+
+export type ModelsPaymentDto = {
+    amount?: number;
+    id?: number;
+    status?: string;
+    type?: string;
+};
+
+export type ModelsPriceModifierDto = {
+    businessId?: number;
+    id?: number;
+    isPercentage?: boolean;
+    modifierType?: string;
+    name?: string;
+    value?: number;
+};
+
+export type ModelsReservationDto = {
+    accountId?: number;
+    createdAt?: string;
+    customer?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    dateOfService?: string;
+    datePlaced?: string;
+    id?: number;
+    reservationLength?: number;
+    serviceId?: number;
+    status?: ConstantsReservationStatus;
+    tipAmount?: number;
+    updatedAt?: string;
+};
+
+export type ModelsServiceDto = {
+    businessId?: number;
+    createdAt?: string;
+    employees?: Array<ModelsAccountDto>;
+    hourlyPrice?: number;
+    id?: number;
+    name?: string;
+    provisioningEndTime?: string;
+    provisioningInterval?: number;
+    provisioningStartTime?: string;
+    serviceCharge?: number;
+    updatedAt?: string;
 };
 
 export type ModelsUpdateAccountRoleLinkRequest = {
@@ -95,6 +270,63 @@ export type ModelsUpdateAccountRoleLinkRequest = {
 
 export type ModelsUpdateAccountRoleRequest = {
     name: string;
+};
+
+export type ModelsUpdateItemOptionRequest = {
+    name?: string;
+    priceModifierId?: number;
+    quantityInStock?: number;
+    trackInventory?: boolean;
+};
+
+export type ModelsUpdateItemRequest = {
+    name?: string;
+    price?: number;
+    quantityInStock?: number;
+    trackInventory?: boolean;
+};
+
+export type ModelsUpdateOrderItemRequest = {
+    count?: number;
+};
+
+export type ModelsUpdateOrderRequest = {
+    customer?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    serviceCharge?: number;
+    status?: string;
+    tipAmount?: number;
+};
+
+export type ModelsUpdatePriceModifierRequest = {
+    isPercentage?: boolean;
+    modifierType?: string;
+    name?: string;
+    value?: number;
+};
+
+export type ModelsUpdateReservationRequest = {
+    accountId?: number;
+    customer?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    dateOfService?: string;
+    datePlaced?: string;
+    reservationLength?: number;
+    serviceId?: number;
+    status?: ConstantsReservationStatus;
+    tipAmount?: number;
+};
+
+export type ModelsUpdateServiceRequest = {
+    businessId?: number;
+    hourlyPrice?: number;
+    name?: string;
+    provisioningEndTime?: string;
+    provisioningInterval?: number;
+    provisioningStartTime?: string;
+    serviceCharge?: number;
 };
 
 export type CreateAccountData = {
@@ -411,52 +643,6 @@ export type UpdateAccountRoleByIdResponses = {
 };
 
 export type UpdateAccountRoleByIdResponse = UpdateAccountRoleByIdResponses[keyof UpdateAccountRoleByIdResponses];
-
-export type GetFunctionsForRoleData = {
-    body?: never;
-    path: {
-        /**
-         * Role ID
-         */
-        id: number;
-    };
-    query?: never;
-    url: '/account/role/{id}/function';
-};
-
-export type GetFunctionsForRoleErrors = {
-    /**
-     * Bad Request
-     */
-    400: ModelsHttpError;
-    /**
-     * Unauthorized
-     */
-    401: ModelsHttpError;
-    /**
-     * Forbidden
-     */
-    403: ModelsHttpError;
-    /**
-     * Not Found
-     */
-    404: ModelsHttpError;
-    /**
-     * Internal Server Error
-     */
-    500: ModelsHttpError;
-};
-
-export type GetFunctionsForRoleError = GetFunctionsForRoleErrors[keyof GetFunctionsForRoleErrors];
-
-export type GetFunctionsForRoleResponses = {
-    /**
-     * OK
-     */
-    200: Array<ModelsAccountRoleFunctionLinkDto>;
-};
-
-export type GetFunctionsForRoleResponse = GetFunctionsForRoleResponses[keyof GetFunctionsForRoleResponses];
 
 export type AssignFunctionToRoleData = {
     /**
@@ -829,3 +1015,1877 @@ export type GetBusinessRolesResponses = {
 };
 
 export type GetBusinessRolesResponse = GetBusinessRolesResponses[keyof GetBusinessRolesResponses];
+
+export type GetItemData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Business ID
+         */
+        businessId: number;
+    };
+    url: '/item';
+};
+
+export type GetItemErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetItemError = GetItemErrors[keyof GetItemErrors];
+
+export type GetItemResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsItemDto>;
+};
+
+export type GetItemResponse = GetItemResponses[keyof GetItemResponses];
+
+export type PostItemData = {
+    /**
+     * Item to create
+     */
+    body: ModelsCreateItemRequest;
+    path?: never;
+    query?: never;
+    url: '/item';
+};
+
+export type PostItemErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type PostItemError = PostItemErrors[keyof PostItemErrors];
+
+export type PostItemResponses = {
+    /**
+     * Created
+     */
+    201: ModelsItemDto;
+};
+
+export type PostItemResponse = PostItemResponses[keyof PostItemResponses];
+
+export type GetItemOptionData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Business ID
+         */
+        businessId: number;
+    };
+    url: '/item-option';
+};
+
+export type GetItemOptionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetItemOptionError = GetItemOptionErrors[keyof GetItemOptionErrors];
+
+export type GetItemOptionResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsItemOptionDto>;
+};
+
+export type GetItemOptionResponse = GetItemOptionResponses[keyof GetItemOptionResponses];
+
+export type PostItemOptionData = {
+    /**
+     * Item option to create
+     */
+    body: ModelsCreateItemOptionRequest;
+    path?: never;
+    query?: never;
+    url: '/item-option';
+};
+
+export type PostItemOptionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type PostItemOptionError = PostItemOptionErrors[keyof PostItemOptionErrors];
+
+export type PostItemOptionResponses = {
+    /**
+     * Created
+     */
+    201: ModelsItemOptionDto;
+};
+
+export type PostItemOptionResponse = PostItemOptionResponses[keyof PostItemOptionResponses];
+
+export type DeleteItemOptionByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Item Option ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/item-option/{id}';
+};
+
+export type DeleteItemOptionByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type DeleteItemOptionByIdError = DeleteItemOptionByIdErrors[keyof DeleteItemOptionByIdErrors];
+
+export type DeleteItemOptionByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsHttpError;
+};
+
+export type DeleteItemOptionByIdResponse = DeleteItemOptionByIdResponses[keyof DeleteItemOptionByIdResponses];
+
+export type GetItemOptionByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Item Option ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/item-option/{id}';
+};
+
+export type GetItemOptionByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetItemOptionByIdError = GetItemOptionByIdErrors[keyof GetItemOptionByIdErrors];
+
+export type GetItemOptionByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsItemOptionDto;
+};
+
+export type GetItemOptionByIdResponse = GetItemOptionByIdResponses[keyof GetItemOptionByIdResponses];
+
+export type PutItemOptionByIdData = {
+    /**
+     * Item option to update
+     */
+    body: ModelsUpdateItemOptionRequest;
+    path: {
+        /**
+         * Item Option ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/item-option/{id}';
+};
+
+export type PutItemOptionByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type PutItemOptionByIdError = PutItemOptionByIdErrors[keyof PutItemOptionByIdErrors];
+
+export type PutItemOptionByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsItemOptionDto;
+};
+
+export type PutItemOptionByIdResponse = PutItemOptionByIdResponses[keyof PutItemOptionByIdResponses];
+
+export type DeleteItemByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Item ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/item/{id}';
+};
+
+export type DeleteItemByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type DeleteItemByIdError = DeleteItemByIdErrors[keyof DeleteItemByIdErrors];
+
+export type DeleteItemByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsHttpError;
+};
+
+export type DeleteItemByIdResponse = DeleteItemByIdResponses[keyof DeleteItemByIdResponses];
+
+export type GetItemByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Item ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/item/{id}';
+};
+
+export type GetItemByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetItemByIdError = GetItemByIdErrors[keyof GetItemByIdErrors];
+
+export type GetItemByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsItemDto;
+};
+
+export type GetItemByIdResponse = GetItemByIdResponses[keyof GetItemByIdResponses];
+
+export type PutItemByIdData = {
+    /**
+     * Item to update
+     */
+    body: ModelsUpdateItemRequest;
+    path: {
+        /**
+         * Item ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/item/{id}';
+};
+
+export type PutItemByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type PutItemByIdError = PutItemByIdErrors[keyof PutItemByIdErrors];
+
+export type PutItemByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsItemDto;
+};
+
+export type PutItemByIdResponse = PutItemByIdResponses[keyof PutItemByIdResponses];
+
+export type GetOrdersData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Business ID to filter by
+         */
+        businessId: number;
+    };
+    url: '/order';
+};
+
+export type GetOrdersErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetOrdersError = GetOrdersErrors[keyof GetOrdersErrors];
+
+export type GetOrdersResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsOrderDto>;
+};
+
+export type GetOrdersResponse = GetOrdersResponses[keyof GetOrdersResponses];
+
+export type CreateOrderData = {
+    /**
+     * Order to create
+     */
+    body: ModelsCreateOrderRequest;
+    path?: never;
+    query?: never;
+    url: '/order';
+};
+
+export type CreateOrderErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type CreateOrderError = CreateOrderErrors[keyof CreateOrderErrors];
+
+export type CreateOrderResponses = {
+    /**
+     * Created
+     */
+    201: ModelsOrderDto;
+};
+
+export type CreateOrderResponse = CreateOrderResponses[keyof CreateOrderResponses];
+
+export type GetOrderByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Order ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/order/{id}';
+};
+
+export type GetOrderByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetOrderByIdError = GetOrderByIdErrors[keyof GetOrderByIdErrors];
+
+export type GetOrderByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsOrderDto;
+};
+
+export type GetOrderByIdResponse = GetOrderByIdResponses[keyof GetOrderByIdResponses];
+
+export type UpdateOrderData = {
+    /**
+     * Order updates
+     */
+    body: ModelsUpdateOrderRequest;
+    path: {
+        /**
+         * Order ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/order/{id}';
+};
+
+export type UpdateOrderErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type UpdateOrderError = UpdateOrderErrors[keyof UpdateOrderErrors];
+
+export type UpdateOrderResponses = {
+    /**
+     * OK
+     */
+    200: ModelsOrderDto;
+};
+
+export type UpdateOrderResponse = UpdateOrderResponses[keyof UpdateOrderResponses];
+
+export type GetOrderItemsData = {
+    body?: never;
+    path: {
+        /**
+         * Order ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/order/{id}/item';
+};
+
+export type GetOrderItemsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetOrderItemsError = GetOrderItemsErrors[keyof GetOrderItemsErrors];
+
+export type GetOrderItemsResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsOrderItemDto>;
+};
+
+export type GetOrderItemsResponse = GetOrderItemsResponses[keyof GetOrderItemsResponses];
+
+export type AddItemToOrderData = {
+    /**
+     * Item to add
+     */
+    body: ModelsCreateOrderItemRequest;
+    path: {
+        /**
+         * Order ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/order/{id}/item';
+};
+
+export type AddItemToOrderErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Conflict
+     */
+    409: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type AddItemToOrderError = AddItemToOrderErrors[keyof AddItemToOrderErrors];
+
+export type AddItemToOrderResponses = {
+    /**
+     * Created
+     */
+    201: ModelsOrderItemDto;
+};
+
+export type AddItemToOrderResponse = AddItemToOrderResponses[keyof AddItemToOrderResponses];
+
+export type RemoveItemFromOrderData = {
+    body?: never;
+    path: {
+        /**
+         * Order ID
+         */
+        orderId: number;
+        /**
+         * Item ID
+         */
+        itemId: number;
+    };
+    query?: never;
+    url: '/order/{orderId}/item/{itemId}';
+};
+
+export type RemoveItemFromOrderErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Conflict
+     */
+    409: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type RemoveItemFromOrderError = RemoveItemFromOrderErrors[keyof RemoveItemFromOrderErrors];
+
+export type RemoveItemFromOrderResponses = {
+    /**
+     * No Content
+     */
+    204: unknown;
+};
+
+export type UpdateOrderItemData = {
+    /**
+     * Item updates
+     */
+    body: ModelsUpdateOrderItemRequest;
+    path: {
+        /**
+         * Order ID
+         */
+        orderId: number;
+        /**
+         * Item ID
+         */
+        itemId: number;
+    };
+    query?: never;
+    url: '/order/{orderId}/item/{itemId}';
+};
+
+export type UpdateOrderItemErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Conflict
+     */
+    409: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type UpdateOrderItemError = UpdateOrderItemErrors[keyof UpdateOrderItemErrors];
+
+export type UpdateOrderItemResponses = {
+    /**
+     * OK
+     */
+    200: ModelsOrderItemDto;
+};
+
+export type UpdateOrderItemResponse = UpdateOrderItemResponses[keyof UpdateOrderItemResponses];
+
+export type GetItemOptionsInOrderData = {
+    body?: never;
+    path: {
+        /**
+         * Order ID
+         */
+        orderId: number;
+        /**
+         * Item ID
+         */
+        itemId: number;
+    };
+    query?: never;
+    url: '/order/{orderId}/item/{itemId}/option';
+};
+
+export type GetItemOptionsInOrderErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetItemOptionsInOrderError = GetItemOptionsInOrderErrors[keyof GetItemOptionsInOrderErrors];
+
+export type GetItemOptionsInOrderResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsItemOptionLinkDto>;
+};
+
+export type GetItemOptionsInOrderResponse = GetItemOptionsInOrderResponses[keyof GetItemOptionsInOrderResponses];
+
+export type AddOptionToOrderItemData = {
+    /**
+     * Option to add
+     */
+    body: ModelsCreateItemOptionLinkRequest;
+    path: {
+        /**
+         * Order ID
+         */
+        orderId: number;
+        /**
+         * Item ID
+         */
+        itemId: number;
+    };
+    query?: never;
+    url: '/order/{orderId}/item/{itemId}/option';
+};
+
+export type AddOptionToOrderItemErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Conflict
+     */
+    409: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type AddOptionToOrderItemError = AddOptionToOrderItemErrors[keyof AddOptionToOrderItemErrors];
+
+export type AddOptionToOrderItemResponses = {
+    /**
+     * Created
+     */
+    201: ModelsItemOptionLinkDto;
+};
+
+export type AddOptionToOrderItemResponse = AddOptionToOrderItemResponses[keyof AddOptionToOrderItemResponses];
+
+export type RemoveOptionFromOrderItemData = {
+    body?: never;
+    path: {
+        /**
+         * Order ID
+         */
+        orderId: number;
+        /**
+         * Item ID
+         */
+        itemId: number;
+        /**
+         * Option ID
+         */
+        optionId: number;
+    };
+    query?: never;
+    url: '/order/{orderId}/item/{itemId}/option/{optionId}';
+};
+
+export type RemoveOptionFromOrderItemErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Conflict
+     */
+    409: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type RemoveOptionFromOrderItemError = RemoveOptionFromOrderItemErrors[keyof RemoveOptionFromOrderItemErrors];
+
+export type RemoveOptionFromOrderItemResponses = {
+    /**
+     * No Content
+     */
+    204: unknown;
+};
+
+export type LinkPaymentToOrderData = {
+    body?: never;
+    path: {
+        /**
+         * Order ID
+         */
+        orderId: number;
+        /**
+         * Payment ID
+         */
+        paymentId: number;
+    };
+    query?: never;
+    url: '/order/{orderId}/payment/{paymentId}';
+};
+
+export type LinkPaymentToOrderErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Conflict
+     */
+    409: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type LinkPaymentToOrderError = LinkPaymentToOrderErrors[keyof LinkPaymentToOrderErrors];
+
+export type LinkPaymentToOrderResponses = {
+    /**
+     * Created
+     */
+    201: unknown;
+};
+
+export type ApplyPriceModifierToOrderData = {
+    /**
+     * Price modifier to apply
+     */
+    body: ModelsApplyPriceModifierRequest;
+    path: {
+        /**
+         * Order ID
+         */
+        orderId: number;
+    };
+    query?: never;
+    url: '/order/{orderId}/price-modifier';
+};
+
+export type ApplyPriceModifierToOrderErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Conflict
+     */
+    409: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type ApplyPriceModifierToOrderError = ApplyPriceModifierToOrderErrors[keyof ApplyPriceModifierToOrderErrors];
+
+export type ApplyPriceModifierToOrderResponses = {
+    /**
+     * Created
+     */
+    201: unknown;
+};
+
+export type GetPaymentsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/payment';
+};
+
+export type GetPaymentsErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetPaymentsError = GetPaymentsErrors[keyof GetPaymentsErrors];
+
+export type GetPaymentsResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsPaymentDto>;
+};
+
+export type GetPaymentsResponse = GetPaymentsResponses[keyof GetPaymentsResponses];
+
+export type CreatePaymentData = {
+    /**
+     * Payment to create
+     */
+    body: ModelsCreatePaymentRequest;
+    path?: never;
+    query?: never;
+    url: '/payment';
+};
+
+export type CreatePaymentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type CreatePaymentError = CreatePaymentErrors[keyof CreatePaymentErrors];
+
+export type CreatePaymentResponses = {
+    /**
+     * Created
+     */
+    201: ModelsPaymentDto;
+};
+
+export type CreatePaymentResponse = CreatePaymentResponses[keyof CreatePaymentResponses];
+
+export type GetPriceModifiersData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Business ID
+         */
+        businessId: number;
+    };
+    url: '/price-modifier';
+};
+
+export type GetPriceModifiersErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetPriceModifiersError = GetPriceModifiersErrors[keyof GetPriceModifiersErrors];
+
+export type GetPriceModifiersResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsPriceModifierDto>;
+};
+
+export type GetPriceModifiersResponse = GetPriceModifiersResponses[keyof GetPriceModifiersResponses];
+
+export type CreatePriceModifierData = {
+    /**
+     * Price modifier to create
+     */
+    body: ModelsCreatePriceModifierRequest;
+    path?: never;
+    query?: never;
+    url: '/price-modifier';
+};
+
+export type CreatePriceModifierErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type CreatePriceModifierError = CreatePriceModifierErrors[keyof CreatePriceModifierErrors];
+
+export type CreatePriceModifierResponses = {
+    /**
+     * Created
+     */
+    201: ModelsPriceModifierDto;
+};
+
+export type CreatePriceModifierResponse = CreatePriceModifierResponses[keyof CreatePriceModifierResponses];
+
+export type DeletePriceModifierData = {
+    body?: never;
+    path: {
+        /**
+         * Price Modifier ID
+         */
+        id: number;
+    };
+    query: {
+        /**
+         * Business ID
+         */
+        businessId: number;
+    };
+    url: '/price-modifier/{id}';
+};
+
+export type DeletePriceModifierErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type DeletePriceModifierError = DeletePriceModifierErrors[keyof DeletePriceModifierErrors];
+
+export type DeletePriceModifierResponses = {
+    /**
+     * OK
+     */
+    200: {
+        [key: string]: string;
+    };
+};
+
+export type DeletePriceModifierResponse = DeletePriceModifierResponses[keyof DeletePriceModifierResponses];
+
+export type GetPriceModifierByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Price Modifier ID
+         */
+        id: number;
+    };
+    query: {
+        /**
+         * Business ID
+         */
+        businessId: number;
+    };
+    url: '/price-modifier/{id}';
+};
+
+export type GetPriceModifierByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetPriceModifierByIdError = GetPriceModifierByIdErrors[keyof GetPriceModifierByIdErrors];
+
+export type GetPriceModifierByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsPriceModifierDto;
+};
+
+export type GetPriceModifierByIdResponse = GetPriceModifierByIdResponses[keyof GetPriceModifierByIdResponses];
+
+export type UpdatePriceModifierData = {
+    /**
+     * Price modifier details to update
+     */
+    body: ModelsUpdatePriceModifierRequest;
+    path: {
+        /**
+         * Price Modifier ID
+         */
+        id: number;
+    };
+    query: {
+        /**
+         * Business ID
+         */
+        businessId: number;
+    };
+    url: '/price-modifier/{id}';
+};
+
+export type UpdatePriceModifierErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type UpdatePriceModifierError = UpdatePriceModifierErrors[keyof UpdatePriceModifierErrors];
+
+export type UpdatePriceModifierResponses = {
+    /**
+     * OK
+     */
+    200: ModelsPriceModifierDto;
+};
+
+export type UpdatePriceModifierResponse = UpdatePriceModifierResponses[keyof UpdatePriceModifierResponses];
+
+export type GetReservationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/reservation';
+};
+
+export type GetReservationsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetReservationsError = GetReservationsErrors[keyof GetReservationsErrors];
+
+export type GetReservationsResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsReservationDto>;
+};
+
+export type GetReservationsResponse = GetReservationsResponses[keyof GetReservationsResponses];
+
+export type CreateReservationData = {
+    /**
+     * Reservation to create
+     */
+    body: ModelsCreateReservationRequest;
+    path?: never;
+    query?: never;
+    url: '/reservation';
+};
+
+export type CreateReservationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type CreateReservationError = CreateReservationErrors[keyof CreateReservationErrors];
+
+export type CreateReservationResponses = {
+    /**
+     * Created
+     */
+    201: ModelsReservationDto;
+};
+
+export type CreateReservationResponse = CreateReservationResponses[keyof CreateReservationResponses];
+
+export type GetReservationByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Reservation ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/reservation/{id}';
+};
+
+export type GetReservationByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetReservationByIdError = GetReservationByIdErrors[keyof GetReservationByIdErrors];
+
+export type GetReservationByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsReservationDto;
+};
+
+export type GetReservationByIdResponse = GetReservationByIdResponses[keyof GetReservationByIdResponses];
+
+export type UpdateReservationData = {
+    /**
+     * Reservation updates
+     */
+    body: ModelsUpdateReservationRequest;
+    path: {
+        /**
+         * Reservation ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/reservation/{id}';
+};
+
+export type UpdateReservationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type UpdateReservationError = UpdateReservationErrors[keyof UpdateReservationErrors];
+
+export type UpdateReservationResponses = {
+    /**
+     * OK
+     */
+    200: ModelsReservationDto;
+};
+
+export type UpdateReservationResponse = UpdateReservationResponses[keyof UpdateReservationResponses];
+
+export type GetServicesData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Business ID
+         */
+        businessId: number;
+    };
+    url: '/service';
+};
+
+export type GetServicesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetServicesError = GetServicesErrors[keyof GetServicesErrors];
+
+export type GetServicesResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsServiceDto>;
+};
+
+export type GetServicesResponse = GetServicesResponses[keyof GetServicesResponses];
+
+export type CreateServiceData = {
+    /**
+     * Service to create
+     */
+    body: ModelsCreateServiceRequest;
+    path?: never;
+    query?: never;
+    url: '/service';
+};
+
+export type CreateServiceErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type CreateServiceError = CreateServiceErrors[keyof CreateServiceErrors];
+
+export type CreateServiceResponses = {
+    /**
+     * Created
+     */
+    201: ModelsServiceDto;
+};
+
+export type CreateServiceResponse = CreateServiceResponses[keyof CreateServiceResponses];
+
+export type AssignServiceToEmployeeData = {
+    /**
+     * Service assignment request
+     */
+    body: ModelsAssignServiceRequest;
+    path: {
+        /**
+         * Employee ID
+         */
+        employeeId: number;
+    };
+    query?: never;
+    url: '/service/employee/{employeeId}';
+};
+
+export type AssignServiceToEmployeeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type AssignServiceToEmployeeError = AssignServiceToEmployeeErrors[keyof AssignServiceToEmployeeErrors];
+
+export type AssignServiceToEmployeeResponses = {
+    /**
+     * No Content
+     */
+    204: unknown;
+};
+
+export type DeleteServiceData = {
+    body?: never;
+    path: {
+        /**
+         * Service ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/service/{id}';
+};
+
+export type DeleteServiceErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type DeleteServiceError = DeleteServiceErrors[keyof DeleteServiceErrors];
+
+export type DeleteServiceResponses = {
+    /**
+     * No Content
+     */
+    204: unknown;
+};
+
+export type GetServiceByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Service ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/service/{id}';
+};
+
+export type GetServiceByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetServiceByIdError = GetServiceByIdErrors[keyof GetServiceByIdErrors];
+
+export type GetServiceByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsServiceDto;
+};
+
+export type GetServiceByIdResponse = GetServiceByIdResponses[keyof GetServiceByIdResponses];
+
+export type UpdateServiceData = {
+    /**
+     * Service updates
+     */
+    body: ModelsUpdateServiceRequest;
+    path: {
+        /**
+         * Service ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/service/{id}';
+};
+
+export type UpdateServiceErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type UpdateServiceError = UpdateServiceErrors[keyof UpdateServiceErrors];
+
+export type UpdateServiceResponses = {
+    /**
+     * OK
+     */
+    200: ModelsServiceDto;
+};
+
+export type UpdateServiceResponse = UpdateServiceResponses[keyof UpdateServiceResponses];
+
+export type RemoveServiceFromEmployeeData = {
+    body?: never;
+    path: {
+        /**
+         * Service ID
+         */
+        id: number;
+        /**
+         * Employee ID
+         */
+        employeeId: number;
+    };
+    query?: never;
+    url: '/service/{id}/employee/{employeeId}';
+};
+
+export type RemoveServiceFromEmployeeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type RemoveServiceFromEmployeeError = RemoveServiceFromEmployeeErrors[keyof RemoveServiceFromEmployeeErrors];
+
+export type RemoveServiceFromEmployeeResponses = {
+    /**
+     * No Content
+     */
+    204: unknown;
+};

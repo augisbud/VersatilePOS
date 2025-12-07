@@ -7,6 +7,8 @@ export enum RouteId {
   UNAUTHORIZED = 'unauthorized',
   BUSINESS = 'business',
   OVERVIEW = 'overview',
+  RESERVATIONS = 'reservations',
+  NEW_RESERVATION = 'new_reservation',
 }
 
 export interface ScreenConfig {
@@ -16,4 +18,5 @@ export interface ScreenConfig {
   component: React.ComponentType;
   icon?: ReactNode;
   showInNav?: boolean;
+  parentPage?: RouteId;
 }

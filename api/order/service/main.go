@@ -8,6 +8,7 @@ import (
 	"VersatilePOS/database"
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
+	"VersatilePOS/generic/rbac"
 	"errors"
 	"gorm.io/gorm"
 	"time"
@@ -33,6 +34,15 @@ func isOrderInFinalState(status constants.OrderStatus) bool {
 }
 
 func (s *Service) CreateOrder(req orderModels.CreateOrderRequest, userID uint) (*orderModels.OrderDto, error) {
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Orders, constants.Write, req.BusinessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to create orders for this business")
+	}
+
 	now := time.Now()
 	order := &entities.Order{
 		BusinessID:        req.BusinessID,
@@ -56,7 +66,18 @@ func (s *Service) CreateOrder(req orderModels.CreateOrderRequest, userID uint) (
 	return &dto, nil
 }
 
-func (s *Service) GetOrders(businessID uint) ([]orderModels.OrderDto, error) {
+func (s *Service) GetOrders(businessID uint, userID uint) ([]orderModels.OrderDto, error) {
+	// Check RBAC permissions if businessID is provided
+	if businessID != 0 {
+		ok, err := rbac.HasAccess(constants.Orders, constants.Read, businessID, userID)
+		if err != nil {
+			return nil, errors.New("failed to verify permissions")
+		}
+		if !ok {
+			return nil, errors.New("unauthorized to view orders for this business")
+		}
+	}
+
 	orders, err := s.repo.GetOrders(businessID)
 	if err != nil {
 		return nil, err
@@ -70,26 +91,44 @@ func (s *Service) GetOrders(businessID uint) ([]orderModels.OrderDto, error) {
 	return orderDtos, nil
 }
 
-func (s *Service) GetOrderByID(id uint) (*orderModels.OrderDto, error) {
+func (s *Service) GetOrderByID(id uint, userID uint) (*orderModels.OrderDto, error) {
 	order, err := s.repo.GetOrderByID(id)
 	if err != nil {
 		return nil, err
 	}
 	if order == nil {
 		return nil, errors.New("order not found")
+	}
+
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Orders, constants.Read, order.BusinessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to view this order")
 	}
 
 	dto := orderModels.NewOrderDtoFromEntity(*order)
 	return &dto, nil
 }
 
-func (s *Service) UpdateOrder(id uint, req orderModels.UpdateOrderRequest) (*orderModels.OrderDto, error) {
+func (s *Service) UpdateOrder(id uint, req orderModels.UpdateOrderRequest, userID uint) (*orderModels.OrderDto, error) {
 	order, err := s.repo.GetOrderByID(id)
 	if err != nil {
 		return nil, err
 	}
 	if order == nil {
 		return nil, errors.New("order not found")
+	}
+
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Orders, constants.Write, order.BusinessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to update this order")
 	}
 
 	if req.Status != nil {
@@ -126,13 +165,22 @@ func (s *Service) UpdateOrder(id uint, req orderModels.UpdateOrderRequest) (*ord
 	return &dto, nil
 }
 
-func (s *Service) AddItemToOrder(orderID uint, req orderModels.CreateOrderItemRequest) (*orderModels.OrderItemDto, error) {
+func (s *Service) AddItemToOrder(orderID uint, req orderModels.CreateOrderItemRequest, userID uint) (*orderModels.OrderItemDto, error) {
 	order, err := s.repo.GetOrderByID(orderID)
 	if err != nil {
 		return nil, err
 	}
 	if order == nil {
 		return nil, errors.New("order not found")
+	}
+
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Orders, constants.Write, order.BusinessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to modify this order")
 	}
 
 	// Check if order is in final state
@@ -170,7 +218,24 @@ func (s *Service) AddItemToOrder(orderID uint, req orderModels.CreateOrderItemRe
 	return &dto, nil
 }
 
-func (s *Service) GetOrderItems(orderID uint) ([]orderModels.OrderItemDto, error) {
+func (s *Service) GetOrderItems(orderID uint, userID uint) ([]orderModels.OrderItemDto, error) {
+	order, err := s.repo.GetOrderByID(orderID)
+	if err != nil {
+		return nil, err
+	}
+	if order == nil {
+		return nil, errors.New("order not found")
+	}
+
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Orders, constants.Read, order.BusinessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to view this order")
+	}
+
 	orderItems, err := s.repo.GetOrderItems(orderID)
 	if err != nil {
 		return nil, err
@@ -184,13 +249,22 @@ func (s *Service) GetOrderItems(orderID uint) ([]orderModels.OrderItemDto, error
 	return orderItemDtos, nil
 }
 
-func (s *Service) UpdateOrderItem(orderID, itemID uint, req orderModels.UpdateOrderItemRequest) (*orderModels.OrderItemDto, error) {
+func (s *Service) UpdateOrderItem(orderID, itemID uint, req orderModels.UpdateOrderItemRequest, userID uint) (*orderModels.OrderItemDto, error) {
 	order, err := s.repo.GetOrderByID(orderID)
 	if err != nil {
 		return nil, err
 	}
 	if order == nil {
 		return nil, errors.New("order not found")
+	}
+
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Orders, constants.Write, order.BusinessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to modify this order")
 	}
 
 	// Check if order is in final state
@@ -219,13 +293,22 @@ func (s *Service) UpdateOrderItem(orderID, itemID uint, req orderModels.UpdateOr
 	return &dto, nil
 }
 
-func (s *Service) RemoveItemFromOrder(orderID, itemID uint) error {
+func (s *Service) RemoveItemFromOrder(orderID, itemID uint, userID uint) error {
 	order, err := s.repo.GetOrderByID(orderID)
 	if err != nil {
 		return err
 	}
 	if order == nil {
 		return errors.New("order not found")
+	}
+
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Orders, constants.Write, order.BusinessID, userID)
+	if err != nil {
+		return errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return errors.New("unauthorized to modify this order")
 	}
 
 	// Check if order is in final state
@@ -244,13 +327,22 @@ func (s *Service) RemoveItemFromOrder(orderID, itemID uint) error {
 	return s.repo.DeleteOrderItem(orderItem)
 }
 
-func (s *Service) ApplyPriceModifierToOrder(orderID uint, req orderModels.ApplyPriceModifierRequest) error {
+func (s *Service) ApplyPriceModifierToOrder(orderID uint, req orderModels.ApplyPriceModifierRequest, userID uint) error {
 	order, err := s.repo.GetOrderByID(orderID)
 	if err != nil {
 		return err
 	}
 	if order == nil {
 		return errors.New("order not found")
+	}
+
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Orders, constants.Write, order.BusinessID, userID)
+	if err != nil {
+		return errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return errors.New("unauthorized to modify this order")
 	}
 
 	// Check if order is in final state
@@ -276,13 +368,22 @@ func (s *Service) ApplyPriceModifierToOrder(orderID uint, req orderModels.ApplyP
 	return err
 }
 
-func (s *Service) AddOptionToOrderItem(orderID, itemID uint, req orderModels.CreateItemOptionLinkRequest) (*orderModels.ItemOptionLinkDto, error) {
+func (s *Service) AddOptionToOrderItem(orderID, itemID uint, req orderModels.CreateItemOptionLinkRequest, userID uint) (*orderModels.ItemOptionLinkDto, error) {
 	order, err := s.repo.GetOrderByID(orderID)
 	if err != nil {
 		return nil, err
 	}
 	if order == nil {
 		return nil, errors.New("order not found")
+	}
+
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Orders, constants.Write, order.BusinessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to modify this order")
 	}
 
 	// Check if order is in final state
@@ -329,7 +430,24 @@ func (s *Service) AddOptionToOrderItem(orderID, itemID uint, req orderModels.Cre
 	return &dto, nil
 }
 
-func (s *Service) GetItemOptionsInOrder(orderID, itemID uint) ([]orderModels.ItemOptionLinkDto, error) {
+func (s *Service) GetItemOptionsInOrder(orderID, itemID uint, userID uint) ([]orderModels.ItemOptionLinkDto, error) {
+	order, err := s.repo.GetOrderByID(orderID)
+	if err != nil {
+		return nil, err
+	}
+	if order == nil {
+		return nil, errors.New("order not found")
+	}
+
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Orders, constants.Read, order.BusinessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to view this order")
+	}
+
 	// Verify order item exists
 	orderItem, err := s.repo.GetOrderItemByID(orderID, itemID)
 	if err != nil {
@@ -352,13 +470,22 @@ func (s *Service) GetItemOptionsInOrder(orderID, itemID uint) ([]orderModels.Ite
 	return linkDtos, nil
 }
 
-func (s *Service) RemoveOptionFromOrderItem(orderID, itemID, optionID uint) error {
+func (s *Service) RemoveOptionFromOrderItem(orderID, itemID, optionID uint, userID uint) error {
 	order, err := s.repo.GetOrderByID(orderID)
 	if err != nil {
 		return err
 	}
 	if order == nil {
 		return errors.New("order not found")
+	}
+
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Orders, constants.Write, order.BusinessID, userID)
+	if err != nil {
+		return errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return errors.New("unauthorized to modify this order")
 	}
 
 	// Check if order is in final state
@@ -386,7 +513,7 @@ func (s *Service) RemoveOptionFromOrderItem(orderID, itemID, optionID uint) erro
 	return s.repo.DeleteItemOptionLink(link)
 }
 
-func (s *Service) LinkPaymentToOrder(orderID, paymentID uint) error {
+func (s *Service) LinkPaymentToOrder(orderID, paymentID uint, userID uint) error {
 	// Verify order exists
 	order, err := s.repo.GetOrderByID(orderID)
 	if err != nil {
@@ -394,6 +521,15 @@ func (s *Service) LinkPaymentToOrder(orderID, paymentID uint) error {
 	}
 	if order == nil {
 		return errors.New("order not found")
+	}
+
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Orders, constants.Write, order.BusinessID, userID)
+	if err != nil {
+		return errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return errors.New("unauthorized to modify this order")
 	}
 
 	// Verify payment exists

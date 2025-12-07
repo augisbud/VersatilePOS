@@ -74,6 +74,7 @@ func seedFunctions(db *gorm.DB) {
 		{Name: "Manage Price Modifiers", Action: constants.PriceModifiers, Description: "Create, update, and delete price modifiers (discounts, taxes, etc.)."},
 		{Name: "Manage Items", Action: constants.Items, Description: "Create, update, and delete items."},
 		{Name: "Manage Item Options", Action: constants.ItemOptions, Description: "Create, update, and delete item options."},
+		{Name: "Manage Orders", Action: constants.Orders, Description: "Create, update, and manage orders."},
 	}
 
 	for _, function := range functions {

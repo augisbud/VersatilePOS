@@ -6,7 +6,6 @@ import { useUser } from '@/hooks/useUser';
 import type { ColumnsType } from 'antd/es/table';
 import { ModelsServiceDto } from '@/api/types.gen';
 import { ServiceFormModal, ServiceFormValues } from './ServiceFormModal';
-import dayjs from 'dayjs';
 
 const { Title } = Typography;
 
@@ -58,25 +57,11 @@ export const BusinessServices = ({ businessId }: BusinessServicesProps) => {
     setIsSubmitting(true);
     try {
       if (editingService && editingService.id) {
-        await updateService(editingService.id, {
-          name: values.name,
-          hourlyPrice: values.hourlyPrice,
-          serviceCharge: values.serviceCharge,
-          provisioningInterval: values.provisioningInterval,
-          provisioningStartTime: values.provisioningStartTime,
-          provisioningEndTime: values.provisioningEndTime,
-        });
+        await updateService(editingService.id, values);
       } else {
-        await createService({
-          name: values.name,
-          hourlyPrice: values.hourlyPrice,
-          serviceCharge: values.serviceCharge,
-          provisioningInterval: values.provisioningInterval,
-          provisioningStartTime: values.provisioningStartTime,
-          provisioningEndTime: values.provisioningEndTime,
-          businessId,
-        });
+        await createService({ ...values, businessId });
       }
+
       handleCloseModal();
     } catch (error) {
       console.error('Failed to save service:', error);
@@ -86,7 +71,10 @@ export const BusinessServices = ({ businessId }: BusinessServicesProps) => {
   };
 
   const formatPrice = (price?: number) => {
-    if (price === undefined || price === null) return '-';
+    if (price === undefined || price === null) {
+      return '-';
+    }
+
     return `$${price.toFixed(2)}`;
   };
 
@@ -122,8 +110,7 @@ export const BusinessServices = ({ businessId }: BusinessServicesProps) => {
       render: (_, record) =>
         record.provisioningStartTime && record.provisioningEndTime ? (
           <span>
-            {dayjs(record.provisioningStartTime).format('HH:mm')} -{' '}
-            {dayjs(record.provisioningEndTime).format('HH:mm')}
+            {record.provisioningStartTime} - {record.provisioningEndTime}
           </span>
         ) : (
           '-'

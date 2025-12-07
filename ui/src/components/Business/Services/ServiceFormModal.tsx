@@ -7,7 +7,6 @@ import {
   Button,
   Space,
 } from 'antd';
-import { useEffect } from 'react';
 import { ModelsServiceDto } from '@/api/types.gen';
 import dayjs, { Dayjs } from 'dayjs';
 
@@ -47,39 +46,27 @@ export const ServiceFormModal = ({
   const [form] = Form.useForm<ServiceFormValues>();
   const hourlyPrice = Form.useWatch('hourlyPrice', form);
 
-  useEffect(() => {
-    if (open) {
-      if (editingService) {
-        form.setFieldsValue({
-          name: editingService.name,
-          hourlyPrice: editingService.hourlyPrice,
-          serviceCharge: editingService.serviceCharge,
-          provisioningInterval: editingService.provisioningInterval,
-          provisioningStartTime: editingService.provisioningStartTime
-            ? dayjs(editingService.provisioningStartTime, 'HH:mm')
-            : undefined,
-          provisioningEndTime: editingService.provisioningEndTime
-            ? dayjs(editingService.provisioningEndTime, 'HH:mm')
-            : undefined,
-        });
-      } else {
-        form.resetFields();
-      }
+  const handleAfterOpenChange = (visible: boolean) => {
+    if (visible && editingService) {
+      form.setFieldsValue({
+        ...editingService,
+        provisioningStartTime: dayjs(
+          editingService.provisioningStartTime,
+          'HH:mm'
+        ),
+        provisioningEndTime: dayjs(editingService.provisioningEndTime, 'HH:mm'),
+      });
     }
-  }, [editingService, open, form]);
+  };
 
   const handleSubmit = () => {
     void form.validateFields().then((values) => {
       onSubmit({
         ...values,
-        provisioningStartTime: dayjs(
-          values.provisioningStartTime,
+        provisioningStartTime: dayjs(values.provisioningStartTime).format(
           'HH:mm'
-        ).toISOString(),
-        provisioningEndTime: dayjs(
-          values.provisioningEndTime,
-          'HH:mm'
-        ).toISOString(),
+        ),
+        provisioningEndTime: dayjs(values.provisioningEndTime).format('HH:mm'),
       });
     });
   };
@@ -97,6 +84,7 @@ export const ServiceFormModal = ({
       onOk={handleSubmit}
       onCancel={onClose}
       confirmLoading={isSubmitting}
+      afterOpenChange={handleAfterOpenChange}
       destroyOnHidden
     >
       <Form form={form} layout="vertical" preserve={false}>

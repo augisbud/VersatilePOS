@@ -7,7 +7,7 @@ import (
 
 type CreateReservationRequest struct {
 	AccountID         uint                      `json:"accountId" validate:"required"`
-	ServiceID         uint64                    `json:"serviceId" validate:"required"`
+	ServiceID         uint                      `json:"serviceId" validate:"required"`
 	DatePlaced        time.Time                 `json:"datePlaced" validate:"required"`
 	DateOfService     time.Time                 `json:"dateOfService" validate:"required"`
 	ReservationLength uint32                    `json:"reservationLength" validate:"required"`

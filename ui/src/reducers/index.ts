@@ -5,6 +5,7 @@ import { employeeReducer } from './employee';
 import { functionReducer } from './function';
 import { roleReducer } from './role';
 import { reservationReducer } from './reservation';
+import { serviceReducer } from './service';
 
 export const rootReducer = combineReducers({
   user: userReducer,
@@ -13,4 +14,5 @@ export const rootReducer = combineReducers({
   function: functionReducer,
   role: roleReducer,
   reservation: reservationReducer,
+  service: serviceReducer,
 });

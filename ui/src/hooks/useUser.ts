@@ -10,6 +10,8 @@ import {
   getCanWriteBusinesses,
   getCanReadRoles,
   getCanWriteRoles,
+  getCanReadServices,
+  getCanWriteServices,
 } from '@/selectors/user';
 import {
   login as loginAction,
@@ -35,6 +37,8 @@ export const useUser = () => {
   const canWriteBusinesses = useAppSelector(getCanWriteBusinesses);
   const canReadRoles = useAppSelector(getCanReadRoles);
   const canWriteRoles = useAppSelector(getCanWriteRoles);
+  const canReadServices = useAppSelector(getCanReadServices);
+  const canWriteServices = useAppSelector(getCanWriteServices);
 
   const hasRoles = (roles: ModelsAccountRoleLinkDto[]) => !!roles.length;
 
@@ -57,6 +61,8 @@ export const useUser = () => {
     canWriteBusinesses,
     canReadRoles,
     canWriteRoles,
+    canReadServices,
+    canWriteServices,
     roles,
     hasRoles,
     login,

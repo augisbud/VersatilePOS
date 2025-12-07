@@ -36,6 +36,8 @@ export default defineConfig([
       'react-hooks/exhaustive-deps': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-redundant-type-constituents': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
       'no-restricted-imports': [
         'error',
         {

@@ -28,7 +28,7 @@ export const ClientInformationForm = ({ form }: ClientInformationFormProps) => {
       <Form.Item
         label="Phone number"
         name="phoneNumber"
-        rules={[{ required: true, message: 'Please enter phone number' }]}
+        rules={[{ message: 'Please enter phone number' }]}
       >
         <Input />
       </Form.Item>

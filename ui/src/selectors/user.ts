@@ -6,6 +6,8 @@ import {
   canWriteBusinesses,
   canReadRoles,
   canWriteRoles,
+  canReadServices,
+  canWriteServices,
 } from '@/utils/permissions';
 
 export const getUserToken = (state: State) => state.user.token;
@@ -36,3 +38,9 @@ export const getCanReadRoles = (state: State) =>
 
 export const getCanWriteRoles = (state: State) =>
   canWriteRoles(getUserRoles(state));
+
+export const getCanReadServices = (state: State) =>
+  canReadServices(getUserRoles(state));
+
+export const getCanWriteServices = (state: State) =>
+  canWriteServices(getUserRoles(state));

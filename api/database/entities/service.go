@@ -19,5 +19,12 @@ type Service struct {
 	ProvisioningStartTime time.Time `json:"provisioningStartTime"`
 	ProvisioningEndTime   time.Time `json:"provisioningEndTime"`
 	ProvisioningInterval  uint      `json:"provisioningInterval"` // Duration in minutes
+
+	Employees []Account `gorm:"many2many:account_services;"`
+}
+
+type AccountServices struct {
+	AccountID uint `gorm:"primaryKey"`
+	ServiceID uint `gorm:"primaryKey"`
 }
 

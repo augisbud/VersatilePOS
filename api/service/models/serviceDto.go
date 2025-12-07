@@ -1,6 +1,7 @@
 package models
 
 import (
+	"VersatilePOS/account/models"
 	"VersatilePOS/database/entities"
 	"time"
 )
@@ -14,11 +15,17 @@ type ServiceDto struct {
 	ProvisioningStartTime string `json:"provisioningStartTime"`
 	ProvisioningEndTime   string `json:"provisioningEndTime"`
 	ProvisioningInterval  uint   `json:"provisioningInterval"`
+	Employees    []models.AccountDto `json:"employees,omitempty"`
 	CreatedAt    string  `json:"createdAt"`
 	UpdatedAt    string  `json:"updatedAt"`
 }
 
 func NewServiceDtoFromEntity(s entities.Service) ServiceDto {
+	employees := make([]models.AccountDto, 0)
+	for _, employee := range s.Employees {
+		employees = append(employees, models.NewAccountDtoFromEntity(employee, nil))
+	}
+
 	return ServiceDto{
 		ID:                    s.ID,
 		BusinessID:            s.BusinessID,
@@ -28,6 +35,7 @@ func NewServiceDtoFromEntity(s entities.Service) ServiceDto {
 		ProvisioningStartTime: s.ProvisioningStartTime.Format(time.RFC3339),
 		ProvisioningEndTime:   s.ProvisioningEndTime.Format(time.RFC3339),
 		ProvisioningInterval:  s.ProvisioningInterval,
+		Employees:             employees,
 		CreatedAt:             s.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		UpdatedAt:             s.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}

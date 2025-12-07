@@ -243,15 +243,120 @@ func (ctrl *Controller) DeleteService(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// @Summary Assign a service to an employee
+// @Description Assign a service to an employee. The employee must belong to the same business as the service.
+// @Tags service
+// @Accept  json
+// @Produce  json
+// @Param   employeeId   path      int  true  "Employee ID"
+// @Param   request  body  models.AssignServiceRequest  true  "Service assignment request"
+// @Success 204 "No Content"
+// @Failure 400 {object} models.HTTPError
+// @Failure 401 {object} models.HTTPError
+// @Failure 403 {object} models.HTTPError
+// @Failure 404 {object} models.HTTPError
+// @Failure 500 {object} models.HTTPError
+// @Security BearerAuth
+// @Router /service/employee/{employeeId} [post]
+// @Id assignServiceToEmployee
+func (ctrl *Controller) AssignServiceToEmployee(c *gin.Context) {
+	employeeIDStr := c.Param("employeeId")
+	employeeID, err := strconv.ParseUint(employeeIDStr, 10, 32)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "Invalid employee ID"})
+		return
+	}
+
+	var req serviceModels.AssignServiceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: err.Error()})
+		return
+	}
+
+	userID, err := middleware.GetUserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: err.Error()})
+		return
+	}
+
+	err = ctrl.service.AssignServiceToEmployee(uint(employeeID), req, userID)
+	if err != nil {
+		switch err.Error() {
+		case "service not found", "employee not found":
+			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: err.Error()})
+		case "unauthorized", "employee does not belong to the service's business":
+			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: err.Error()})
+		default:
+			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: err.Error()})
+		}
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+// @Summary Remove a service from an employee
+// @Description Remove a service from an employee.
+// @Tags service
+// @Param   id   path      int  true  "Service ID"
+// @Param   employeeId   path      int  true  "Employee ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} models.HTTPError
+// @Failure 401 {object} models.HTTPError
+// @Failure 403 {object} models.HTTPError
+// @Failure 404 {object} models.HTTPError
+// @Failure 500 {object} models.HTTPError
+// @Security BearerAuth
+// @Router /service/{id}/employee/{employeeId} [delete]
+// @Id removeServiceFromEmployee
+func (ctrl *Controller) RemoveServiceFromEmployee(c *gin.Context) {
+	employeeIDStr := c.Param("employeeId")
+	employeeID, err := strconv.ParseUint(employeeIDStr, 10, 32)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "Invalid employee ID"})
+		return
+	}
+
+	serviceIDStr := c.Param("id")
+	serviceID, err := strconv.ParseUint(serviceIDStr, 10, 32)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "Invalid service ID"})
+		return
+	}
+
+	userID, err := middleware.GetUserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: err.Error()})
+		return
+	}
+
+	err = ctrl.service.RemoveServiceFromEmployee(uint(employeeID), uint(serviceID), userID)
+	if err != nil {
+		switch err.Error() {
+		case "service not found", "employee not found":
+			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: err.Error()})
+		case "unauthorized":
+			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: err.Error()})
+		default:
+			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: err.Error()})
+		}
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
 func (ctrl *Controller) RegisterRoutes(r *gin.Engine) {
 	serviceGroup := r.Group("/service")
 	serviceGroup.Use(middleware.AuthMiddleware())
 	{
 		serviceGroup.POST("", ctrl.CreateService)
 		serviceGroup.GET("", ctrl.GetServices)
+		serviceGroup.POST("/employee/:employeeId", ctrl.AssignServiceToEmployee)
 		serviceGroup.GET("/:id", ctrl.GetServiceById)
 		serviceGroup.PUT("/:id", ctrl.UpdateService)
 		serviceGroup.DELETE("/:id", ctrl.DeleteService)
+		serviceGroup.DELETE("/:id/employee/:employeeId", ctrl.RemoveServiceFromEmployee)
 	}
 }
 

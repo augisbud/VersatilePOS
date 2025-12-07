@@ -13,4 +13,6 @@ type Account struct {
 	OwnedBusinesses []Business `gorm:"foreignKey:OwnerID"`
 
 	MemberOf []Business `gorm:"many2many:business_employees;"`
+
+	ProvisionableServices []Service `gorm:"many2many:account_services;"`
 }

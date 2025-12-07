@@ -69,11 +69,12 @@ func (ctrl *Controller) CreateOrder(c *gin.Context) {
 }
 
 // @Summary Get orders
-// @Description Get all orders, optionally filtered by business. Requires authentication and Orders Read permission if businessId is provided.
+// @Description Get all orders for a business. Requires authentication and Orders Read permission.
 // @Tags order
 // @Produce  json
-// @Param   businessId  query  int  false  "Business ID to filter by"
+// @Param   businessId  query  int  true  "Business ID to filter by"
 // @Success 200 {array} models.OrderDto
+// @Failure 400 {object} models.HTTPError
 // @Failure 401 {object} models.HTTPError
 // @Failure 403 {object} models.HTTPError
 // @Failure 500 {object} models.HTTPError
@@ -87,17 +88,19 @@ func (ctrl *Controller) GetOrders(c *gin.Context) {
 		return
 	}
 
-	var businessID uint
-	if businessIDStr := c.Query("businessId"); businessIDStr != "" {
-		id, err := strconv.ParseUint(businessIDStr, 10, 32)
-		if err != nil {
-			c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "invalid businessId"})
-			return
-		}
-		businessID = uint(id)
+	businessIDStr := c.Query("businessId")
+	if businessIDStr == "" {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "businessId query parameter is required"})
+		return
 	}
 
-	orders, err := ctrl.service.GetOrders(businessID, userID)
+	businessID, err := strconv.ParseUint(businessIDStr, 10, 32)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "invalid businessId"})
+		return
+	}
+
+	orders, err := ctrl.service.GetOrders(uint(businessID), userID)
 	if err != nil {
 		if err.Error() == "unauthorized to view orders for this business" {
 			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: err.Error()})

@@ -67,15 +67,13 @@ func (s *Service) CreateOrder(req orderModels.CreateOrderRequest, userID uint) (
 }
 
 func (s *Service) GetOrders(businessID uint, userID uint) ([]orderModels.OrderDto, error) {
-	// Check RBAC permissions if businessID is provided
-	if businessID != 0 {
-		ok, err := rbac.HasAccess(constants.Orders, constants.Read, businessID, userID)
-		if err != nil {
-			return nil, errors.New("failed to verify permissions")
-		}
-		if !ok {
-			return nil, errors.New("unauthorized to view orders for this business")
-		}
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Orders, constants.Read, businessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to view orders for this business")
 	}
 
 	orders, err := s.repo.GetOrders(businessID)

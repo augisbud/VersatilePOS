@@ -20,7 +20,7 @@ export const fetchReservations = createAsyncThunk<ModelsReservationDto[], void>(
       throw new Error(response.error.error);
     }
 
-    return response.data ?? [];
+    return Array.isArray(response.data) ? response.data : [];
   }
 );
 

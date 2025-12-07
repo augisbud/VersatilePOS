@@ -1688,7 +1688,12 @@
         },
         "/order": {
             "get": {
-                "description": "Get all orders, optionally filtered by business",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all orders for a business. Requires authentication and Orders Read permission.",
                 "produces": [
                     "application/json"
                 ],
@@ -1702,7 +1707,8 @@
                         "type": "integer",
                         "description": "Business ID to filter by",
                         "name": "businessId",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1713,6 +1719,24 @@
                             "items": {
                                 "$ref": "#/definitions/models.OrderDto"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
                         }
                     },
                     "500": {
@@ -1729,7 +1753,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a new order. Authentication is optional - if authenticated, the user's ID will be used as ServicingAccountID if not provided.",
+                "description": "Create a new order. Requires authentication and Orders Write permission for the business.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1765,6 +1789,18 @@
                             "$ref": "#/definitions/models.HTTPError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -1776,7 +1812,12 @@
         },
         "/order/{id}": {
             "get": {
-                "description": "Get a specific order by its ID",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a specific order by its ID. Requires authentication and Orders Read permission.",
                 "produces": [
                     "application/json"
                 ],
@@ -1807,6 +1848,18 @@
                             "$ref": "#/definitions/models.HTTPError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -1822,7 +1875,12 @@
                 }
             },
             "put": {
-                "description": "Update order details (status, etc.)",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update order details (status, etc.). Requires authentication and Orders Write permission.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1865,6 +1923,18 @@
                             "$ref": "#/definitions/models.HTTPError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -1882,7 +1952,12 @@
         },
         "/order/{id}/item": {
             "get": {
-                "description": "Get all items in an order",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all items in an order. Requires authentication and Orders Read permission.",
                 "produces": [
                     "application/json"
                 ],
@@ -1916,6 +1991,24 @@
                             "$ref": "#/definitions/models.HTTPError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -1925,7 +2018,12 @@
                 }
             },
             "post": {
-                "description": "Add an item to an order",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Add an item to an order. Requires authentication and Orders Write permission.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1968,6 +2066,18 @@
                             "$ref": "#/definitions/models.HTTPError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -1991,7 +2101,12 @@
         },
         "/order/{orderId}/item/{itemId}": {
             "put": {
-                "description": "Update an order item",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an order item. Requires authentication and Orders Write permission.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2041,6 +2156,18 @@
                             "$ref": "#/definitions/models.HTTPError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -2062,7 +2189,12 @@
                 }
             },
             "delete": {
-                "description": "Remove an item from an order",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Remove an item from an order. Requires authentication and Orders Write permission.",
                 "tags": [
                     "order"
                 ],
@@ -2094,6 +2226,18 @@
                             "$ref": "#/definitions/models.HTTPError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -2117,7 +2261,12 @@
         },
         "/order/{orderId}/item/{itemId}/option": {
             "get": {
-                "description": "Get all options for an order item",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all options for an order item. Requires authentication and Orders Read permission.",
                 "produces": [
                     "application/json"
                 ],
@@ -2158,6 +2307,18 @@
                             "$ref": "#/definitions/models.HTTPError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -2173,7 +2334,12 @@
                 }
             },
             "post": {
-                "description": "Add an option to an order item",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Add an option to an order item. Requires authentication and Orders Write permission.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2223,6 +2389,18 @@
                             "$ref": "#/definitions/models.HTTPError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -2246,7 +2424,12 @@
         },
         "/order/{orderId}/item/{itemId}/option/{optionId}": {
             "delete": {
-                "description": "Remove an option from an order item",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Remove an option from an order item. Requires authentication and Orders Write permission.",
                 "tags": [
                     "order"
                 ],
@@ -2285,6 +2468,18 @@
                             "$ref": "#/definitions/models.HTTPError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -2308,7 +2503,12 @@
         },
         "/order/{orderId}/payment/{paymentId}": {
             "post": {
-                "description": "Link a payment to an order",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Link a payment to an order. Requires authentication and Orders Write permission.",
                 "tags": [
                     "order"
                 ],
@@ -2340,6 +2540,18 @@
                             "$ref": "#/definitions/models.HTTPError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -2363,7 +2575,12 @@
         },
         "/order/{orderId}/price-modifier": {
             "post": {
-                "description": "Apply a price modifier to an order item",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Apply a price modifier to an order item. Requires authentication and Orders Write permission.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2399,6 +2616,18 @@
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/models.HTTPError"
                         }
@@ -3092,6 +3321,330 @@
                     }
                 }
             }
+        },
+        "/service": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all services of current business",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "service"
+                ],
+                "summary": "Get services",
+                "operationId": "getServices",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Business ID",
+                        "name": "businessId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ServiceDto"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a service with the provided details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "service"
+                ],
+                "summary": "Create service",
+                "operationId": "createService",
+                "parameters": [
+                    {
+                        "description": "Service to create",
+                        "name": "service",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateServiceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.ServiceDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a service by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "service"
+                ],
+                "summary": "Get service by id",
+                "operationId": "getServiceById",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ServiceDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update service details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "service"
+                ],
+                "summary": "Update service details",
+                "operationId": "updateService",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Service updates",
+                        "name": "service",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateServiceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ServiceDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a service",
+                "tags": [
+                    "service"
+                ],
+                "summary": "Delete service",
+                "operationId": "deleteService",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -3127,8 +3680,10 @@
                 "roles",
                 "reservations",
                 "priceModifiers",
+                "services",
                 "items",
-                "itemOptions"
+                "itemOptions",
+                "orders"
             ],
             "x-enum-varnames": [
                 "Accounts",
@@ -3136,8 +3691,10 @@
                 "Roles",
                 "Reservations",
                 "PriceModifiers",
+                "Services",
                 "Items",
-                "ItemOptions"
+                "ItemOptions",
+                "Orders"
             ]
         },
         "constants.ReservationStatus": {
@@ -3552,6 +4109,41 @@
                 }
             }
         },
+        "models.CreateServiceRequest": {
+            "type": "object",
+            "required": [
+                "businessId",
+                "hourlyPrice",
+                "name",
+                "provisioningEndTime",
+                "provisioningInterval",
+                "provisioningStartTime"
+            ],
+            "properties": {
+                "businessId": {
+                    "type": "integer"
+                },
+                "hourlyPrice": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "provisioningEndTime": {
+                    "type": "string"
+                },
+                "provisioningInterval": {
+                    "type": "integer"
+                },
+                "provisioningStartTime": {
+                    "type": "string"
+                },
+                "serviceCharge": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
         "models.FunctionDto": {
             "type": "object",
             "properties": {
@@ -3792,6 +4384,41 @@
                 }
             }
         },
+        "models.ServiceDto": {
+            "type": "object",
+            "properties": {
+                "businessId": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "hourlyPrice": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "provisioningEndTime": {
+                    "type": "string"
+                },
+                "provisioningInterval": {
+                    "type": "integer"
+                },
+                "provisioningStartTime": {
+                    "type": "string"
+                },
+                "serviceCharge": {
+                    "type": "number"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "models.UpdateAccountRoleLinkRequest": {
             "type": "object",
             "required": [
@@ -3936,6 +4563,32 @@
                     "$ref": "#/definitions/constants.ReservationStatus"
                 },
                 "tipAmount": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.UpdateServiceRequest": {
+            "type": "object",
+            "properties": {
+                "businessId": {
+                    "type": "integer"
+                },
+                "hourlyPrice": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "provisioningEndTime": {
+                    "type": "string"
+                },
+                "provisioningInterval": {
+                    "type": "integer"
+                },
+                "provisioningStartTime": {
+                    "type": "string"
+                },
+                "serviceCharge": {
                     "type": "number"
                 }
             }

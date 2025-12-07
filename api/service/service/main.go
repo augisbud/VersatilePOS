@@ -8,6 +8,7 @@ import (
 	serviceModels "VersatilePOS/service/models"
 	"VersatilePOS/service/repository"
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -43,13 +44,23 @@ func (s *Service) CreateService(req serviceModels.CreateServiceRequest, userID u
 		return nil, errors.New("unauthorized")
 	}
 
+	// Parse time strings (hh:mm format) to time.Time
+	startTime, err := time.Parse("15:04", req.ProvisioningStartTime)
+	if err != nil {
+		return nil, errors.New("invalid provisioningStartTime format, expected hh:mm")
+	}
+	endTime, err := time.Parse("15:04", req.ProvisioningEndTime)
+	if err != nil {
+		return nil, errors.New("invalid provisioningEndTime format, expected hh:mm")
+	}
+
 	service := &entities.Service{
 		BusinessID:           req.BusinessID,
 		Name:                 req.Name,
 		HourlyPrice:          req.HourlyPrice,
 		ServiceCharge:       req.ServiceCharge,
-		ProvisioningStartTime: req.ProvisioningStartTime,
-		ProvisioningEndTime:   req.ProvisioningEndTime,
+		ProvisioningStartTime: startTime,
+		ProvisioningEndTime:   endTime,
 		ProvisioningInterval:  req.ProvisioningInterval,
 	}
 
@@ -154,10 +165,18 @@ func (s *Service) UpdateService(id uint, req serviceModels.UpdateServiceRequest,
 		service.ServiceCharge = *req.ServiceCharge
 	}
 	if req.ProvisioningStartTime != nil {
-		service.ProvisioningStartTime = *req.ProvisioningStartTime
+		startTime, err := time.Parse("15:04", *req.ProvisioningStartTime)
+		if err != nil {
+			return nil, errors.New("invalid provisioningStartTime format, expected hh:mm")
+		}
+		service.ProvisioningStartTime = startTime
 	}
 	if req.ProvisioningEndTime != nil {
-		service.ProvisioningEndTime = *req.ProvisioningEndTime
+		endTime, err := time.Parse("15:04", *req.ProvisioningEndTime)
+		if err != nil {
+			return nil, errors.New("invalid provisioningEndTime format, expected hh:mm")
+		}
+		service.ProvisioningEndTime = endTime
 	}
 	if req.ProvisioningInterval != nil {
 		service.ProvisioningInterval = *req.ProvisioningInterval

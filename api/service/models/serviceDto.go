@@ -3,7 +3,6 @@ package models
 import (
 	"VersatilePOS/account/models"
 	"VersatilePOS/database/entities"
-	"time"
 )
 
 type ServiceDto struct {
@@ -32,8 +31,8 @@ func NewServiceDtoFromEntity(s entities.Service) ServiceDto {
 		Name:                  s.Name,
 		HourlyPrice:           s.HourlyPrice,
 		ServiceCharge:        s.ServiceCharge,
-		ProvisioningStartTime: s.ProvisioningStartTime.Format(time.RFC3339),
-		ProvisioningEndTime:   s.ProvisioningEndTime.Format(time.RFC3339),
+		ProvisioningStartTime: s.ProvisioningStartTime.Format("15:04"),
+		ProvisioningEndTime:   s.ProvisioningEndTime.Format("15:04"),
 		ProvisioningInterval:  s.ProvisioningInterval,
 		Employees:             employees,
 		CreatedAt:             s.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),

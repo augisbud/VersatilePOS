@@ -7,6 +7,8 @@ const (
 	Businesses    	Action = "businesses"
 	Roles         	Action = "roles"
 	Reservations	Action = "reservations"
-	PriceModifiers Action = "priceModifiers"
-	Services       Action = "services"
+	PriceModifiers 	Action = "priceModifiers"
+	Services       	Action = "services"
+	Items          	Action = "items"
+	ItemOptions    	Action = "itemOptions"
 )

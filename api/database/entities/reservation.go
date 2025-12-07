@@ -13,7 +13,8 @@ type Reservation struct {
 	AccountID uint    `json:"accountId"`
 	Account   Account `gorm:"foreignKey:AccountID"`
 
-	ServiceID uint64 `json:"serviceId"`
+	ServiceID uint    `json:"serviceId"`
+	Service   Service `gorm:"foreignKey:ServiceID"`
 
 	DatePlaced    time.Time `json:"datePlaced"`
 	DateOfService time.Time `json:"dateOfService"`

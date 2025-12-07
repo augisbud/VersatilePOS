@@ -7,7 +7,7 @@ import (
 
 type UpdateReservationRequest struct {
 	AccountID         *uint                      `json:"accountId"`
-	ServiceID         *uint64                    `json:"serviceId"`
+	ServiceID         *uint                      `json:"serviceId"`
 	DatePlaced        *time.Time                 `json:"datePlaced"`
 	DateOfService     *time.Time                 `json:"dateOfService"`
 	ReservationLength *uint32                    `json:"reservationLength"`

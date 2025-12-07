@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AssignFunctionToRoleData, AssignFunctionToRoleErrors, AssignFunctionToRoleResponses, AssignRoleToAccountData, AssignRoleToAccountErrors, AssignRoleToAccountResponses, CreateAccountData, CreateAccountErrors, CreateAccountResponses, CreateAccountRoleData, CreateAccountRoleErrors, CreateAccountRoleResponses, CreateBusinessData, CreateBusinessErrors, CreateBusinessResponses, DeleteAccountByIdData, DeleteAccountByIdErrors, DeleteAccountByIdResponses, DeleteAccountRoleByIdData, DeleteAccountRoleByIdErrors, DeleteAccountRoleByIdResponses, GetAccountRoleByIdData, GetAccountRoleByIdErrors, GetAccountRoleByIdResponses, GetAccountsData, GetAccountsErrors, GetAccountsResponses, GetAllFunctionsData, GetAllFunctionsErrors, GetAllFunctionsResponses, GetBusinessByIdData, GetBusinessByIdErrors, GetBusinessByIdResponses, GetBusinessesData, GetBusinessesErrors, GetBusinessesResponses, GetBusinessRolesData, GetBusinessRolesErrors, GetBusinessRolesResponses, GetFunctionsForRoleData, GetFunctionsForRoleErrors, GetFunctionsForRoleResponses, GetMyAccountData, GetMyAccountErrors, GetMyAccountResponses, LoginAccountData, LoginAccountErrors, LoginAccountResponses, UpdateAccountRoleByIdData, UpdateAccountRoleByIdErrors, UpdateAccountRoleByIdResponses, UpdateAccountRoleStatusData, UpdateAccountRoleStatusErrors, UpdateAccountRoleStatusResponses } from './types.gen';
+import type { AssignFunctionToRoleData, AssignFunctionToRoleErrors, AssignFunctionToRoleResponses, AssignRoleToAccountData, AssignRoleToAccountErrors, AssignRoleToAccountResponses, CreateAccountData, CreateAccountErrors, CreateAccountResponses, CreateAccountRoleData, CreateAccountRoleErrors, CreateAccountRoleResponses, CreateBusinessData, CreateBusinessErrors, CreateBusinessResponses, CreatePaymentData, CreatePaymentErrors, CreatePaymentResponses, CreatePriceModifierData, CreatePriceModifierErrors, CreatePriceModifierResponses, CreateReservationData, CreateReservationErrors, CreateReservationResponses, DeleteAccountByIdData, DeleteAccountByIdErrors, DeleteAccountByIdResponses, DeleteAccountRoleByIdData, DeleteAccountRoleByIdErrors, DeleteAccountRoleByIdResponses, DeletePriceModifierData, DeletePriceModifierErrors, DeletePriceModifierResponses, GetAccountRoleByIdData, GetAccountRoleByIdErrors, GetAccountRoleByIdResponses, GetAccountsData, GetAccountsErrors, GetAccountsResponses, GetAllFunctionsData, GetAllFunctionsErrors, GetAllFunctionsResponses, GetBusinessByIdData, GetBusinessByIdErrors, GetBusinessByIdResponses, GetBusinessesData, GetBusinessesErrors, GetBusinessesResponses, GetBusinessRolesData, GetBusinessRolesErrors, GetBusinessRolesResponses, GetMyAccountData, GetMyAccountErrors, GetMyAccountResponses, GetPaymentsData, GetPaymentsErrors, GetPaymentsResponses, GetPriceModifierByIdData, GetPriceModifierByIdErrors, GetPriceModifierByIdResponses, GetPriceModifiersData, GetPriceModifiersErrors, GetPriceModifiersResponses, GetReservationByIdData, GetReservationByIdErrors, GetReservationByIdResponses, GetReservationsData, GetReservationsErrors, GetReservationsResponses, LoginAccountData, LoginAccountErrors, LoginAccountResponses, UpdateAccountRoleByIdData, UpdateAccountRoleByIdErrors, UpdateAccountRoleByIdResponses, UpdateAccountRoleStatusData, UpdateAccountRoleStatusErrors, UpdateAccountRoleStatusResponses, UpdatePriceModifierData, UpdatePriceModifierErrors, UpdatePriceModifierResponses, UpdateReservationData, UpdateReservationErrors, UpdateReservationResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -177,25 +177,6 @@ export const updateAccountRoleById = <ThrowOnError extends boolean = false>(opti
             'Content-Type': 'application/json',
             ...options.headers
         }
-    });
-};
-
-/**
- * Get all functions for an account role
- *
- * Get all functions assigned to a specific account role.
- */
-export const getFunctionsForRole = <ThrowOnError extends boolean = false>(options: Options<GetFunctionsForRoleData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetFunctionsForRoleResponses, GetFunctionsForRoleErrors, ThrowOnError>({
-        responseType: 'json',
-        security: [
-            {
-                name: 'Authorization',
-                type: 'apiKey'
-            }
-        ],
-        url: '/account/role/{id}/function',
-        ...options
     });
 };
 
@@ -383,5 +364,222 @@ export const getBusinessRoles = <ThrowOnError extends boolean = false>(options: 
         ],
         url: '/business/{id}/roles',
         ...options
+    });
+};
+
+/**
+ * Get all payments
+ *
+ * Get all payments
+ */
+export const getPayments = <ThrowOnError extends boolean = false>(options?: Options<GetPaymentsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetPaymentsResponses, GetPaymentsErrors, ThrowOnError>({
+        responseType: 'json',
+        url: '/payment',
+        ...options
+    });
+};
+
+/**
+ * Create a payment
+ *
+ * Create a payment with the provided details
+ */
+export const createPayment = <ThrowOnError extends boolean = false>(options: Options<CreatePaymentData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreatePaymentResponses, CreatePaymentErrors, ThrowOnError>({
+        responseType: 'json',
+        url: '/payment',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get all price modifiers
+ *
+ * Get all price modifiers
+ */
+export const getPriceModifiers = <ThrowOnError extends boolean = false>(options: Options<GetPriceModifiersData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetPriceModifiersResponses, GetPriceModifiersErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/price-modifier',
+        ...options
+    });
+};
+
+/**
+ * Create a price modifier
+ *
+ * Create a price modifier with the provided details
+ */
+export const createPriceModifier = <ThrowOnError extends boolean = false>(options: Options<CreatePriceModifierData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreatePriceModifierResponses, CreatePriceModifierErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/price-modifier',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Delete price modifier
+ *
+ * Delete price modifier by id
+ */
+export const deletePriceModifier = <ThrowOnError extends boolean = false>(options: Options<DeletePriceModifierData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeletePriceModifierResponses, DeletePriceModifierErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/price-modifier/{id}',
+        ...options
+    });
+};
+
+/**
+ * Get price modifier by id
+ *
+ * Get price modifier information by id
+ */
+export const getPriceModifierById = <ThrowOnError extends boolean = false>(options: Options<GetPriceModifierByIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetPriceModifierByIdResponses, GetPriceModifierByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/price-modifier/{id}',
+        ...options
+    });
+};
+
+/**
+ * Update price modifier details
+ *
+ * Update price modifier details
+ */
+export const updatePriceModifier = <ThrowOnError extends boolean = false>(options: Options<UpdatePriceModifierData, ThrowOnError>) => {
+    return (options.client ?? client).put<UpdatePriceModifierResponses, UpdatePriceModifierErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/price-modifier/{id}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get reservations
+ *
+ * Get all reservations
+ */
+export const getReservations = <ThrowOnError extends boolean = false>(options?: Options<GetReservationsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetReservationsResponses, GetReservationsErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/reservation',
+        ...options
+    });
+};
+
+/**
+ * Create reservation
+ *
+ * Create a new reservation
+ */
+export const createReservation = <ThrowOnError extends boolean = false>(options: Options<CreateReservationData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreateReservationResponses, CreateReservationErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/reservation',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get reservation by id
+ *
+ * Get a reservation by its ID
+ */
+export const getReservationById = <ThrowOnError extends boolean = false>(options: Options<GetReservationByIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetReservationByIdResponses, GetReservationByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/reservation/{id}',
+        ...options
+    });
+};
+
+/**
+ * Update reservation details
+ *
+ * Update reservation details
+ */
+export const updateReservation = <ThrowOnError extends boolean = false>(options: Options<UpdateReservationData, ThrowOnError>) => {
+    return (options.client ?? client).put<UpdateReservationResponses, UpdateReservationErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/reservation/{id}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
     });
 };

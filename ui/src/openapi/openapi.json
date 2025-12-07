@@ -1101,6 +1101,11 @@
         },
         "/price-modifier": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get all price modifiers",
                 "produces": [
                     "application/json"
@@ -1110,6 +1115,15 @@
                 ],
                 "summary": "Get all price modifiers",
                 "operationId": "getPriceModifiers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Business ID",
+                        "name": "businessId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1118,6 +1132,24 @@
                             "items": {
                                 "$ref": "#/definitions/models.PriceModifierDto"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
                         }
                     },
                     "500": {
@@ -1129,6 +1161,11 @@
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a price modifier with the provided details",
                 "consumes": [
                     "application/json"
@@ -1165,6 +1202,18 @@
                             "$ref": "#/definitions/models.HTTPError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -1176,6 +1225,11 @@
         },
         "/price-modifier/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get price modifier information by id",
                 "produces": [
                     "application/json"
@@ -1192,6 +1246,13 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Business ID",
+                        "name": "businessId",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1199,6 +1260,24 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.PriceModifierDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
                         }
                     },
                     "404": {
@@ -1216,6 +1295,11 @@
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update price modifier details",
                 "consumes": [
                     "application/json"
@@ -1234,6 +1318,13 @@
                         "description": "Price Modifier ID",
                         "name": "id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Business ID",
+                        "name": "businessId",
+                        "in": "query",
                         "required": true
                     },
                     {
@@ -1259,6 +1350,18 @@
                             "$ref": "#/definitions/models.HTTPError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -1274,6 +1377,11 @@
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete price modifier by id",
                 "produces": [
                     "application/json"
@@ -1290,6 +1398,13 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Business ID",
+                        "name": "businessId",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1304,6 +1419,261 @@
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/reservation": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all reservations",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reservation"
+                ],
+                "summary": "Get reservations",
+                "operationId": "getReservations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ReservationDto"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new reservation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reservation"
+                ],
+                "summary": "Create reservation",
+                "operationId": "createReservation",
+                "parameters": [
+                    {
+                        "description": "Reservation to create",
+                        "name": "reservation",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateReservationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.ReservationDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/reservation/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a reservation by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reservation"
+                ],
+                "summary": "Get reservation by id",
+                "operationId": "getReservationById",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Reservation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ReservationDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update reservation details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reservation"
+                ],
+                "summary": "Update reservation details",
+                "operationId": "updateReservation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Reservation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Reservation updates",
+                        "name": "reservation",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateReservationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ReservationDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/models.HTTPError"
                         }
@@ -1354,12 +1724,31 @@
             "enum": [
                 "accounts",
                 "businesses",
-                "roles"
+                "roles",
+                "reservations",
+                "priceModifiers"
             ],
             "x-enum-varnames": [
                 "Accounts",
                 "Businesses",
-                "Roles"
+                "Roles",
+                "Reservations",
+                "PriceModifiers"
+            ]
+        },
+        "constants.ReservationStatus": {
+            "type": "string",
+            "enum": [
+                "Confirmed",
+                "Completed",
+                "Cancelled",
+                "NoShow"
+            ],
+            "x-enum-varnames": [
+                "ReservationConfirmed",
+                "ReservationCompleted",
+                "ReservationCancelled",
+                "ReservationNoShow"
             ]
         },
         "models.AccountDto": {
@@ -1569,11 +1958,15 @@
         "models.CreatePriceModifierRequest": {
             "type": "object",
             "required": [
+                "businessId",
                 "modifierType",
                 "name",
                 "value"
             ],
             "properties": {
+                "businessId": {
+                    "type": "integer"
+                },
                 "isPercentage": {
                     "type": "boolean"
                 },
@@ -1584,6 +1977,49 @@
                     "type": "string"
                 },
                 "value": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.CreateReservationRequest": {
+            "type": "object",
+            "required": [
+                "accountId",
+                "customer",
+                "dateOfService",
+                "datePlaced",
+                "reservationLength",
+                "serviceId"
+            ],
+            "properties": {
+                "accountId": {
+                    "type": "integer"
+                },
+                "customer": {
+                    "type": "string"
+                },
+                "customerEmail": {
+                    "type": "string"
+                },
+                "customerPhone": {
+                    "type": "string"
+                },
+                "dateOfService": {
+                    "type": "string"
+                },
+                "datePlaced": {
+                    "type": "string"
+                },
+                "reservationLength": {
+                    "type": "integer"
+                },
+                "serviceId": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/constants.ReservationStatus"
+                },
+                "tipAmount": {
                     "type": "number"
                 }
             }
@@ -1649,6 +2085,9 @@
         "models.PriceModifierDto": {
             "type": "object",
             "properties": {
+                "businessId": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -1663,6 +2102,50 @@
                 },
                 "value": {
                     "type": "number"
+                }
+            }
+        },
+        "models.ReservationDto": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "customer": {
+                    "type": "string"
+                },
+                "customerEmail": {
+                    "type": "string"
+                },
+                "customerPhone": {
+                    "type": "string"
+                },
+                "dateOfService": {
+                    "type": "string"
+                },
+                "datePlaced": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "reservationLength": {
+                    "type": "integer"
+                },
+                "serviceId": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/constants.ReservationStatus"
+                },
+                "tipAmount": {
+                    "type": "number"
+                },
+                "updatedAt": {
+                    "type": "string"
                 }
             }
         },
@@ -1710,6 +2193,41 @@
                     "type": "string"
                 },
                 "value": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.UpdateReservationRequest": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "integer"
+                },
+                "customer": {
+                    "type": "string"
+                },
+                "customerEmail": {
+                    "type": "string"
+                },
+                "customerPhone": {
+                    "type": "string"
+                },
+                "dateOfService": {
+                    "type": "string"
+                },
+                "datePlaced": {
+                    "type": "string"
+                },
+                "reservationLength": {
+                    "type": "integer"
+                },
+                "serviceId": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/constants.ReservationStatus"
+                },
+                "tipAmount": {
                     "type": "number"
                 }
             }

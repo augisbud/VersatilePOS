@@ -7,6 +7,7 @@ export enum RouteId {
   UNAUTHORIZED = 'unauthorized',
   BUSINESS = 'business',
   OVERVIEW = 'overview',
+  RESERVATIONS = 'reservations',
 }
 
 export interface ScreenConfig {

@@ -39,10 +39,13 @@ func (s *Service) CreateService(req serviceModels.CreateServiceRequest, userID u
 	}
 
 	service := &entities.Service{
-		BusinessID:    req.BusinessID,
-		Name:          req.Name,
-		HourlyPrice:   req.HourlyPrice,
-		ServiceCharge: req.ServiceCharge,
+		BusinessID:           req.BusinessID,
+		Name:                 req.Name,
+		HourlyPrice:          req.HourlyPrice,
+		ServiceCharge:       req.ServiceCharge,
+		ProvisioningStartTime: req.ProvisioningStartTime,
+		ProvisioningEndTime:   req.ProvisioningEndTime,
+		ProvisioningInterval:  req.ProvisioningInterval,
 	}
 
 	if err := s.repo.CreateService(service); err != nil {
@@ -62,19 +65,23 @@ func (s *Service) CreateService(req serviceModels.CreateServiceRequest, userID u
 	return &dto, nil
 }
 
-func (s *Service) GetServices(userID uint) ([]serviceModels.ServiceDto, error) {
-	services, err := s.repo.GetServices()
+func (s *Service) GetServices(businessID uint, userID uint) ([]serviceModels.ServiceDto, error) {
+	ok, err := s.hasServiceAccess(businessID, userID, constants.Read)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to view services for this business")
+	}
+
+	services, err := s.repo.GetServicesByBusinessID(businessID)
 	if err != nil {
 		return nil, errors.New("failed to get services")
 	}
 
-	// Filter services based on RBAC - only show services where user has Read access
 	serviceDtos := make([]serviceModels.ServiceDto, 0)
 	for _, service := range services {
-		ok, err := s.hasServiceAccess(service.BusinessID, userID, constants.Read)
-		if err == nil && ok {
-			serviceDtos = append(serviceDtos, serviceModels.NewServiceDtoFromEntity(service))
-		}
+		serviceDtos = append(serviceDtos, serviceModels.NewServiceDtoFromEntity(service))
 	}
 
 	return serviceDtos, nil
@@ -140,6 +147,15 @@ func (s *Service) UpdateService(id uint, req serviceModels.UpdateServiceRequest,
 	}
 	if req.ServiceCharge != nil {
 		service.ServiceCharge = *req.ServiceCharge
+	}
+	if req.ProvisioningStartTime != nil {
+		service.ProvisioningStartTime = req.ProvisioningStartTime
+	}
+	if req.ProvisioningEndTime != nil {
+		service.ProvisioningEndTime = req.ProvisioningEndTime
+	}
+	if req.ProvisioningInterval != nil {
+		service.ProvisioningInterval = req.ProvisioningInterval
 	}
 
 	if err := s.repo.UpdateService(service); err != nil {

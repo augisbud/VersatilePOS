@@ -62,11 +62,15 @@ func (ctrl *Controller) CreateService(c *gin.Context) {
 }
 
 // @Summary Get services
-// @Description Get all services
+// @Description Get all services of current business
 // @Tags service
+// @Accept  json
 // @Produce  json
+// @Param   businessId query int true "Business ID"
 // @Success 200 {array} models.ServiceDto
+// @Failure 400 {object} models.HTTPError
 // @Failure 401 {object} models.HTTPError
+// @Failure 403 {object} models.HTTPError
 // @Failure 500 {object} models.HTTPError
 // @Security BearerAuth
 // @Router /service [get]
@@ -78,9 +82,25 @@ func (ctrl *Controller) GetServices(c *gin.Context) {
 		return
 	}
 
-	services, err := ctrl.service.GetServices(userID)
+	businessIDStr := c.Query("businessId")
+	if businessIDStr == "" {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "businessId query parameter is required"})
+		return
+	}
+
+	businessID, err := strconv.ParseUint(businessIDStr, 10, 32)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: err.Error()})
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "invalid businessId"})
+		return
+	}
+
+	services, err := ctrl.service.GetServices(uint(businessID), userID)
+	if err != nil {
+		if err.Error() == "unauthorized to view services for this business" {
+			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: err.Error()})
+		} else {
+			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: err.Error()})
+		}
 		return
 	}
 

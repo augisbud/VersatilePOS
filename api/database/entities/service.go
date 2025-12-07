@@ -1,6 +1,10 @@
 package entities
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Service struct {
 	gorm.Model
@@ -11,5 +15,9 @@ type Service struct {
 	Name         string  `json:"name"`
 	HourlyPrice  float64 `json:"hourlyPrice" gorm:"type:decimal(10,2);not null"`
 	ServiceCharge float64 `json:"serviceCharge" gorm:"type:decimal(10,2);not null;default:0"`
+
+	ProvisioningStartTime *time.Time `json:"provisioningStartTime"`
+	ProvisioningEndTime   *time.Time `json:"provisioningEndTime"`
+	ProvisioningInterval  *uint      `json:"provisioningInterval"` // Duration in minutes
 }
 

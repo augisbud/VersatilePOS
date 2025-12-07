@@ -83,7 +83,7 @@ func (s *Service) CreateReservation(req reservationModels.CreateReservationReque
 	if req.Status != "" {
 		reservation.Status = req.Status
 	} else {
-		reservation.Status = constants.ReservationPending
+		reservation.Status = constants.ReservationConfirmed
 	}
 
 	if req.DatePlaced.IsZero() {

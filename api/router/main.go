@@ -4,6 +4,7 @@ import (
 	"VersatilePOS/account"
 	"VersatilePOS/business"
 	_ "VersatilePOS/docs"
+	"VersatilePOS/item"
 	"VersatilePOS/payment"
 	"VersatilePOS/priceModifier"
 	"VersatilePOS/reservation"
@@ -17,6 +18,7 @@ func RegisterRoutes(r *gin.Engine) {
 	account.RegisterHandlers(r)
 	business.RegisterHandlers(r)
 	reservation.RegisterHandlers(r)
+	item.RegisterHandlers(r)
 	payment.RegisterHandlers(r)
 	priceModifier.RegisterHandlers(r)
 

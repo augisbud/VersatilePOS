@@ -10,4 +10,5 @@ const (
 	PriceModifiers Action = "priceModifiers"
 	Items          Action = "items"
 	ItemOptions    Action = "itemOptions"
+	Orders         Action = "orders"
 )

@@ -13,6 +13,9 @@ type PriceModifier struct {
 	Value        float64                `json:"value" gorm:"type:decimal(10,2);not null"`
 	IsPercentage bool                   `json:"isPercentage" gorm:"default:false"`
 
+	BusinessID uint     `json:"businessId"`
+	Business   Business `gorm:"foreignKey:BusinessID"`
+
 	// Relationships
 	OrderLinks        []PriceModifierOrderLink        `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:PriceModifierID"`
 	ReservationLinks  []PriceModifierReservationLink   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:PriceModifierID"`

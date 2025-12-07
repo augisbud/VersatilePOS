@@ -5,6 +5,7 @@ import (
 	"VersatilePOS/priceModifier/repository"
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
+	"VersatilePOS/generic/rbac"
 	"errors"
 )
 
@@ -18,7 +19,16 @@ func NewService() *Service {
 	}
 }
 
-func (s *Service) CreatePriceModifier(req priceModifierModels.CreatePriceModifierRequest) (*priceModifierModels.PriceModifierDto, error) {
+func (s *Service) CreatePriceModifier(req priceModifierModels.CreatePriceModifierRequest, userID uint) (*priceModifierModels.PriceModifierDto, error) {
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.PriceModifiers, constants.Write, req.BusinessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to create price modifiers for this business")
+	}
+
 	modifierType := constants.ModifierType(req.ModifierType)
 	// Validate modifier type
 	if modifierType != constants.Discount && modifierType != constants.Surcharge &&
@@ -27,6 +37,7 @@ func (s *Service) CreatePriceModifier(req priceModifierModels.CreatePriceModifie
 	}
 
 	priceModifier := &entities.PriceModifier{
+		BusinessID:   req.BusinessID,
 		ModifierType: modifierType,
 		Name:         req.Name,
 		Value:        req.Value,
@@ -42,8 +53,17 @@ func (s *Service) CreatePriceModifier(req priceModifierModels.CreatePriceModifie
 	return &dto, nil
 }
 
-func (s *Service) GetPriceModifiers() ([]priceModifierModels.PriceModifierDto, error) {
-	priceModifiers, err := s.repo.GetPriceModifiers()
+func (s *Service) GetPriceModifiers(businessID uint, userID uint) ([]priceModifierModels.PriceModifierDto, error) {
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.PriceModifiers, constants.Read, businessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to view price modifiers for this business")
+	}
+
+	priceModifiers, err := s.repo.GetPriceModifiers(businessID)
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +76,17 @@ func (s *Service) GetPriceModifiers() ([]priceModifierModels.PriceModifierDto, e
 	return priceModifierDtos, nil
 }
 
-func (s *Service) GetPriceModifierByID(id uint) (*priceModifierModels.PriceModifierDto, error) {
-	priceModifier, err := s.repo.GetPriceModifierByID(id)
+func (s *Service) GetPriceModifierByID(id uint, businessID uint, userID uint) (*priceModifierModels.PriceModifierDto, error) {
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.PriceModifiers, constants.Read, businessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to view price modifiers for this business")
+	}
+
+	priceModifier, err := s.repo.GetPriceModifierByID(id, businessID)
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +98,17 @@ func (s *Service) GetPriceModifierByID(id uint) (*priceModifierModels.PriceModif
 	return &dto, nil
 }
 
-func (s *Service) UpdatePriceModifier(id uint, req priceModifierModels.UpdatePriceModifierRequest) (*priceModifierModels.PriceModifierDto, error) {
-	priceModifier, err := s.repo.GetPriceModifierByID(id)
+func (s *Service) UpdatePriceModifier(id uint, businessID uint, req priceModifierModels.UpdatePriceModifierRequest, userID uint) (*priceModifierModels.PriceModifierDto, error) {
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.PriceModifiers, constants.Write, businessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to update price modifiers for this business")
+	}
+
+	priceModifier, err := s.repo.GetPriceModifierByID(id, businessID)
 	if err != nil {
 		return nil, err
 	}
@@ -107,8 +145,17 @@ func (s *Service) UpdatePriceModifier(id uint, req priceModifierModels.UpdatePri
 	return &dto, nil
 }
 
-func (s *Service) DeletePriceModifier(id uint) error {
-	priceModifier, err := s.repo.GetPriceModifierByID(id)
+func (s *Service) DeletePriceModifier(id uint, businessID uint, userID uint) error {
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.PriceModifiers, constants.Write, businessID, userID)
+	if err != nil {
+		return errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return errors.New("unauthorized to delete price modifiers for this business")
+	}
+
+	priceModifier, err := s.repo.GetPriceModifierByID(id, businessID)
 	if err != nil {
 		return err
 	}

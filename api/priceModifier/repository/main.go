@@ -16,17 +16,17 @@ func (r *Repository) CreatePriceModifier(priceModifier *entities.PriceModifier) 
 	return priceModifier, nil
 }
 
-func (r *Repository) GetPriceModifiers() ([]entities.PriceModifier, error) {
+func (r *Repository) GetPriceModifiers(businessID uint) ([]entities.PriceModifier, error) {
 	var priceModifiers []entities.PriceModifier
-	if result := database.DB.Find(&priceModifiers); result.Error != nil {
+	if result := database.DB.Where("business_id = ?", businessID).Find(&priceModifiers); result.Error != nil {
 		return nil, result.Error
 	}
 	return priceModifiers, nil
 }
 
-func (r *Repository) GetPriceModifierByID(id uint) (*entities.PriceModifier, error) {
+func (r *Repository) GetPriceModifierByID(id uint, businessID uint) (*entities.PriceModifier, error) {
 	var priceModifier entities.PriceModifier
-	if result := database.DB.First(&priceModifier, id); result.Error != nil {
+	if result := database.DB.Where("id = ? AND business_id = ?", id, businessID).First(&priceModifier); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return nil, nil
 		}

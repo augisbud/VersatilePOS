@@ -2,6 +2,8 @@ package service
 
 import (
 	"VersatilePOS/database/entities"
+	"VersatilePOS/generic/constants"
+	"VersatilePOS/generic/rbac"
 	serviceModels "VersatilePOS/service/models"
 	"VersatilePOS/service/repository"
 	"errors"
@@ -17,7 +19,25 @@ func NewService() *Service {
 	}
 }
 
-func (s *Service) CreateService(req serviceModels.CreateServiceRequest) (*serviceModels.ServiceDto, error) {
+// hasServiceAccess checks if user has access to services for a given business
+func (s *Service) hasServiceAccess(businessID uint, userID uint, level constants.AccessLevel) (bool, error) {
+	ok, err := rbac.HasAccess(constants.Services, level, businessID, userID)
+	if err != nil {
+		return false, errors.New("failed to verify permissions")
+	}
+	return ok, nil
+}
+
+func (s *Service) CreateService(req serviceModels.CreateServiceRequest, userID uint) (*serviceModels.ServiceDto, error) {
+	// Check if user has write access to services for this business
+	hasAccess, err := s.hasServiceAccess(req.BusinessID, userID, constants.Write)
+	if err != nil {
+		return nil, err
+	}
+	if !hasAccess {
+		return nil, errors.New("unauthorized")
+	}
+
 	service := &entities.Service{
 		BusinessID:    req.BusinessID,
 		Name:          req.Name,
@@ -42,40 +62,70 @@ func (s *Service) CreateService(req serviceModels.CreateServiceRequest) (*servic
 	return &dto, nil
 }
 
-func (s *Service) GetServices() ([]serviceModels.ServiceDto, error) {
+func (s *Service) GetServices(userID uint) ([]serviceModels.ServiceDto, error) {
 	services, err := s.repo.GetServices()
 	if err != nil {
 		return nil, errors.New("failed to get services")
 	}
 
-	var serviceDtos []serviceModels.ServiceDto
+	// Filter services based on RBAC - only show services where user has Read access
+	serviceDtos := make([]serviceModels.ServiceDto, 0)
 	for _, service := range services {
-		serviceDtos = append(serviceDtos, serviceModels.NewServiceDtoFromEntity(service))
+		ok, err := s.hasServiceAccess(service.BusinessID, userID, constants.Read)
+		if err == nil && ok {
+			serviceDtos = append(serviceDtos, serviceModels.NewServiceDtoFromEntity(service))
+		}
 	}
 
 	return serviceDtos, nil
 }
 
-func (s *Service) GetServiceByID(id uint) (*serviceModels.ServiceDto, error) {
+func (s *Service) GetServiceByID(id uint, userID uint) (*serviceModels.ServiceDto, error) {
 	service, err := s.repo.GetServiceByID(id)
 	if err != nil {
 		return nil, errors.New("failed to get service")
 	}
 	if service == nil {
 		return nil, errors.New("service not found")
+	}
+
+	// Check if user has read access to services for this business
+	hasAccess, err := s.hasServiceAccess(service.BusinessID, userID, constants.Read)
+	if err != nil {
+		return nil, err
+	}
+	if !hasAccess {
+		return nil, errors.New("unauthorized")
 	}
 
 	dto := serviceModels.NewServiceDtoFromEntity(*service)
 	return &dto, nil
 }
 
-func (s *Service) UpdateService(id uint, req serviceModels.UpdateServiceRequest) (*serviceModels.ServiceDto, error) {
+func (s *Service) UpdateService(id uint, req serviceModels.UpdateServiceRequest, userID uint) (*serviceModels.ServiceDto, error) {
 	service, err := s.repo.GetServiceByID(id)
 	if err != nil {
 		return nil, errors.New("failed to get service")
 	}
 	if service == nil {
 		return nil, errors.New("service not found")
+	}
+
+	// Check if user has write access to services for this business
+	hasAccess, err := s.hasServiceAccess(service.BusinessID, userID, constants.Write)
+	if err != nil {
+		return nil, err
+	}
+	if !hasAccess {
+		return nil, errors.New("unauthorized")
+	}
+
+	// If business is being updated, verify access to the new business
+	if req.BusinessID != nil && *req.BusinessID != service.BusinessID {
+		ok, err := s.hasServiceAccess(*req.BusinessID, userID, constants.Write)
+		if err != nil || !ok {
+			return nil, errors.New("unauthorized to assign service to this business")
+		}
 	}
 
 	// Update fields if provided
@@ -109,13 +159,22 @@ func (s *Service) UpdateService(id uint, req serviceModels.UpdateServiceRequest)
 	return &dto, nil
 }
 
-func (s *Service) DeleteService(id uint) error {
+func (s *Service) DeleteService(id uint, userID uint) error {
 	service, err := s.repo.GetServiceByID(id)
 	if err != nil {
 		return errors.New("failed to get service")
 	}
 	if service == nil {
 		return errors.New("service not found")
+	}
+
+	// Check if user has write access to services for this business
+	hasAccess, err := s.hasServiceAccess(service.BusinessID, userID, constants.Write)
+	if err != nil {
+		return err
+	}
+	if !hasAccess {
+		return errors.New("unauthorized")
 	}
 
 	if err := s.repo.DeleteService(id); err != nil {

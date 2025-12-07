@@ -2,6 +2,7 @@ package controller
 
 import (
 	"VersatilePOS/generic/models"
+	"VersatilePOS/middleware"
 	serviceModels "VersatilePOS/service/models"
 	"VersatilePOS/service/service"
 	"net/http"
@@ -28,7 +29,10 @@ func NewController() *Controller {
 // @Param   service  body  models.CreateServiceRequest  true  "Service to create"
 // @Success 201 {object} models.ServiceDto
 // @Failure 400 {object} models.HTTPError
+// @Failure 401 {object} models.HTTPError
+// @Failure 403 {object} models.HTTPError
 // @Failure 500 {object} models.HTTPError
+// @Security BearerAuth
 // @Router /service [post]
 // @Id createService
 func (ctrl *Controller) CreateService(c *gin.Context) {
@@ -38,9 +42,19 @@ func (ctrl *Controller) CreateService(c *gin.Context) {
 		return
 	}
 
-	service, err := ctrl.service.CreateService(req)
+	userID, err := middleware.GetUserIDFromContext(c)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: err.Error()})
+		c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: err.Error()})
+		return
+	}
+
+	service, err := ctrl.service.CreateService(req, userID)
+	if err != nil {
+		if err.Error() == "unauthorized" {
+			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: err.Error()})
+		} else {
+			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: err.Error()})
+		}
 		return
 	}
 
@@ -52,11 +66,19 @@ func (ctrl *Controller) CreateService(c *gin.Context) {
 // @Tags service
 // @Produce  json
 // @Success 200 {array} models.ServiceDto
+// @Failure 401 {object} models.HTTPError
 // @Failure 500 {object} models.HTTPError
+// @Security BearerAuth
 // @Router /service [get]
 // @Id getServices
 func (ctrl *Controller) GetServices(c *gin.Context) {
-	services, err := ctrl.service.GetServices()
+	userID, err := middleware.GetUserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: err.Error()})
+		return
+	}
+
+	services, err := ctrl.service.GetServices(userID)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: err.Error()})
 		return
@@ -72,8 +94,11 @@ func (ctrl *Controller) GetServices(c *gin.Context) {
 // @Param   id   path      int  true  "Service ID"
 // @Success 200 {object} models.ServiceDto
 // @Failure 400 {object} models.HTTPError
+// @Failure 401 {object} models.HTTPError
+// @Failure 403 {object} models.HTTPError
 // @Failure 404 {object} models.HTTPError
 // @Failure 500 {object} models.HTTPError
+// @Security BearerAuth
 // @Router /service/{id} [get]
 // @Id getServiceById
 func (ctrl *Controller) GetServiceById(c *gin.Context) {
@@ -84,10 +109,18 @@ func (ctrl *Controller) GetServiceById(c *gin.Context) {
 		return
 	}
 
-	service, err := ctrl.service.GetServiceByID(uint(id))
+	userID, err := middleware.GetUserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: err.Error()})
+		return
+	}
+
+	service, err := ctrl.service.GetServiceByID(uint(id), userID)
 	if err != nil {
 		if err.Error() == "service not found" {
 			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: err.Error()})
+		} else if err.Error() == "unauthorized" {
+			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: err.Error()})
 		} else {
 			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: err.Error()})
 		}
@@ -106,8 +139,11 @@ func (ctrl *Controller) GetServiceById(c *gin.Context) {
 // @Param   service  body  models.UpdateServiceRequest  true  "Service updates"
 // @Success 200 {object} models.ServiceDto
 // @Failure 400 {object} models.HTTPError
+// @Failure 401 {object} models.HTTPError
+// @Failure 403 {object} models.HTTPError
 // @Failure 404 {object} models.HTTPError
 // @Failure 500 {object} models.HTTPError
+// @Security BearerAuth
 // @Router /service/{id} [put]
 // @Id updateService
 func (ctrl *Controller) UpdateService(c *gin.Context) {
@@ -124,10 +160,18 @@ func (ctrl *Controller) UpdateService(c *gin.Context) {
 		return
 	}
 
-	service, err := ctrl.service.UpdateService(uint(id), req)
+	userID, err := middleware.GetUserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: err.Error()})
+		return
+	}
+
+	service, err := ctrl.service.UpdateService(uint(id), req, userID)
 	if err != nil {
 		if err.Error() == "service not found" {
 			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: err.Error()})
+		} else if err.Error() == "unauthorized" || err.Error() == "unauthorized to assign service to this business" {
+			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: err.Error()})
 		} else {
 			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: err.Error()})
 		}
@@ -143,8 +187,11 @@ func (ctrl *Controller) UpdateService(c *gin.Context) {
 // @Param   id   path      int  true  "Service ID"
 // @Success 204 "No Content"
 // @Failure 400 {object} models.HTTPError
+// @Failure 401 {object} models.HTTPError
+// @Failure 403 {object} models.HTTPError
 // @Failure 404 {object} models.HTTPError
 // @Failure 500 {object} models.HTTPError
+// @Security BearerAuth
 // @Router /service/{id} [delete]
 // @Id deleteService
 func (ctrl *Controller) DeleteService(c *gin.Context) {
@@ -155,10 +202,18 @@ func (ctrl *Controller) DeleteService(c *gin.Context) {
 		return
 	}
 
-	err = ctrl.service.DeleteService(uint(id))
+	userID, err := middleware.GetUserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: err.Error()})
+		return
+	}
+
+	err = ctrl.service.DeleteService(uint(id), userID)
 	if err != nil {
 		if err.Error() == "service not found" {
 			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: err.Error()})
+		} else if err.Error() == "unauthorized" {
+			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: err.Error()})
 		} else {
 			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: err.Error()})
 		}
@@ -170,10 +225,13 @@ func (ctrl *Controller) DeleteService(c *gin.Context) {
 
 func (ctrl *Controller) RegisterRoutes(r *gin.Engine) {
 	serviceGroup := r.Group("/service")
-	serviceGroup.POST("", ctrl.CreateService)
-	serviceGroup.GET("", ctrl.GetServices)
-	serviceGroup.GET("/:id", ctrl.GetServiceById)
-	serviceGroup.PUT("/:id", ctrl.UpdateService)
-	serviceGroup.DELETE("/:id", ctrl.DeleteService)
+	serviceGroup.Use(middleware.AuthMiddleware())
+	{
+		serviceGroup.POST("", ctrl.CreateService)
+		serviceGroup.GET("", ctrl.GetServices)
+		serviceGroup.GET("/:id", ctrl.GetServiceById)
+		serviceGroup.PUT("/:id", ctrl.UpdateService)
+		serviceGroup.DELETE("/:id", ctrl.DeleteService)
+	}
 }
 

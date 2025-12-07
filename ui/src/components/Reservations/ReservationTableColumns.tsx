@@ -1,6 +1,58 @@
-import type { ColumnsType } from 'antd/es/table';
+import { Input, Button, Space } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import type { ColumnsType, ColumnType } from 'antd/es/table';
+import type { FilterDropdownProps } from 'antd/es/table/interface';
 import { ModelsReservationDto } from '@/api/types.gen';
 import { ReservationStatusTag } from './ReservationStatusTag';
+
+const getColumnSearchProps = (): ColumnType<ModelsReservationDto> => ({
+  filterDropdown: ({
+    setSelectedKeys,
+    selectedKeys,
+    confirm,
+    clearFilters,
+  }: FilterDropdownProps) => (
+    <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+      <Input
+        placeholder="Search customer"
+        value={selectedKeys[0]}
+        onChange={(e) =>
+          setSelectedKeys(e.target.value ? [e.target.value] : [])
+        }
+        onPressEnter={() => confirm()}
+        style={{ marginBottom: 8, display: 'block' }}
+      />
+      <Space>
+        <Button
+          onClick={() => {
+            clearFilters?.();
+            confirm();
+          }}
+          size="small"
+          style={{ width: 90 }}
+        >
+          Reset
+        </Button>
+        <Button
+          type="primary"
+          onClick={() => confirm()}
+          icon={<SearchOutlined />}
+          size="small"
+          style={{ width: 90 }}
+        >
+          Search
+        </Button>
+      </Space>
+    </div>
+  ),
+  filterIcon: (filtered: boolean) => (
+    <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+  ),
+  onFilter: (value, record) =>
+    (record.customer ?? '')
+      .toLowerCase()
+      .includes((value as string).toLowerCase()),
+});
 
 export const getReservationColumns = (): ColumnsType<ModelsReservationDto> => {
   return [
@@ -9,6 +61,7 @@ export const getReservationColumns = (): ColumnsType<ModelsReservationDto> => {
       dataIndex: 'customer',
       key: 'customer',
       render: (customer: string) => <strong>{customer}</strong>,
+      ...getColumnSearchProps(),
     },
     {
       title: 'Email',

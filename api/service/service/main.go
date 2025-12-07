@@ -44,13 +44,13 @@ func (s *Service) CreateService(req serviceModels.CreateServiceRequest, userID u
 		return nil, errors.New("unauthorized")
 	}
 
-	// Parse time strings (hh:mm format) to time.Time with a reference date
+	// Parse time strings (hh:mm format) to time.Time in UTC to avoid timezone conversion issues
 	referenceDate := "2000-01-01"
-	startTime, err := time.Parse("2006-01-02 15:04", referenceDate+" "+req.ProvisioningStartTime)
+	startTime, err := time.ParseInLocation("2006-01-02 15:04", referenceDate+" "+req.ProvisioningStartTime, time.UTC)
 	if err != nil {
 		return nil, errors.New("invalid provisioningStartTime format, expected hh:mm")
 	}
-	endTime, err := time.Parse("2006-01-02 15:04", referenceDate+" "+req.ProvisioningEndTime)
+	endTime, err := time.ParseInLocation("2006-01-02 15:04", referenceDate+" "+req.ProvisioningEndTime, time.UTC)
 	if err != nil {
 		return nil, errors.New("invalid provisioningEndTime format, expected hh:mm")
 	}
@@ -167,7 +167,7 @@ func (s *Service) UpdateService(id uint, req serviceModels.UpdateServiceRequest,
 	}
 	if req.ProvisioningStartTime != nil {
 		referenceDate := "2000-01-01"
-		startTime, err := time.Parse("2006-01-02 15:04", referenceDate+" "+*req.ProvisioningStartTime)
+		startTime, err := time.ParseInLocation("2006-01-02 15:04", referenceDate+" "+*req.ProvisioningStartTime, time.UTC)
 		if err != nil {
 			return nil, errors.New("invalid provisioningStartTime format, expected hh:mm")
 		}
@@ -175,7 +175,7 @@ func (s *Service) UpdateService(id uint, req serviceModels.UpdateServiceRequest,
 	}
 	if req.ProvisioningEndTime != nil {
 		referenceDate := "2000-01-01"
-		endTime, err := time.Parse("2006-01-02 15:04", referenceDate+" "+*req.ProvisioningEndTime)
+		endTime, err := time.ParseInLocation("2006-01-02 15:04", referenceDate+" "+*req.ProvisioningEndTime, time.UTC)
 		if err != nil {
 			return nil, errors.New("invalid provisioningEndTime format, expected hh:mm")
 		}

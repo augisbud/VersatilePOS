@@ -1,11 +1,14 @@
 import { useEffect } from 'react';
-import { Table, Typography, Alert } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { Table, Typography, Alert, Button } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { useReservations } from '@/hooks/useReservations';
 import { getReservationColumns } from '@/components/Reservations';
 
 const { Title } = Typography;
 
 export const Reservations = () => {
+  const navigate = useNavigate();
   const { reservations, loading, error, fetchReservations } = useReservations();
 
   useEffect(() => {
@@ -13,6 +16,10 @@ export const Reservations = () => {
   }, []);
 
   const columns = getReservationColumns();
+
+  const handleNewReservation = () => {
+    void navigate('/reservations/new');
+  };
 
   return (
     <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
@@ -27,6 +34,13 @@ export const Reservations = () => {
         <Title level={2} style={{ margin: 0 }}>
           Reservations
         </Title>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={handleNewReservation}
+        >
+          New Reservation
+        </Button>
       </div>
 
       {error && (

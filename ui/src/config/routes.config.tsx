@@ -8,6 +8,7 @@ import { Unauthorized } from '@/pages/Unauthorized';
 import { Business } from '@/pages/Business';
 import { Overview } from '@/pages/Overview';
 import { Reservations } from '@/pages/Reservations';
+import { NewReservation } from '@/pages/NewReservation';
 
 export const routesConfig: ScreenConfig[] = [
   {
@@ -16,14 +17,6 @@ export const routesConfig: ScreenConfig[] = [
     title: 'Overview',
     component: Overview,
     icon: <HomeOutlined />,
-    showInNav: true,
-  },
-  {
-    id: RouteId.BUSINESS,
-    path: '/business',
-    title: 'My Businesses',
-    component: Business,
-    icon: <ShopOutlined />,
     showInNav: true,
   },
   {
@@ -39,6 +32,22 @@ export const routesConfig: ScreenConfig[] = [
     title: 'Reservations',
     component: Reservations,
     icon: <CalendarOutlined />,
+    showInNav: true,
+  },
+  {
+    id: RouteId.NEW_RESERVATION,
+    path: '/reservations/new',
+    title: 'New Reservation',
+    component: NewReservation,
+    showInNav: false,
+    parentPage: RouteId.RESERVATIONS,
+  },
+  {
+    id: RouteId.BUSINESS,
+    path: '/business',
+    title: 'My Businesses',
+    component: Business,
+    icon: <ShopOutlined />,
     showInNav: true,
   },
 ];

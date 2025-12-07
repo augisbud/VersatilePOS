@@ -7,7 +7,12 @@ export const TopNavigation = () => {
 
   const visibleRoutes = routesConfig.filter((route) => route.showInNav);
 
+  const currentRoute = routesConfig.find(
+    (route) => route.path === location.pathname
+  );
+
   const selectedKey =
+    currentRoute?.parentPage ||
     visibleRoutes.find((route) => route.path === location.pathname)?.id ||
     visibleRoutes[0]?.id;
 

@@ -8,6 +8,7 @@ import (
 	serviceModels "VersatilePOS/service/models"
 	"VersatilePOS/service/repository"
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -43,13 +44,24 @@ func (s *Service) CreateService(req serviceModels.CreateServiceRequest, userID u
 		return nil, errors.New("unauthorized")
 	}
 
+	// Parse time strings (hh:mm format) to time.Time in UTC to avoid timezone conversion issues
+	referenceDate := "2000-01-01"
+	startTime, err := time.ParseInLocation("2006-01-02 15:04", referenceDate+" "+req.ProvisioningStartTime, time.UTC)
+	if err != nil {
+		return nil, errors.New("invalid provisioningStartTime format, expected hh:mm")
+	}
+	endTime, err := time.ParseInLocation("2006-01-02 15:04", referenceDate+" "+req.ProvisioningEndTime, time.UTC)
+	if err != nil {
+		return nil, errors.New("invalid provisioningEndTime format, expected hh:mm")
+	}
+
 	service := &entities.Service{
 		BusinessID:           req.BusinessID,
 		Name:                 req.Name,
 		HourlyPrice:          req.HourlyPrice,
 		ServiceCharge:       req.ServiceCharge,
-		ProvisioningStartTime: req.ProvisioningStartTime,
-		ProvisioningEndTime:   req.ProvisioningEndTime,
+		ProvisioningStartTime: startTime,
+		ProvisioningEndTime:   endTime,
 		ProvisioningInterval:  req.ProvisioningInterval,
 	}
 
@@ -154,10 +166,20 @@ func (s *Service) UpdateService(id uint, req serviceModels.UpdateServiceRequest,
 		service.ServiceCharge = *req.ServiceCharge
 	}
 	if req.ProvisioningStartTime != nil {
-		service.ProvisioningStartTime = *req.ProvisioningStartTime
+		referenceDate := "2000-01-01"
+		startTime, err := time.ParseInLocation("2006-01-02 15:04", referenceDate+" "+*req.ProvisioningStartTime, time.UTC)
+		if err != nil {
+			return nil, errors.New("invalid provisioningStartTime format, expected hh:mm")
+		}
+		service.ProvisioningStartTime = startTime
 	}
 	if req.ProvisioningEndTime != nil {
-		service.ProvisioningEndTime = *req.ProvisioningEndTime
+		referenceDate := "2000-01-01"
+		endTime, err := time.ParseInLocation("2006-01-02 15:04", referenceDate+" "+*req.ProvisioningEndTime, time.UTC)
+		if err != nil {
+			return nil, errors.New("invalid provisioningEndTime format, expected hh:mm")
+		}
+		service.ProvisioningEndTime = endTime
 	}
 	if req.ProvisioningInterval != nil {
 		service.ProvisioningInterval = *req.ProvisioningInterval

@@ -35,6 +35,15 @@ export const Business = () => {
     setSelectedBusiness(null);
   };
 
+  const handleCreateBusiness = async (
+    businessData: ModelsCreateBusinessRequest
+  ) => {
+    const result = await createBusiness(businessData);
+    await refreshAccount();
+
+    return result;
+  };
+
   useEffect(() => {
     const loadBusinesses = async () => {
       if (canLoadBusinesses && userBusinessId) {
@@ -64,15 +73,6 @@ export const Business = () => {
       />
     );
   }
-
-  const handleCreateBusiness = async (
-    businessData: ModelsCreateBusinessRequest
-  ) => {
-    const result = await createBusiness(businessData);
-    await refreshAccount();
-
-    return result;
-  };
 
   return (
     <BusinessList

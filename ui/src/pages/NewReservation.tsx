@@ -1,67 +1,71 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Form, Button, Typography, Row, Col, message } from 'antd';
+import { Card, Form, Button, Typography, Row, Col } from 'antd';
 import { PlusOutlined, EditOutlined } from '@ant-design/icons';
 import {
   ClientInformationForm,
   ServiceCard,
-  ServiceSelectionModal,
+  ServiceSelection,
 } from '@/components/Reservations';
 import type { ClientFormValues } from '@/components/Reservations';
 import { useReservations } from '@/hooks/useReservations';
-import { useUser } from '@/hooks/useUser';
-import { ModelsServiceDto } from '@/api/types.gen';
+import { ModelsServiceDto, ModelsAccountDto } from '@/api/types.gen';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
+
+type PageState = 'service-selection' | 'reservation-details';
 
 export const NewReservation = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm<ClientFormValues>();
   const { createReservation, loading } = useReservations();
-  const { user } = useUser();
 
+  const [pageState, setPageState] = useState<PageState>('reservation-details');
   const [selectedService, setSelectedService] =
     useState<ModelsServiceDto | null>(null);
+  const [selectedSpecialist, setSelectedSpecialist] =
+    useState<ModelsAccountDto | null>(null);
   const [serviceDateTime, setServiceDateTime] = useState<string>('');
   const [serviceDuration, setServiceDuration] = useState<number>(0);
-  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
 
   const handleCancel = () => {
     void navigate('/reservations');
   };
 
-  const handleOpenServiceModal = () => {
-    setIsServiceModalOpen(true);
-  };
-
-  const handleCloseServiceModal = () => {
-    setIsServiceModalOpen(false);
-  };
-
-  const handleSelectService = (
+  const handleServiceSelectionContinue = (
     service: ModelsServiceDto,
+    specialist: ModelsAccountDto,
     dateTime: string,
     duration: number
   ) => {
     setSelectedService(service);
+    setSelectedSpecialist(specialist);
     setServiceDateTime(dateTime);
     setServiceDuration(duration);
+    setPageState('reservation-details');
+  };
+
+  const handleServiceSelectionCancel = () => {
+    setPageState('reservation-details');
+  };
+
+  const handleOpenServiceSelection = () => {
+    setPageState('service-selection');
   };
 
   const handleConfirmReservation = async () => {
     try {
       const values = await form.validateFields();
 
-      if (!selectedService?.id || !user?.id) {
-        void message.error('Missing required information');
+      if (!selectedService?.id || !selectedSpecialist?.id) {
         return;
       }
 
       const customerName = `${values.name} ${values.surname}`;
 
       await createReservation({
-        accountId: user.id,
+        accountId: selectedSpecialist.id,
         serviceId: selectedService.id,
         customer: customerName,
         customerEmail: values.email || undefined,
@@ -72,15 +76,27 @@ export const NewReservation = () => {
         status: 'Confirmed',
       });
 
-      void message.success('Reservation created successfully!');
       void navigate('/reservations');
     } catch (error) {
       console.error('Failed to create reservation:', error);
-      void message.error('Failed to create reservation');
     }
   };
 
   const hasService = selectedService && serviceDateTime && serviceDuration;
+
+  if (pageState === 'service-selection') {
+    return (
+      <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+        <ServiceSelection
+          onCancel={handleServiceSelectionCancel}
+          onContinue={handleServiceSelectionContinue}
+          initialService={selectedService}
+          initialSpecialist={selectedSpecialist}
+          initialDateTime={serviceDateTime || undefined}
+        />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -105,11 +121,21 @@ export const NewReservation = () => {
           <Col xs={24} md={12}>
             <Title level={5}>Chosen service</Title>
             {hasService ? (
-              <ServiceCard
-                service={selectedService}
-                dateTime={serviceDateTime}
-                duration={serviceDuration}
-              />
+              <>
+                <ServiceCard
+                  service={selectedService}
+                  dateTime={serviceDateTime}
+                  duration={serviceDuration}
+                />
+                {selectedSpecialist && (
+                  <Text
+                    type="secondary"
+                    style={{ display: 'block', marginTop: '8px' }}
+                  >
+                    Specialist: {selectedSpecialist.name}
+                  </Text>
+                )}
+              </>
             ) : (
               <Text type="secondary">No service selected yet</Text>
             )}
@@ -127,7 +153,7 @@ export const NewReservation = () => {
           <Col>
             <Button
               icon={hasService ? <EditOutlined /> : <PlusOutlined />}
-              onClick={handleOpenServiceModal}
+              onClick={handleOpenServiceSelection}
             >
               {hasService ? 'Change Service' : 'Add Service'}
             </Button>
@@ -144,16 +170,6 @@ export const NewReservation = () => {
           </Col>
         </Row>
       </Card>
-
-      {/* This one is temporary  */}
-      <ServiceSelectionModal
-        open={isServiceModalOpen}
-        onClose={handleCloseServiceModal}
-        onSelect={handleSelectService}
-        initialService={selectedService}
-        initialDateTime={serviceDateTime}
-        initialDuration={serviceDuration}
-      />
     </div>
   );
 };

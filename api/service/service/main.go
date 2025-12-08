@@ -255,15 +255,25 @@ func (s *Service) AssignServiceToEmployee(employeeID uint, req serviceModels.Ass
 		return errors.New("failed to get employee")
 	}
 
-	// Verify that the employee belongs to the same business as the service
-	isEmployee := false
+	belongsToBusiness := false
+	
 	for _, business := range employee.MemberOf {
 		if business.ID == service.BusinessID {
-			isEmployee = true
+			belongsToBusiness = true
 			break
 		}
 	}
-	if !isEmployee {
+	
+	if !belongsToBusiness {
+		for _, business := range employee.OwnedBusinesses {
+			if business.ID == service.BusinessID {
+				belongsToBusiness = true
+				break
+			}
+		}
+	}
+	
+	if !belongsToBusiness {
 		return errors.New("employee does not belong to the service's business")
 	}
 
@@ -310,4 +320,5 @@ func (s *Service) RemoveServiceFromEmployee(employeeID uint, serviceID uint, use
 
 	return nil
 }
+
 

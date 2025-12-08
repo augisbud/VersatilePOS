@@ -95,7 +95,7 @@ export const OrderItems = () => {
   useEffect(() => {
     void loadData();
     // We only want to re-run when the order id changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [parsedOrderId]);
 
   useEffect(() => {
@@ -255,7 +255,9 @@ export const OrderItems = () => {
         <Space>
           <Button
             icon={<ArrowLeftOutlined />}
-            onClick={() => navigate('/orders')}
+              onClick={() => {
+                void navigate('/orders');
+              }}
             type="text"
           >
             Back to orders

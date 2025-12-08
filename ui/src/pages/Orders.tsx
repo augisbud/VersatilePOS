@@ -99,7 +99,7 @@ export const Orders = () => {
   };
 
   const handleNewOrder = () => {
-    navigate('/orders/new');
+    void navigate('/orders/new');
   };
 
   const handleOpenModal = (order: ModelsOrderDto) => {
@@ -199,7 +199,9 @@ export const Orders = () => {
             {record.id && (
               <Button
                 type="link"
-                onClick={() => navigate(`/orders/${record.id}/items`)}
+                onClick={() => {
+                  void navigate(`/orders/${record.id}/items`);
+                }}
               >
                 Items
               </Button>

@@ -26,7 +26,10 @@ export interface ItemFormValues {
   name: string;
   price: number;
   quantityInStock?: number;
+  trackInventory?: boolean;
 }
+
+type ItemWithInventory = ModelsItemDto & { trackInventory?: boolean };
 
 interface BusinessItemsProps {
   businessId: number;
@@ -35,7 +38,7 @@ interface BusinessItemsProps {
 export const BusinessItems = ({ businessId }: BusinessItemsProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editingItem, setEditingItem] = useState<ModelsItemDto | null>(null);
+  const [editingItem, setEditingItem] = useState<ItemWithInventory | null>(null);
   const [form] = Form.useForm<ItemFormValues>();
   const trackInventory = Form.useWatch('trackInventory', form);
 
@@ -62,7 +65,7 @@ export const BusinessItems = ({ businessId }: BusinessItemsProps) => {
     }
   }, [trackInventory, form]);
 
-  const handleOpenModal = (item?: ModelsItemDto) => {
+  const handleOpenModal = (item?: ItemWithInventory) => {
     setEditingItem(item ?? null);
     setIsModalOpen(true);
     form.setFieldsValue({
@@ -117,7 +120,7 @@ export const BusinessItems = ({ businessId }: BusinessItemsProps) => {
     }
   };
 
-  const columns: ColumnsType<ModelsItemDto> = [
+  const columns: ColumnsType<ItemWithInventory> = [
     {
       title: 'Name',
       dataIndex: 'name',
@@ -204,7 +207,7 @@ export const BusinessItems = ({ businessId }: BusinessItemsProps) => {
       )}
       <Table
         columns={columns}
-        dataSource={items}
+        dataSource={items as ItemWithInventory[]}
         rowKey="id"
         loading={loading}
         pagination={false}

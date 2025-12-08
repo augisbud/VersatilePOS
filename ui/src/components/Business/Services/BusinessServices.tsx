@@ -13,6 +13,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { ModelsServiceDto } from '@/api/types.gen';
 import { ServiceFormModal, ServiceFormValues } from './ServiceFormModal';
 import { AssignEmployeeModal } from './AssignEmployeeModal';
+import { formatCurrency, formatDuration } from '@/utils/formatters';
 
 const { Title } = Typography;
 
@@ -105,14 +106,6 @@ export const BusinessServices = ({ businessId }: BusinessServicesProps) => {
     }
   };
 
-  const formatPrice = (price?: number) => {
-    if (price === undefined || price === null) {
-      return '-';
-    }
-
-    return `$${price.toFixed(2)}`;
-  };
-
   const columns: ColumnsType<ModelsServiceDto> = [
     {
       title: 'Service Name',
@@ -126,12 +119,12 @@ export const BusinessServices = ({ businessId }: BusinessServicesProps) => {
       render: (_, record) => (
         <Space size={2}>
           <Tag color="green" style={{ marginRight: 0 }}>
-            {formatPrice(record.hourlyPrice)}/hr
+            {formatCurrency(record.hourlyPrice)}/hr
           </Tag>
           {record.serviceCharge ? (
             <>
               <span>+</span>
-              <Tag color="blue">{formatPrice(record.serviceCharge)}</Tag>
+              <Tag color="blue">{formatCurrency(record.serviceCharge)}</Tag>
             </>
           ) : null}
         </Space>
@@ -141,7 +134,7 @@ export const BusinessServices = ({ businessId }: BusinessServicesProps) => {
       title: 'Booking Interval',
       dataIndex: 'provisioningInterval',
       key: 'provisioningInterval',
-      render: (interval) => (interval ? `${interval} min` : '-'),
+      render: (interval) => formatDuration(interval),
     },
     {
       title: 'Available Hours',

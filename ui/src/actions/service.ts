@@ -2,6 +2,7 @@ import {
   ModelsServiceDto,
   ModelsCreateServiceRequest,
   ModelsUpdateServiceRequest,
+  ModelsAssignServiceRequest,
 } from '@/api/types.gen';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import {
@@ -10,6 +11,8 @@ import {
   createService,
   updateService,
   deleteService,
+  assignServiceToEmployee,
+  removeServiceFromEmployee,
 } from '@/api';
 
 export const fetchServices = createAsyncThunk<ModelsServiceDto[], number>(
@@ -89,5 +92,55 @@ export const removeService = createAsyncThunk<number, number>(
     }
 
     return serviceId;
+  }
+);
+
+export const assignEmployeeToService = createAsyncThunk<
+  { employeeId: number; serviceId: number },
+  { employeeId: number; serviceId: number }
+>(
+  'service/assignEmployeeToService',
+  async ({
+    employeeId,
+    serviceId,
+  }: {
+    employeeId: number;
+    serviceId: number;
+  }) => {
+    const body: ModelsAssignServiceRequest = { serviceId };
+    const response = await assignServiceToEmployee({
+      path: { employeeId },
+      body,
+    });
+
+    if (response.error) {
+      throw new Error(response.error.error);
+    }
+
+    return { employeeId, serviceId };
+  }
+);
+
+export const unassignEmployeeFromService = createAsyncThunk<
+  { employeeId: number; serviceId: number },
+  { employeeId: number; serviceId: number }
+>(
+  'service/unassignEmployeeFromService',
+  async ({
+    employeeId,
+    serviceId,
+  }: {
+    employeeId: number;
+    serviceId: number;
+  }) => {
+    const response = await removeServiceFromEmployee({
+      path: { id: serviceId, employeeId },
+    });
+
+    if (response.error) {
+      throw new Error(response.error.error);
+    }
+
+    return { employeeId, serviceId };
   }
 );

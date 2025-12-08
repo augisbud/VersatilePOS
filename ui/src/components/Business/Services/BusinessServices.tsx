@@ -1,11 +1,18 @@
 import { Card, Table, Typography, Button, Popconfirm, Tag, Space } from 'antd';
-import { DeleteOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  PlusOutlined,
+  EditOutlined,
+  UserAddOutlined,
+} from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import { useServices } from '@/hooks/useServices';
+import { useEmployees } from '@/hooks/useEmployees';
 import { useUser } from '@/hooks/useUser';
 import type { ColumnsType } from 'antd/es/table';
 import { ModelsServiceDto } from '@/api/types.gen';
 import { ServiceFormModal, ServiceFormValues } from './ServiceFormModal';
+import { AssignEmployeeModal } from './AssignEmployeeModal';
 
 const { Title } = Typography;
 
@@ -21,7 +28,12 @@ export const BusinessServices = ({ businessId }: BusinessServicesProps) => {
     createService,
     updateService,
     deleteService,
+    assignEmployeeToService,
+    unassignEmployeeFromService,
+    getServiceById,
+    assignmentLoading,
   } = useServices();
+  const { employees, fetchEmployees } = useEmployees();
   const { canWriteServices } = useUser();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,10 +41,33 @@ export const BusinessServices = ({ businessId }: BusinessServicesProps) => {
   const [editingService, setEditingService] = useState<ModelsServiceDto | null>(
     null
   );
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [assigningServiceId, setAssigningServiceId] = useState<number | null>(
+    null
+  );
+
+  const assigningService = assigningServiceId
+    ? getServiceById(assigningServiceId)
+    : null;
 
   useEffect(() => {
     void fetchServices(businessId);
+    void fetchEmployees(businessId);
   }, [businessId]);
+
+  const handleOpenAssignModal = (service: ModelsServiceDto) => {
+    setAssigningServiceId(service.id ?? null);
+    setIsAssignModalOpen(true);
+  };
+
+  const handleCloseAssignModal = () => {
+    setIsAssignModalOpen(false);
+    setAssigningServiceId(null);
+  };
+
+  const handleAssignSuccess = () => {
+    void fetchServices(businessId);
+  };
 
   const handleDelete = async (serviceId: number) => {
     try {
@@ -86,17 +121,21 @@ export const BusinessServices = ({ businessId }: BusinessServicesProps) => {
       render: (name) => <span style={{ fontWeight: 500 }}>{name}</span>,
     },
     {
-      title: 'Hourly Price',
-      dataIndex: 'hourlyPrice',
-      key: 'hourlyPrice',
-      render: (price) => <Tag color="green">{formatPrice(price)}/hr</Tag>,
-    },
-    {
-      title: 'Service Charge',
-      dataIndex: 'serviceCharge',
-      key: 'serviceCharge',
-      render: (charge) =>
-        charge ? <Tag color="blue">{formatPrice(charge)}</Tag> : '-',
+      title: 'Pricing',
+      key: 'pricing',
+      render: (_, record) => (
+        <Space size={2}>
+          <Tag color="green" style={{ marginRight: 0 }}>
+            {formatPrice(record.hourlyPrice)}/hr
+          </Tag>
+          {record.serviceCharge ? (
+            <>
+              <span>+</span>
+              <Tag color="blue">{formatPrice(record.serviceCharge)}</Tag>
+            </>
+          ) : null}
+        </Space>
+      ),
     },
     {
       title: 'Booking Interval',
@@ -115,6 +154,29 @@ export const BusinessServices = ({ businessId }: BusinessServicesProps) => {
         ) : (
           '-'
         ),
+    },
+    {
+      title: 'Assigned Employees',
+      key: 'employees',
+      render: (_, record) => (
+        <Space size={[4, 4]} wrap>
+          {record.employees && record.employees.length > 0 ? (
+            record.employees.map((employee) => (
+              <Tag key={employee.id}>{employee.name}</Tag>
+            ))
+          ) : (
+            <span style={{ color: '#999' }}>No employees</span>
+          )}
+          {canWriteServices && (
+            <Button
+              type="dashed"
+              size="small"
+              icon={<UserAddOutlined />}
+              onClick={() => handleOpenAssignModal(record)}
+            />
+          )}
+        </Space>
+      ),
     },
   ];
 
@@ -185,6 +247,17 @@ export const BusinessServices = ({ businessId }: BusinessServicesProps) => {
         isSubmitting={isSubmitting}
         onClose={handleCloseModal}
         onSubmit={(values) => void handleSubmit(values)}
+      />
+
+      <AssignEmployeeModal
+        open={isAssignModalOpen}
+        service={assigningService}
+        employees={employees}
+        isLoading={assignmentLoading}
+        onClose={handleCloseAssignModal}
+        onAssign={assignEmployeeToService}
+        onUnassign={unassignEmployeeFromService}
+        onSuccess={handleAssignSuccess}
       />
     </>
   );

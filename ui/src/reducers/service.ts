@@ -5,6 +5,8 @@ import {
   addService,
   editService,
   removeService,
+  assignEmployeeToService,
+  unassignEmployeeFromService,
 } from '@/actions/service';
 import { ModelsServiceDto } from '@/api/types.gen';
 
@@ -12,6 +14,7 @@ export interface ServiceState {
   services: ModelsServiceDto[];
   selectedService?: ModelsServiceDto;
   loading: boolean;
+  assignmentLoading: boolean;
   error?: string;
 }
 
@@ -19,6 +22,7 @@ const initialState: ServiceState = {
   services: [],
   selectedService: undefined,
   loading: false,
+  assignmentLoading: false,
 };
 
 export const serviceReducer = createReducer(initialState, (builder) => {
@@ -95,6 +99,48 @@ export const serviceReducer = createReducer(initialState, (builder) => {
     })
     .addCase(removeService.rejected, (state, action) => {
       state.loading = false;
+      state.error = action.error.message;
+    })
+    // Assign employee to service
+    .addCase(assignEmployeeToService.pending, (state) => {
+      state.assignmentLoading = true;
+      state.error = undefined;
+    })
+    .addCase(assignEmployeeToService.fulfilled, (state) => {
+      state.assignmentLoading = false;
+    })
+    .addCase(assignEmployeeToService.rejected, (state, action) => {
+      state.assignmentLoading = false;
+      state.error = action.error.message;
+    })
+    // Unassign employee from service
+    .addCase(unassignEmployeeFromService.pending, (state) => {
+      state.assignmentLoading = true;
+      state.error = undefined;
+    })
+    .addCase(unassignEmployeeFromService.fulfilled, (state, { payload }) => {
+      const service = state.services.find((s) => s.id === payload.serviceId);
+
+      if (service && service.employees) {
+        service.employees = service.employees.filter(
+          (e) => e.id !== payload.employeeId
+        );
+      }
+
+      if (
+        state.selectedService?.id === payload.serviceId &&
+        state.selectedService.employees
+      ) {
+        state.selectedService.employees =
+          state.selectedService.employees.filter(
+            (e) => e.id !== payload.employeeId
+          );
+      }
+
+      state.assignmentLoading = false;
+    })
+    .addCase(unassignEmployeeFromService.rejected, (state, action) => {
+      state.assignmentLoading = false;
       state.error = action.error.message;
     });
 });

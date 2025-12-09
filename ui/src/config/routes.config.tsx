@@ -2,6 +2,7 @@ import {
   CalendarOutlined,
   HomeOutlined,
   ShopOutlined,
+  ShoppingCartOutlined,
 } from '@ant-design/icons';
 import { ScreenConfig, RouteId } from '@/types/routes';
 import { Unauthorized } from '@/pages/Unauthorized';
@@ -9,6 +10,9 @@ import { Business } from '@/pages/Business';
 import { Overview } from '@/pages/Overview';
 import { Reservations } from '@/pages/Reservations';
 import { NewReservation } from '@/pages/NewReservation';
+import { Orders } from '@/pages/Orders';
+import { NewOrder } from '@/pages/NewOrder';
+import { OrderItems } from '@/pages/OrderItems';
 
 export const routesConfig: ScreenConfig[] = [
   {
@@ -25,6 +29,30 @@ export const routesConfig: ScreenConfig[] = [
     title: 'Unauthorized',
     component: Unauthorized,
     showInNav: false,
+  },
+  {
+    id: RouteId.ORDERS,
+    path: '/orders',
+    title: 'Orders',
+    component: Orders,
+    icon: <ShoppingCartOutlined />,
+    showInNav: true,
+  },
+  {
+    id: RouteId.NEW_ORDER,
+    path: '/orders/new',
+    title: 'New Order',
+    component: NewOrder,
+    showInNav: false,
+    parentPage: RouteId.ORDERS,
+  },
+  {
+    id: RouteId.ORDER_ITEMS,
+    path: '/orders/:orderId/items',
+    title: 'Order Items',
+    component: OrderItems,
+    showInNav: false,
+    parentPage: RouteId.ORDERS,
   },
   {
     id: RouteId.RESERVATIONS,

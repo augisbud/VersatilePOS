@@ -6,6 +6,8 @@ import { functionReducer } from './function';
 import { roleReducer } from './role';
 import { reservationReducer } from './reservation';
 import { serviceReducer } from './service';
+import { itemReducer } from './item';
+import { orderReducer } from './order';
 
 export const rootReducer = combineReducers({
   user: userReducer,
@@ -15,4 +17,6 @@ export const rootReducer = combineReducers({
   role: roleReducer,
   reservation: reservationReducer,
   service: serviceReducer,
+  item: itemReducer,
+  order: orderReducer,
 });

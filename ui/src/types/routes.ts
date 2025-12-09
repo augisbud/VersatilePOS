@@ -7,6 +7,9 @@ export enum RouteId {
   UNAUTHORIZED = 'unauthorized',
   BUSINESS = 'business',
   OVERVIEW = 'overview',
+  ORDERS = 'orders',
+  NEW_ORDER = 'new_order',
+  ORDER_ITEMS = 'order_items',
   RESERVATIONS = 'reservations',
   NEW_RESERVATION = 'new_reservation',
 }

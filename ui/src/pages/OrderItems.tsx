@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, Card, message } from 'antd';
+import { Alert, Card } from 'antd';
 import { useOrders } from '@/hooks/useOrders';
 import { useItems } from '@/hooks/useItems';
 import { useUser } from '@/hooks/useUser';
@@ -76,7 +76,6 @@ export const OrderItems = () => {
 
   useEffect(() => {
     void loadData();
-    // We only want to re-run when the order id changes
   }, [parsedOrderId]);
 
   useEffect(() => {
@@ -102,61 +101,41 @@ export const OrderItems = () => {
   };
 
   const handleSave = async (item: ModelsOrderItemDto) => {
-    if (!item.id || !parsedOrderId) return;
+    if (!item.id || !parsedOrderId) {
+      return;
+    }
 
     const nextCount = counts[item.id] ?? item.count ?? 0;
     if (nextCount <= 0) {
-      message.error('Quantity must be at least 1');
       return;
     }
 
-    try {
-      await updateOrderItem(parsedOrderId, item.id, { count: nextCount });
-      message.success('Order item updated');
-      await fetchItemsForOrder(parsedOrderId);
-    } catch (err) {
-      console.error('Failed to update order item', err);
-      message.error('Failed to update order item');
-    }
+    await updateOrderItem(parsedOrderId, item.id, { count: nextCount });
+    await fetchItemsForOrder(parsedOrderId);
   };
 
   const handleAddItem = async () => {
-    if (!parsedOrderId) return;
-    if (!itemToAdd) {
-      message.error('Select an item to add');
-      return;
-    }
-    if (itemQuantity <= 0) {
-      message.error('Quantity must be at least 1');
+    if (!parsedOrderId || !itemToAdd || itemQuantity <= 0) {
       return;
     }
 
-    try {
-      await addItemToOrder(parsedOrderId, {
-        itemId: itemToAdd,
-        count: itemQuantity,
-      });
-      message.success('Item added to order');
-      await fetchItemsForOrder(parsedOrderId);
-      setItemQuantity(1);
-      setItemToAdd(undefined);
-    } catch (err) {
-      console.error('Failed to add item to order', err);
-      message.error('Failed to add item to order');
-    }
+    await addItemToOrder(parsedOrderId, {
+      itemId: itemToAdd,
+      count: itemQuantity,
+    });
+    await fetchItemsForOrder(parsedOrderId);
+
+    setItemQuantity(1);
+    setItemToAdd(undefined);
   };
 
   const handleRemoveItem = async (item: ModelsOrderItemDto) => {
-    if (!parsedOrderId || !item.id) return;
-
-    try {
-      await removeItemFromOrder(parsedOrderId, item.id);
-      message.success('Item removed from order');
-      await fetchItemsForOrder(parsedOrderId);
-    } catch (err) {
-      console.error('Failed to remove order item', err);
-      message.error('Failed to remove order item');
+    if (!parsedOrderId || !item.id) {
+      return;
     }
+
+    await removeItemFromOrder(parsedOrderId, item.id);
+    await fetchItemsForOrder(parsedOrderId);
   };
 
   if (!canReadOrders) {

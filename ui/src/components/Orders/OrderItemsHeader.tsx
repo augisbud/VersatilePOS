@@ -10,7 +10,12 @@ type Props = {
 
 const { Title } = Typography;
 
-export const OrderItemsHeader = ({ onBack, onRefresh, loading, hasOrderId }: Props) => (
+export const OrderItemsHeader = ({
+  onBack,
+  onRefresh,
+  loading,
+  hasOrderId,
+}: Props) => (
   <Space
     style={{ marginBottom: 16, width: '100%', justifyContent: 'space-between' }}
   >

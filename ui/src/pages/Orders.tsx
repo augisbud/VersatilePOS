@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Card, Form, message } from 'antd';
+import { Alert, Card, Form } from 'antd';
 import { useOrders } from '@/hooks/useOrders';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
@@ -100,25 +100,21 @@ export const Orders = () => {
   };
 
   const handleSubmit = async () => {
-    try {
-      const values = await form.validateFields();
-      if (!editingOrder?.id) return;
-
-      await updateOrder(editingOrder.id, {
-        customer: values.customer || undefined,
-        customerEmail: values.customerEmail || undefined,
-        customerPhone: values.customerPhone || undefined,
-        serviceCharge: values.serviceCharge,
-        status: values.status || undefined,
-        tipAmount: values.tipAmount,
-      });
-
-      message.success('Order updated');
-      handleCloseModal();
-    } catch (err) {
-      console.error('Failed to update order', err);
-      message.error('Failed to update order');
+    const values = await form.validateFields();
+    if (!editingOrder?.id) {
+      return;
     }
+
+    await updateOrder(editingOrder.id, {
+      customer: values.customer || undefined,
+      customerEmail: values.customerEmail || undefined,
+      customerPhone: values.customerPhone || undefined,
+      serviceCharge: values.serviceCharge,
+      status: values.status || undefined,
+      tipAmount: values.tipAmount,
+    });
+
+    handleCloseModal();
   };
 
   if (!canReadOrders) {

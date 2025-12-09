@@ -1,28 +1,22 @@
-import { Space, Table, Typography, Button, Popconfirm } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import { Button, Popconfirm, Space, Tag, Typography } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { ModelsItemDto } from '@/api/types.gen';
-
-type Props = {
-  items: ModelsItemDto[];
-  loading: boolean;
-  canWriteItems: boolean;
-  selectedBusinessId?: number | null;
-  onEdit: (item: ModelsItemDto) => void;
-  onDelete: (itemId: number) => void;
-};
+import type { ColumnsType } from 'antd/es/table';
+import { ItemWithInventory } from './ItemFormModal';
 
 const { Text } = Typography;
 
-export const ItemsTable = ({
-  items,
-  loading,
+interface GetItemColumnsParams {
+  canWriteItems: boolean;
+  onEdit: (item: ItemWithInventory) => void;
+  onDelete: (itemId: number) => void;
+}
+
+export const getItemColumns = ({
   canWriteItems,
-  selectedBusinessId,
   onEdit,
   onDelete,
-}: Props) => {
-  const columns: ColumnsType<ModelsItemDto> = [
+}: GetItemColumnsParams): ColumnsType<ItemWithInventory> => {
+  const columns: ColumnsType<ItemWithInventory> = [
     {
       title: 'Name',
       dataIndex: 'name',
@@ -34,13 +28,22 @@ export const ItemsTable = ({
       dataIndex: 'price',
       key: 'price',
       render: (value?: number) =>
-        value !== undefined ? `$${value.toFixed(2)}` : '-',
+        value !== undefined ? <Tag color="blue">${value.toFixed(2)}</Tag> : '—',
     },
     {
       title: 'Quantity in Stock',
       dataIndex: 'quantityInStock',
       key: 'quantityInStock',
       render: (value?: number) => (value !== undefined ? value : '—'),
+    },
+    {
+      title: 'Tracking',
+      key: 'trackInventory',
+      render: (_, record) => {
+        const isTracking =
+          record.trackInventory ?? record.quantityInStock !== undefined;
+        return isTracking ? <Tag color="green">On</Tag> : 'Off';
+      },
     },
   ];
 
@@ -61,7 +64,7 @@ export const ItemsTable = ({
           <Popconfirm
             title="Delete item"
             description="Are you sure you want to delete this item?"
-            onConfirm={() => record.id && onDelete(record.id)}
+            onConfirm={() => onDelete(record.id!)}
             okText="Yes"
             cancelText="No"
           >
@@ -74,23 +77,5 @@ export const ItemsTable = ({
     });
   }
 
-  return (
-    <Table
-      columns={columns}
-      dataSource={items}
-      rowKey="id"
-      loading={loading}
-      pagination={{
-        pageSize: 10,
-        showSizeChanger: true,
-        showTotal: (total, range) =>
-          `${range[0]}-${range[1]} of ${total} items`,
-      }}
-      locale={{
-        emptyText: selectedBusinessId
-          ? 'No items found for this business.'
-          : 'Select a business to view items.',
-      }}
-    />
-  );
+  return columns;
 };

@@ -43,7 +43,8 @@ export const OrderItemsTable = ({
       key: 'count',
       width: 160,
       render: (_: number | undefined, record) => {
-        const current = record.id !== undefined ? counts[record.id] : record.count;
+        const current =
+          record.id !== undefined ? counts[record.id] : record.count;
         return (
           <InputNumber
             min={1}
@@ -61,7 +62,11 @@ export const OrderItemsTable = ({
       render: (_, record) =>
         record.id && canWriteOrders ? (
           <Space size="small">
-            <Button type="link" icon={<SaveOutlined />} onClick={() => onSave(record)}>
+            <Button
+              type="link"
+              icon={<SaveOutlined />}
+              onClick={() => onSave(record)}
+            >
               Save
             </Button>
             <Button

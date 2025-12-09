@@ -43,7 +43,9 @@ export const OrdersTable = ({
       dataIndex: 'status',
       key: 'status',
       render: (value?: string) => {
-        const color = value ? ORDER_STATUS_COLOR[value] ?? 'default' : 'default';
+        const color = value
+          ? (ORDER_STATUS_COLOR[value] ?? 'default')
+          : 'default';
         return value ? <Tag color={color}>{value}</Tag> : <Tag>Unknown</Tag>;
       },
     },
@@ -51,19 +53,22 @@ export const OrdersTable = ({
       title: 'Service Charge',
       dataIndex: 'serviceCharge',
       key: 'serviceCharge',
-      render: (value?: number) => (value !== undefined ? `$${value.toFixed(2)}` : '—'),
+      render: (value?: number) =>
+        value !== undefined ? `$${value.toFixed(2)}` : '—',
     },
     {
       title: 'Tip',
       dataIndex: 'tipAmount',
       key: 'tipAmount',
-      render: (value?: number) => (value !== undefined ? `$${value.toFixed(2)}` : '—'),
+      render: (value?: number) =>
+        value !== undefined ? `$${value.toFixed(2)}` : '—',
     },
     {
       title: 'Placed At',
       dataIndex: 'datePlaced',
       key: 'datePlaced',
-      render: (value?: string) => (value ? new Date(value).toLocaleString() : '—'),
+      render: (value?: string) =>
+        value ? new Date(value).toLocaleString() : '—',
     },
     {
       title: 'Actions',
@@ -76,7 +81,10 @@ export const OrdersTable = ({
               Edit
             </Button>
             {record.id && (
-              <Button type="link" onClick={() => record.id && onItems(record.id)}>
+              <Button
+                type="link"
+                onClick={() => record.id && onItems(record.id)}
+              >
                 Items
               </Button>
             )}
@@ -94,7 +102,8 @@ export const OrdersTable = ({
       pagination={{
         pageSize: 20,
         showSizeChanger: true,
-        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} orders`,
+        showTotal: (total, range) =>
+          `${range[0]}-${range[1]} of ${total} orders`,
       }}
       locale={{
         emptyText: selectedBusinessId

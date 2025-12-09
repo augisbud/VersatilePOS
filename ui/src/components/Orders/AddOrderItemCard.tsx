@@ -53,7 +53,9 @@ export const AddOrderItemCard = ({
           Add item
         </Button>
       </Space>
-      <Text type="secondary">Add new items to this order or adjust quantities below.</Text>
+      <Text type="secondary">
+        Add new items to this order or adjust quantities below.
+      </Text>
     </Space>
   </Card>
 );

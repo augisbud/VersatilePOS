@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Form, Button, Typography, Row, Col, message } from 'antd';
+import { Card, Form, Button, Typography, Row, Col } from 'antd';
 import { PlusOutlined, EditOutlined } from '@ant-design/icons';
 import {
   ClientInformationForm,
@@ -50,34 +50,27 @@ export const NewReservation = () => {
   };
 
   const handleConfirmReservation = async () => {
-    try {
-      const values = await form.validateFields();
+    const values = await form.validateFields();
 
-      if (!selectedService?.id || !user?.id) {
-        void message.error('Missing required information');
-        return;
-      }
-
-      const customerName = `${values.name} ${values.surname}`;
-
-      await createReservation({
-        accountId: user.id,
-        serviceId: selectedService.id,
-        customer: customerName,
-        customerEmail: values.email || undefined,
-        customerPhone: values.phoneNumber || undefined,
-        dateOfService: dayjs(serviceDateTime).toISOString(),
-        datePlaced: dayjs().toISOString(),
-        reservationLength: serviceDuration,
-        status: 'Confirmed',
-      });
-
-      void message.success('Reservation created successfully!');
-      void navigate('/reservations');
-    } catch (error) {
-      console.error('Failed to create reservation:', error);
-      void message.error('Failed to create reservation');
+    if (!selectedService?.id || !user?.id) {
+      return;
     }
+
+    const customerName = `${values.name} ${values.surname}`;
+
+    await createReservation({
+      accountId: user.id,
+      serviceId: selectedService.id,
+      customer: customerName,
+      customerEmail: values.email || undefined,
+      customerPhone: values.phoneNumber || undefined,
+      dateOfService: dayjs(serviceDateTime).toISOString(),
+      datePlaced: dayjs().toISOString(),
+      reservationLength: serviceDuration,
+      status: 'Confirmed',
+    });
+
+    void navigate('/reservations');
   };
 
   const hasService = selectedService && serviceDateTime && serviceDuration;

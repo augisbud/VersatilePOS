@@ -11,7 +11,13 @@ type Props = {
   onSubmit: () => void;
 };
 
-export const OrderEditModal = ({ open, form, loading, onCancel, onSubmit }: Props) => (
+export const OrderEditModal = ({
+  open,
+  form,
+  loading,
+  onCancel,
+  onSubmit,
+}: Props) => (
   <Modal
     open={open}
     onCancel={onCancel}
@@ -19,7 +25,7 @@ export const OrderEditModal = ({ open, form, loading, onCancel, onSubmit }: Prop
     title="Edit Order"
     okText="Save"
     confirmLoading={loading}
-    destroyOnClose
+    destroyOnHidden
   >
     <Form layout="vertical" form={form}>
       <Form.Item label="Customer name" name="customer">

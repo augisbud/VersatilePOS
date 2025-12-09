@@ -38,7 +38,11 @@ export const OrdersHeader = ({
       >
         New Order
       </Button>
-      <Button icon={<ReloadOutlined />} onClick={onRefresh} disabled={!selectedBusinessId}>
+      <Button
+        icon={<ReloadOutlined />}
+        onClick={onRefresh}
+        disabled={!selectedBusinessId}
+      >
         Refresh
       </Button>
     </Space>

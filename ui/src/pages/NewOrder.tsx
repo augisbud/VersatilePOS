@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Card, Form, Typography, message, Space } from 'antd';
+import { Alert, Button, Card, Form, Typography, Space } from 'antd';
 import { useOrders } from '@/hooks/useOrders';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
@@ -45,11 +45,7 @@ export const NewOrder = () => {
     fetchAllBusinesses,
   } = useBusiness();
   const { canWriteOrders } = useUser();
-  const {
-    items,
-    fetchItems,
-    loading: itemsLoading,
-  } = useItems();
+  const { items, fetchItems, loading: itemsLoading } = useItems();
   const userBusinessId = useAppSelector(getUserBusinessId);
 
   useEffect(() => {
@@ -57,7 +53,9 @@ export const NewOrder = () => {
   }, []);
 
   useEffect(() => {
-    if (!businesses.length) return;
+    if (!businesses.length) {
+      return;
+    }
 
     const fallbackBusinessId =
       selectedBusinessId ?? userBusinessId ?? businesses[0].id;
@@ -85,12 +83,7 @@ export const NewOrder = () => {
   );
 
   const handleAddItem = () => {
-    if (!itemToAdd) {
-      void message.error('Select an item to add');
-      return;
-    }
-    if (itemQuantity <= 0) {
-      void message.error('Quantity must be at least 1');
+    if (!itemToAdd || itemQuantity <= 0) {
       return;
     }
 
@@ -114,45 +107,34 @@ export const NewOrder = () => {
   };
 
   const handleSubmit = async () => {
-    try {
-      const values = await form.validateFields();
+    const values = await form.validateFields();
 
-      if (!selectedBusinessId) {
-        void message.error('Select a business first');
-        return;
-      }
-      if (!selectedItems.length) {
-        void message.error('Add at least one item to the order');
-        return;
-      }
-
-      const payload: ModelsCreateOrderRequest = {
-        businessId: selectedBusinessId,
-        customer: values.customer || undefined,
-        customerEmail: values.customerEmail || undefined,
-        customerPhone: values.customerPhone || undefined,
-        serviceCharge: values.serviceCharge,
-        tipAmount: values.tipAmount,
-      };
-
-      const created = await createOrder(payload);
-      if (!created?.id) {
-        throw new Error('Order created without id');
-      }
-
-      for (const item of selectedItems) {
-        await addItemToOrder(created.id, {
-          itemId: item.itemId,
-          count: item.count,
-        });
-      }
-
-      void message.success('Order created with items');
-      void navigate('/orders');
-    } catch (err) {
-      console.error('Failed to create order', err);
-      void message.error('Failed to create order');
+    if (!selectedBusinessId || !selectedItems.length) {
+      return;
     }
+
+    const payload: ModelsCreateOrderRequest = {
+      businessId: selectedBusinessId,
+      customer: values.customer || undefined,
+      customerEmail: values.customerEmail || undefined,
+      customerPhone: values.customerPhone || undefined,
+      serviceCharge: values.serviceCharge,
+      tipAmount: values.tipAmount,
+    };
+
+    const created = await createOrder(payload);
+    if (!created?.id) {
+      return;
+    }
+
+    for (const item of selectedItems) {
+      await addItemToOrder(created.id, {
+        itemId: item.itemId,
+        count: item.count,
+      });
+    }
+
+    void navigate('/orders');
   };
 
   if (!canWriteOrders) {
@@ -190,12 +172,7 @@ export const NewOrder = () => {
           />
 
           {error && (
-            <Alert
-              message="Error"
-              description={error}
-              type="error"
-              showIcon
-            />
+            <Alert message="Error" description={error} type="error" showIcon />
           )}
 
           <CustomerDetailsForm form={form} />

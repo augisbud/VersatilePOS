@@ -78,6 +78,10 @@ func Connect() {
 		&entities.ItemOptionLink{},
 		&entities.Service{},
 		&entities.AccountServices{},
+		&entities.Tag{},
+		&entities.ItemTagLink{},
+		&entities.ItemOptionTagLink{},
+		&entities.ServiceTagLink{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database: ", err)
@@ -99,6 +103,7 @@ func seedFunctions(db *gorm.DB) {
 		{Name: "Manage Items", Action: constants.Items, Description: "Create, update, and delete items."},
 		{Name: "Manage Item Options", Action: constants.ItemOptions, Description: "Create, update, and delete item options."},
 		{Name: "Manage Orders", Action: constants.Orders, Description: "Create, update, and manage orders."},
+		{Name: "Manage Tags", Action: constants.Tags, Description: "Create, update, and delete tags for categorizing items, item options, and services."},
 	}
 
 	for _, function := range functions {

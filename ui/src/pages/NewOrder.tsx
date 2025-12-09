@@ -1,17 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Alert,
-  Button,
-  Card,
-  Form,
-  Input,
-  InputNumber,
-  Select,
-  Typography,
-  message,
-  Space,
-} from 'antd';
+import { Alert, Button, Card, Form, Typography, message, Space } from 'antd';
 import { useOrders } from '@/hooks/useOrders';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
@@ -19,8 +8,11 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { useItems } from '@/hooks/useItems';
 import { getUserBusinessId } from '@/selectors/user';
 import { ModelsCreateOrderRequest } from '@/api/types.gen';
+import { OrderBusinessSelector } from '@/components/Orders/OrderBusinessSelector';
+import { CustomerDetailsForm } from '@/components/Orders/CustomerDetailsForm';
+import { OrderItemsCard } from '@/components/Orders/OrderItemsCard';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 type OrderFormValues = {
   customer?: string;
@@ -190,24 +182,12 @@ export const NewOrder = () => {
         }
       >
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <div>
-            <Text strong>Select business:</Text>
-            <div style={{ marginTop: 8 }}>
-              <Select
-                style={{ minWidth: 280 }}
-                placeholder="Choose a business"
-                loading={businessLoading}
-                value={selectedBusinessId}
-                onChange={(businessId) => selectBusiness(businessId)}
-                options={businesses
-                  .filter((business) => business.id !== undefined)
-                  .map((business) => ({
-                    label: business.name,
-                    value: business.id!,
-                  }))}
-              />
-            </div>
-          </div>
+          <OrderBusinessSelector
+            businesses={businesses}
+            selectedBusinessId={selectedBusinessId}
+            loading={businessLoading}
+            onChange={(businessId) => selectBusiness(businessId)}
+          />
 
           {error && (
             <Alert
@@ -218,90 +198,20 @@ export const NewOrder = () => {
             />
           )}
 
-          <Form layout="vertical" form={form}>
-            <Form.Item label="Customer name" name="customer">
-              <Input placeholder="Optional" />
-            </Form.Item>
-            <Form.Item label="Customer email" name="customerEmail">
-              <Input type="email" placeholder="Optional" />
-            </Form.Item>
-            <Form.Item label="Customer phone" name="customerPhone">
-              <Input placeholder="Optional" />
-            </Form.Item>
-            <Form.Item label="Service charge" name="serviceCharge">
-              <InputNumber
-                min={0}
-                step={0.01}
-                prefix="$"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-            <Form.Item label="Tip amount" name="tipAmount">
-              <InputNumber
-                min={0}
-                step={0.01}
-                prefix="$"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Form>
+          <CustomerDetailsForm form={form} />
 
-        <Card
-          title="Items"
-          size="small"
-          style={{ marginTop: 12 }}
-          loading={itemsLoading}
-        >
-          <Space direction="vertical" style={{ width: '100%' }} size="middle">
-            <Space wrap>
-              <Select
-                style={{ minWidth: 260 }}
-                placeholder="Choose an item"
-                value={itemToAdd}
-                onChange={setItemToAdd}
-                options={itemOptions}
-                disabled={!selectedBusinessId}
-              />
-              <InputNumber
-                min={1}
-                value={itemQuantity}
-                onChange={(value) => setItemQuantity(value ?? 1)}
-              />
-              <Button type="primary" onClick={handleAddItem}>
-                Add
-              </Button>
-            </Space>
-
-            {selectedItems.length === 0 ? (
-              <Text type="secondary">No items selected yet.</Text>
-            ) : (
-              <ul style={{ paddingLeft: 20, margin: 0 }}>
-                {selectedItems.map((item) => {
-                  const itemName =
-                    itemOptions.find((opt) => opt.value === item.itemId)?.label ??
-                    `Item #${item.itemId}`;
-                  return (
-                    <li key={item.itemId} style={{ marginBottom: 4 }}>
-                      <Space>
-                        <Text>
-                          {itemName} — Qty: {item.count}
-                        </Text>
-                        <Button
-                          type="link"
-                          danger
-                          onClick={() => handleRemoveItem(item.itemId)}
-                          size="small"
-                        >
-                          Remove
-                        </Button>
-                      </Space>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </Space>
-        </Card>
+          <OrderItemsCard
+            itemOptions={itemOptions}
+            selectedItems={selectedItems}
+            itemToAdd={itemToAdd}
+            itemQuantity={itemQuantity}
+            onItemToAddChange={setItemToAdd}
+            onItemQuantityChange={(value) => setItemQuantity(value)}
+            onAddItem={handleAddItem}
+            onRemoveItem={handleRemoveItem}
+            loading={itemsLoading}
+            disabled={!selectedBusinessId}
+          />
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
             <Button onClick={handleCancel}>Cancel</Button>
@@ -309,7 +219,7 @@ export const NewOrder = () => {
               type="primary"
               onClick={() => void handleSubmit()}
               loading={loading}
-            disabled={!selectedBusinessId || !selectedItems.length}
+              disabled={!selectedBusinessId || !selectedItems.length}
             >
               Create Order
             </Button>

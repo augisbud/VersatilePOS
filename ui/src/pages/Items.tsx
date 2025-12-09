@@ -1,32 +1,15 @@
 import { useEffect, useState } from 'react';
-import {
-  Alert,
-  Button,
-  Card,
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  Popconfirm,
-  Select,
-  Space,
-  Table,
-  Typography,
-} from 'antd';
-import { ColumnsType } from 'antd/es/table';
-import {
-  DeleteOutlined,
-  EditOutlined,
-  PlusOutlined,
-} from '@ant-design/icons';
+import { Alert, Card, Form } from 'antd';
 import { useItems } from '@/hooks/useItems';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
 import { ModelsItemDto } from '@/api/types.gen';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { getUserBusinessId } from '@/selectors/user';
-
-const { Title, Text } = Typography;
+import { BusinessSelectorCard } from '@/components/Orders/BusinessSelectorCard';
+import { ItemsHeader } from '@/components/Orders/ItemsHeader';
+import { ItemsTable } from '@/components/Orders/ItemsTable';
+import { ItemModal } from '@/components/Orders/ItemModal';
 
 export const Items = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -137,58 +120,6 @@ export const Items = () => {
     }
   };
 
-  const columns: ColumnsType<ModelsItemDto> = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-      render: (value: string) => <Text strong>{value}</Text>,
-    },
-    {
-      title: 'Price',
-      dataIndex: 'price',
-      key: 'price',
-      render: (value?: number) =>
-        value !== undefined ? `$${value.toFixed(2)}` : '-',
-    },
-    {
-      title: 'Quantity in Stock',
-      dataIndex: 'quantityInStock',
-      key: 'quantityInStock',
-      render: (value?: number) => (value !== undefined ? value : '—'),
-    },
-  ];
-
-  if (canWriteItems) {
-    columns.push({
-      title: '',
-      key: 'actions',
-      width: 160,
-      render: (_, record) => (
-        <Space>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => handleOpenModal(record)}
-          >
-            Edit
-          </Button>
-          <Popconfirm
-            title="Delete item"
-            description="Are you sure you want to delete this item?"
-            onConfirm={() => void handleDelete(record.id!)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button type="link" danger icon={<DeleteOutlined />}>
-              Delete
-            </Button>
-          </Popconfirm>
-        </Space>
-      ),
-    });
-  }
-
   if (!canReadItems) {
     return (
       <div style={{ padding: '24px' }}>
@@ -203,53 +134,18 @@ export const Items = () => {
 
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div
-        style={{
-          marginBottom: '16px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <div>
-          <Title level={2} style={{ margin: 0 }}>
-            Items
-          </Title>
-          <Text type="secondary">
-            Manage items for any of your businesses.
-          </Text>
-        </div>
+      <ItemsHeader
+        canWriteItems={canWriteItems}
+        selectedBusinessId={selectedBusinessId}
+        onNewItem={() => handleOpenModal()}
+      />
 
-        {canWriteItems && (
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => handleOpenModal()}
-            disabled={!selectedBusinessId}
-          >
-            New Item
-          </Button>
-        )}
-      </div>
-
-      <Card style={{ marginBottom: '16px' }}>
-        <Space size="middle" wrap>
-          <Text strong>Select business:</Text>
-          <Select
-            style={{ minWidth: 240 }}
-            placeholder="Choose a business"
-            loading={businessLoading}
-            value={selectedBusinessId}
-            onChange={handleBusinessChange}
-            options={businesses
-              .filter((business) => business.id !== undefined)
-              .map((business) => ({
-                label: business.name,
-                value: business.id!,
-              }))}
-          />
-        </Space>
-      </Card>
+      <BusinessSelectorCard
+        businesses={businesses}
+        selectedBusinessId={selectedBusinessId}
+        onChange={handleBusinessChange}
+        loading={businessLoading}
+      />
 
       {error && (
         <Alert
@@ -262,71 +158,24 @@ export const Items = () => {
       )}
 
       <Card>
-        <Table
-          columns={columns}
-          dataSource={items}
-          rowKey="id"
+        <ItemsTable
+          items={items}
           loading={combinedLoading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} items`,
-          }}
-          locale={{
-            emptyText: selectedBusinessId
-              ? 'No items found for this business.'
-              : 'Select a business to view items.',
-          }}
+          canWriteItems={canWriteItems}
+          selectedBusinessId={selectedBusinessId}
+          onEdit={handleOpenModal}
+          onDelete={(id) => void handleDelete(id)}
         />
       </Card>
 
-      <Modal
+      <ItemModal
         open={isModalOpen}
-        onCancel={handleCloseModal}
-        onOk={() => void handleSubmit()}
+        form={form}
+        editingItem={editingItem}
         confirmLoading={isSubmitting}
-        title={editingItem ? 'Edit Item' : 'New Item'}
-        okText={editingItem ? 'Save Changes' : 'Create Item'}
-        destroyOnClose
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            name="name"
-            label="Name"
-            rules={[{ required: true, message: 'Please enter item name' }]}
-          >
-            <Input placeholder="Item name" />
-          </Form.Item>
-
-          <Form.Item
-            name="price"
-            label="Price"
-            rules={[{ required: true, message: 'Please enter item price' }]}
-          >
-            <InputNumber
-              min={0}
-              step={0.01}
-              style={{ width: '100%' }}
-              prefix="$"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="quantityInStock"
-            label="Quantity in stock"
-            rules={[
-              {
-                type: 'number',
-                min: 0,
-                message: 'Quantity must be zero or greater',
-              },
-            ]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
-        </Form>
-      </Modal>
+        onCancel={handleCloseModal}
+        onSubmit={() => void handleSubmit()}
+      />
     </div>
   );
 };

@@ -1,38 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Alert,
-  Button,
-  Card,
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  Select,
-  Space,
-  Table,
-  Tag,
-  Typography,
-  message,
-} from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Alert, Card, Form, message } from 'antd';
 import { useOrders } from '@/hooks/useOrders';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { getUserBusinessId } from '@/selectors/user';
 import { ModelsOrderDto } from '@/api/types.gen';
-
-const { Title, Text } = Typography;
-
-const ORDER_STATUS_OPTIONS = ['Pending', 'Completed', 'Cancelled'];
-
-const ORDER_STATUS_COLOR: Record<string, string> = {
-  Pending: 'blue',
-  Completed: 'green',
-  Cancelled: 'red',
-};
+import { OrdersHeader } from '@/components/Orders/OrdersHeader';
+import { OrdersBusinessSelectorCard } from '@/components/Orders/OrdersBusinessSelectorCard';
+import { OrdersTable } from '@/components/Orders/OrdersTable';
+import { OrderEditModal } from '@/components/Orders/OrderEditModal';
 
 type OrderFormValues = {
   customer?: string;
@@ -143,74 +121,6 @@ export const Orders = () => {
     }
   };
 
-  const columns: ColumnsType<ModelsOrderDto> = [
-    {
-      title: 'Order #',
-      dataIndex: 'id',
-      key: 'id',
-      render: (value?: number) => (value ? `#${value}` : '—'),
-    },
-    {
-      title: 'Customer',
-      dataIndex: 'customer',
-      key: 'customer',
-      render: (value?: string) => value || 'Walk-in',
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (value?: string) => {
-        const color = value ? ORDER_STATUS_COLOR[value] ?? 'default' : 'default';
-        return value ? <Tag color={color}>{value}</Tag> : <Tag>Unknown</Tag>;
-      },
-    },
-    {
-      title: 'Service Charge',
-      dataIndex: 'serviceCharge',
-      key: 'serviceCharge',
-      render: (value?: number) =>
-        value !== undefined ? `$${value.toFixed(2)}` : '—',
-    },
-    {
-      title: 'Tip',
-      dataIndex: 'tipAmount',
-      key: 'tipAmount',
-      render: (value?: number) =>
-        value !== undefined ? `$${value.toFixed(2)}` : '—',
-    },
-    {
-      title: 'Placed At',
-      dataIndex: 'datePlaced',
-      key: 'datePlaced',
-      render: (value?: string) =>
-        value ? new Date(value).toLocaleString() : '—',
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      width: 140,
-      render: (_, record) =>
-        canReadOrders ? (
-          <Space size="small">
-          <Button type="link" onClick={() => handleOpenModal(record)}>
-            Edit
-          </Button>
-            {record.id && (
-              <Button
-                type="link"
-                onClick={() => {
-                  void navigate(`/orders/${record.id}/items`);
-                }}
-              >
-                Items
-              </Button>
-            )}
-          </Space>
-        ) : null,
-    },
-  ];
-
   if (!canReadOrders) {
     return (
       <div style={{ padding: '24px' }}>
@@ -225,60 +135,18 @@ export const Orders = () => {
 
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div
-        style={{
-          marginBottom: '16px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <div>
-          <Title level={2} style={{ margin: 0 }}>
-            Orders
-          </Title>
-          <Text type="secondary">
-            View orders for your selected business.
-          </Text>
-        </div>
+      <OrdersHeader
+        selectedBusinessId={selectedBusinessId}
+        onNewOrder={handleNewOrder}
+        onRefresh={handleRefresh}
+      />
 
-        <Space>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleNewOrder}
-            disabled={!selectedBusinessId}
-          >
-            New Order
-          </Button>
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={handleRefresh}
-            disabled={!selectedBusinessId}
-          >
-            Refresh
-          </Button>
-        </Space>
-      </div>
-
-      <Card style={{ marginBottom: '16px' }}>
-        <Space size="middle" wrap>
-          <Text strong>Select business:</Text>
-          <Select
-            style={{ minWidth: 240 }}
-            placeholder="Choose a business"
-            loading={businessLoading}
-            value={selectedBusinessId}
-            onChange={handleBusinessChange}
-            options={businesses
-              .filter((business) => business.id !== undefined)
-              .map((business) => ({
-                label: business.name,
-                value: business.id!,
-              }))}
-          />
-        </Space>
-      </Card>
+      <OrdersBusinessSelectorCard
+        businesses={businesses}
+        selectedBusinessId={selectedBusinessId}
+        onChange={handleBusinessChange}
+        loading={businessLoading}
+      />
 
       {error && (
         <Alert
@@ -291,72 +159,25 @@ export const Orders = () => {
       )}
 
       <Card>
-        <Table
-          columns={columns}
-          dataSource={orders}
-          rowKey="id"
+        <OrdersTable
+          orders={orders}
           loading={combinedLoading}
-          pagination={{
-            pageSize: 20,
-            showSizeChanger: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} orders`,
-          }}
-          locale={{
-            emptyText: selectedBusinessId
-              ? 'No orders found for this business.'
-              : 'Select a business to view orders.',
+          selectedBusinessId={selectedBusinessId}
+          canReadOrders={canReadOrders}
+          onEdit={handleOpenModal}
+          onItems={(orderId) => {
+            void navigate(`/orders/${orderId}/items`);
           }}
         />
       </Card>
 
-      <Modal
+      <OrderEditModal
         open={isModalOpen}
+        form={form}
+        loading={ordersLoading}
         onCancel={handleCloseModal}
-        onOk={() => void handleSubmit()}
-        title="Edit Order"
-        okText="Save"
-        confirmLoading={ordersLoading}
-        destroyOnClose
-      >
-        <Form layout="vertical" form={form}>
-          <Form.Item label="Customer name" name="customer">
-            <Input placeholder="Optional" />
-          </Form.Item>
-          <Form.Item label="Customer email" name="customerEmail">
-            <Input type="email" placeholder="Optional" />
-          </Form.Item>
-          <Form.Item label="Customer phone" name="customerPhone">
-            <Input placeholder="Optional" />
-          </Form.Item>
-          <Form.Item label="Status" name="status">
-            <Select
-              placeholder="Select status"
-              allowClear
-              options={ORDER_STATUS_OPTIONS.map((status) => ({
-                label: status,
-                value: status,
-              }))}
-            />
-          </Form.Item>
-          <Form.Item label="Service charge" name="serviceCharge">
-            <InputNumber
-              min={0}
-              step={0.01}
-              prefix="$"
-              style={{ width: '100%' }}
-            />
-          </Form.Item>
-          <Form.Item label="Tip amount" name="tipAmount">
-            <InputNumber
-              min={0}
-              step={0.01}
-              prefix="$"
-              style={{ width: '100%' }}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
+        onSubmit={() => void handleSubmit()}
+      />
     </div>
   );
 };

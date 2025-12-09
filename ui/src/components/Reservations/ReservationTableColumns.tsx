@@ -1,11 +1,32 @@
-import { Input, Button, Space } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { Input, Button, Space, Tooltip, Typography } from 'antd';
+import { SearchOutlined, EditOutlined } from '@ant-design/icons';
 import type { ColumnsType, ColumnType } from 'antd/es/table';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
-import { ModelsReservationDto } from '@/api/types.gen';
+import {
+  ModelsReservationDto,
+  ModelsServiceDto,
+  ModelsAccountDto,
+} from '@/api/types.gen';
 import { ReservationStatusTag } from './ReservationStatusTag';
+import {
+  formatDateTime,
+  formatDate,
+  formatCurrency,
+  formatDuration,
+} from '@/utils/formatters';
 
-const getColumnSearchProps = (): ColumnType<ModelsReservationDto> => ({
+const { Text } = Typography;
+
+interface GetColumnsOptions {
+  services: ModelsServiceDto[];
+  employees: ModelsAccountDto[];
+  canWrite: boolean;
+  onEdit: (reservation: ModelsReservationDto) => void;
+}
+
+const getColumnSearchProps = (
+  field: 'customer' | 'customerEmail' | 'customerPhone'
+): ColumnType<ModelsReservationDto> => ({
   filterDropdown: ({
     setSelectedKeys,
     selectedKeys,
@@ -14,7 +35,7 @@ const getColumnSearchProps = (): ColumnType<ModelsReservationDto> => ({
   }: FilterDropdownProps) => (
     <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
       <Input
-        placeholder="Search customer"
+        placeholder={`Search ${field}`}
         value={selectedKeys[0]}
         onChange={(e) =>
           setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -49,46 +70,91 @@ const getColumnSearchProps = (): ColumnType<ModelsReservationDto> => ({
     <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
   ),
   onFilter: (value, record) =>
-    (record.customer ?? '')
+    (record[field] ?? '')
       .toLowerCase()
       .includes((value as string).toLowerCase()),
 });
 
-export const getReservationColumns = (): ColumnsType<ModelsReservationDto> => {
-  return [
+export const getReservationColumns = ({
+  services,
+  employees,
+  canWrite,
+  onEdit,
+}: GetColumnsOptions): ColumnsType<ModelsReservationDto> => {
+  const getServiceName = (serviceId: number | undefined) => {
+    if (!serviceId) {
+      return '-';
+    }
+
+    const service = services.find((s) => s.id === serviceId);
+
+    return service?.name || `Service #${serviceId}`;
+  };
+
+  const getSpecialistName = (accountId: number | undefined) => {
+    if (!accountId) {
+      return '-';
+    }
+
+    const employee = employees.find((e) => e.id === accountId);
+
+    return employee?.name || `Employee #${accountId}`;
+  };
+
+  const columns: ColumnsType<ModelsReservationDto> = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+      width: 70,
+      sorter: (a, b) => (a.id || 0) - (b.id || 0),
+    },
     {
       title: 'Customer',
       dataIndex: 'customer',
       key: 'customer',
-      render: (customer: string) => <strong>{customer}</strong>,
-      ...getColumnSearchProps(),
+      render: (customer: string, record) => (
+        <div>
+          <Text strong>{customer || '-'}</Text>
+          {record.customerEmail && (
+            <div>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {record.customerEmail}
+              </Text>
+            </div>
+          )}
+          {record.customerPhone && (
+            <div>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {record.customerPhone}
+              </Text>
+            </div>
+          )}
+        </div>
+      ),
+      ...getColumnSearchProps('customer'),
     },
     {
-      title: 'Email',
-      dataIndex: 'customerEmail',
-      key: 'customerEmail',
-      render: (email: string) => email || '-',
+      title: 'Service',
+      dataIndex: 'serviceId',
+      key: 'serviceId',
+      render: (serviceId: number) => getServiceName(serviceId),
+      filters: services.map((s) => ({ text: s.name || '', value: s.id || 0 })),
+      onFilter: (value, record) => record.serviceId === value,
     },
     {
-      title: 'Phone',
-      dataIndex: 'customerPhone',
-      key: 'customerPhone',
-      render: (phone: string) => phone || '-',
+      title: 'Specialist',
+      dataIndex: 'accountId',
+      key: 'accountId',
+      render: (accountId: number) => getSpecialistName(accountId),
+      filters: employees.map((e) => ({ text: e.name || '', value: e.id || 0 })),
+      onFilter: (value, record) => record.accountId === value,
     },
     {
-      title: 'Date of Service',
+      title: 'Date & Time',
       dataIndex: 'dateOfService',
       key: 'dateOfService',
-      render: (date: string) => {
-        if (!date) return '-';
-        return new Date(date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-      },
+      render: (date: string) => formatDateTime(date),
       sorter: (a, b) => {
         const dateA = a.dateOfService ? new Date(a.dateOfService).getTime() : 0;
         const dateB = b.dateOfService ? new Date(b.dateOfService).getTime() : 0;
@@ -99,8 +165,8 @@ export const getReservationColumns = (): ColumnsType<ModelsReservationDto> => {
       title: 'Duration',
       dataIndex: 'reservationLength',
       key: 'reservationLength',
-      render: (length: number) => (length ? `${length} min` : '-'),
-      width: 100,
+      render: (length: number) => formatDuration(length),
+      width: 90,
     },
     {
       title: 'Status',
@@ -114,19 +180,45 @@ export const getReservationColumns = (): ColumnsType<ModelsReservationDto> => {
         { text: 'No Show', value: 'NoShow' },
       ],
       onFilter: (value, record) => record.status === value,
+      width: 110,
     },
     {
-      title: 'Date Placed',
+      title: 'Tip',
+      dataIndex: 'tipAmount',
+      key: 'tipAmount',
+      render: (tip: number) => formatCurrency(tip),
+      width: 80,
+    },
+    {
+      title: 'Placed',
       dataIndex: 'datePlaced',
       key: 'datePlaced',
-      render: (date: string) => {
-        if (!date) return '-';
-        return new Date(date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        });
+      render: (date: string) => formatDate(date),
+      sorter: (a, b) => {
+        const dateA = a.datePlaced ? new Date(a.datePlaced).getTime() : 0;
+        const dateB = b.datePlaced ? new Date(b.datePlaced).getTime() : 0;
+        return dateA - dateB;
       },
+      width: 120,
     },
   ];
+
+  if (canWrite) {
+    columns.push({
+      title: '',
+      key: 'actions',
+      width: 60,
+      render: (_, record) => (
+        <Tooltip title="Edit reservation">
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record)}
+          />
+        </Tooltip>
+      ),
+    });
+  }
+
+  return columns;
 };

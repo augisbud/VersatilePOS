@@ -5,8 +5,12 @@ import {
   editOrderItem,
   removeOrderItem,
 } from '@/actions/order';
-import { addReservation } from '@/actions/reservation';
 import { createAccount, login } from '@/actions/user';
+import {
+  assignEmployeeToService,
+  unassignEmployeeFromService,
+} from '@/actions/service';
+import { addReservation } from '@/actions/reservation';
 import { NotificationConfigs, RejectetAction } from './interfaces';
 
 export const NOTIFICATIONS_CONFIG = {
@@ -25,6 +29,30 @@ export const NOTIFICATIONS_CONFIG = {
   [login.rejected.type]: (action: RejectetAction) => ({
     type: 'error',
     message: action.error.message,
+  }),
+  [assignEmployeeToService.fulfilled.type]: () => ({
+    type: 'success',
+    message: 'Employee assigned successfully',
+  }),
+  [assignEmployeeToService.rejected.type]: (action: RejectetAction) => ({
+    type: 'error',
+    message: action.error.message ?? 'Failed to assign employee',
+  }),
+  [unassignEmployeeFromService.fulfilled.type]: () => ({
+    type: 'success',
+    message: 'Employee removed successfully',
+  }),
+  [unassignEmployeeFromService.rejected.type]: (action: RejectetAction) => ({
+    type: 'error',
+    message: action.error.message ?? 'Failed to remove employee',
+  }),
+  [addReservation.fulfilled.type]: () => ({
+    type: 'success',
+    message: 'Reservation created successfully',
+  }),
+  [addReservation.rejected.type]: (action: RejectetAction) => ({
+    type: 'error',
+    message: action.error.message ?? 'Failed to create reservation',
   }),
   [addOrder.fulfilled.type]: () => ({
     type: 'success',
@@ -63,14 +91,6 @@ export const NOTIFICATIONS_CONFIG = {
     message: 'Item removed from order',
   }),
   [removeOrderItem.rejected.type]: (action: RejectetAction) => ({
-    type: 'error',
-    message: action.error.message,
-  }),
-  [addReservation.fulfilled.type]: () => ({
-    type: 'success',
-    message: 'Reservation created successfully',
-  }),
-  [addReservation.rejected.type]: (action: RejectetAction) => ({
     type: 'error',
     message: action.error.message,
   }),

@@ -5,7 +5,10 @@ import {
   getSelectedService,
   getServicesLoading,
   getServicesError,
+  getServiceAssignmentLoading,
   getServiceById as getServiceByIdSelector,
+  getServiceEmployees as getServiceEmployeesSelector,
+  getSelectedServiceEmployees,
 } from '@/selectors/service';
 import {
   fetchServices as fetchServicesAction,
@@ -13,6 +16,8 @@ import {
   addService as addServiceAction,
   editService as editServiceAction,
   removeService as removeServiceAction,
+  assignEmployeeToService as assignEmployeeToServiceAction,
+  unassignEmployeeFromService as unassignEmployeeFromServiceAction,
 } from '@/actions/service';
 import {
   ModelsCreateServiceRequest,
@@ -24,7 +29,9 @@ export const useServices = () => {
   const services = useAppSelector(getServices);
   const selectedService = useAppSelector(getSelectedService);
   const loading = useAppSelector(getServicesLoading);
+  const assignmentLoading = useAppSelector(getServiceAssignmentLoading);
   const error = useAppSelector(getServicesError);
+  const selectedServiceEmployees = useAppSelector(getSelectedServiceEmployees);
 
   const fetchServices = async (businessId: number) => {
     return dispatch(fetchServicesAction(businessId)).unwrap();
@@ -49,20 +56,47 @@ export const useServices = () => {
     return dispatch(removeServiceAction(serviceId)).unwrap();
   };
 
+  const assignEmployeeToService = async (
+    employeeId: number,
+    serviceId: number
+  ) => {
+    return dispatch(
+      assignEmployeeToServiceAction({ employeeId, serviceId })
+    ).unwrap();
+  };
+
+  const unassignEmployeeFromService = async (
+    employeeId: number,
+    serviceId: number
+  ) => {
+    return dispatch(
+      unassignEmployeeFromServiceAction({ employeeId, serviceId })
+    ).unwrap();
+  };
+
   const getServiceByIdFromList = (serviceId: number) => {
     return getServiceByIdSelector(services, serviceId);
+  };
+
+  const getServiceEmployees = (serviceId: number) => {
+    return getServiceEmployeesSelector(services, serviceId);
   };
 
   return {
     services,
     selectedService,
+    selectedServiceEmployees,
     loading,
+    assignmentLoading,
     error,
     fetchServices,
     fetchServiceById,
     createService,
     updateService,
     deleteService,
+    assignEmployeeToService,
+    unassignEmployeeFromService,
     getServiceById: getServiceByIdFromList,
+    getServiceEmployees,
   };
 };

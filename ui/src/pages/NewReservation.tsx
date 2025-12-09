@@ -55,15 +55,15 @@ export const NewReservation = () => {
   };
 
   const handleConfirmReservation = async () => {
-    const values = await form.validateFields();
-
-    if (!selectedService?.id || !selectedSpecialist?.id) {
-      return;
-    }
-
-    const customerName = `${values.name} ${values.surname}`;
-
     try {
+      const values = await form.validateFields();
+
+      if (!selectedService?.id || !selectedSpecialist?.id) {
+        return;
+      }
+
+      const customerName = `${values.name} ${values.surname}`;
+
       await createReservation({
         accountId: selectedSpecialist.id,
         serviceId: selectedService.id,
@@ -75,10 +75,10 @@ export const NewReservation = () => {
         reservationLength: serviceDuration,
         status: 'Confirmed',
       });
+
+      void navigate('/reservations');
     } catch (error) {
       console.error('Failed to create reservation:', error);
-    } finally {
-      void navigate('/reservations');
     }
   };
 

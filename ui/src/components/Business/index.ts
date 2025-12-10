@@ -14,6 +14,3 @@ export { BusinessEmployees, EmployeeRoleFormModal } from './Employees';
 
 // Service components
 export { BusinessServices, ServiceFormModal } from './Services';
-
-// Item components
-export { BusinessItems } from './Items';

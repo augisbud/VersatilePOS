@@ -19,23 +19,29 @@ export const BusinessSelectorCard = ({
   selectedBusinessId,
   onChange,
   loading,
-}: Props) => (
-  <Card style={{ marginBottom: '16px' }}>
-    <Space size="middle" wrap>
-      <Text strong>Select business:</Text>
-      <Select
-        style={{ minWidth: 240 }}
-        placeholder="Choose a business"
-        loading={loading}
-        value={selectedBusinessId}
-        onChange={onChange}
-        options={businesses
-          .filter((business) => business.id !== undefined)
-          .map((business) => ({
-            label: business.name,
-            value: business.id as number,
-          }))}
-      />
-    </Space>
-  </Card>
-);
+}: Props) => {
+  if (businesses.length <= 1) {
+    return null;
+  }
+
+  return (
+    <Card style={{ marginBottom: '16px' }}>
+      <Space size="middle" wrap>
+        <Text strong>Select business:</Text>
+        <Select
+          style={{ minWidth: 240 }}
+          placeholder="Choose a business"
+          loading={loading}
+          value={selectedBusinessId}
+          onChange={onChange}
+          options={businesses
+            .filter((business) => business.id !== undefined)
+            .map((business) => ({
+              label: business.name,
+              value: business.id as number,
+            }))}
+        />
+      </Space>
+    </Card>
+  );
+};

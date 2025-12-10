@@ -7,6 +7,8 @@ import { roleReducer } from './role';
 import { reservationReducer } from './reservation';
 import { serviceReducer } from './service';
 import { itemReducer } from './item';
+import { itemOptionReducer } from './itemOption';
+import { priceModifierReducer } from './priceModifier';
 import { orderReducer } from './order';
 
 export const rootReducer = combineReducers({
@@ -18,5 +20,7 @@ export const rootReducer = combineReducers({
   reservation: reservationReducer,
   service: serviceReducer,
   item: itemReducer,
+  itemOption: itemOptionReducer,
+  priceModifier: priceModifierReducer,
   order: orderReducer,
 });

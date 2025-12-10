@@ -2,6 +2,7 @@ import { Card, Popconfirm } from 'antd';
 import {
   DeleteOutlined,
   EditOutlined,
+  EyeOutlined,
   ShoppingOutlined,
 } from '@ant-design/icons';
 import { ModelsItemDto } from '@/api/types.gen';
@@ -13,6 +14,7 @@ type Props = {
   canWriteItems: boolean;
   onEdit: (item: ModelsItemDto) => void;
   onDelete: (itemId: number) => void;
+  onPreview: (item: ModelsItemDto) => void;
 };
 
 const { Meta } = Card;
@@ -23,42 +25,45 @@ export const ItemCard = ({
   canWriteItems,
   onEdit,
   onDelete,
+  onPreview,
 }: Props) => {
-  console.log('item', item);
+  const actions = [
+    <EyeOutlined key="preview" onClick={() => onPreview(item)} />,
+  ];
+
+  if (canWriteItems) {
+    actions.push(
+      <EditOutlined key="edit" onClick={() => onEdit(item)} />,
+      <Popconfirm
+        key="delete"
+        title="Delete item"
+        description="Are you sure you want to delete this item?"
+        onConfirm={() => item.id && onDelete(item.id)}
+        okText="Yes"
+        cancelText="No"
+      >
+        <DeleteOutlined />
+      </Popconfirm>
+    );
+  }
+
   return (
     <Card
       loading={loading}
-      size="small"
       cover={
         <div
           style={{
-            height: 80,
+            height: 120,
             background: '#e8e8e8',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <ShoppingOutlined style={{ fontSize: 32, color: '#bfbfbf' }} />
+          <ShoppingOutlined style={{ fontSize: 40, color: '#bfbfbf' }} />
         </div>
       }
-      actions={
-        canWriteItems
-          ? [
-              <EditOutlined key="edit" onClick={() => onEdit(item)} />,
-              <Popconfirm
-                key="delete"
-                title="Delete item"
-                description="Are you sure you want to delete this item?"
-                onConfirm={() => item.id && onDelete(item.id)}
-                okText="Yes"
-                cancelText="No"
-              >
-                <DeleteOutlined />
-              </Popconfirm>,
-            ]
-          : undefined
-      }
+      actions={actions}
     >
       <Meta
         title={item.name || `Item #${item.id}`}

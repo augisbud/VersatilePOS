@@ -3,6 +3,7 @@ import { Alert, Form } from 'antd';
 import { useItems } from '@/hooks/useItems';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
+import { useItemOptions } from '@/hooks/useItemOptions';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { getUserBusinessId } from '@/selectors/user';
 import { ModelsItemDto } from '@/api/types.gen';
@@ -10,19 +11,30 @@ import {
   ItemsHeader,
   ItemsGrid,
   ItemModal,
+  ItemPreviewModal,
   BusinessSelectorCard,
 } from '@/components/Items';
+
+type PendingOption = {
+  name: string;
+  priceModifierId: number;
+  quantityInStock?: number;
+  trackInventory?: boolean;
+};
 
 type ItemFormValues = {
   name: string;
   price: number;
   quantityInStock?: number;
+  _pendingOptions?: PendingOption[];
 };
 
 export const Items = () => {
   const [form] = Form.useForm<ItemFormValues>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ModelsItemDto | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewItem, setPreviewItem] = useState<ModelsItemDto | null>(null);
 
   const {
     items,
@@ -41,6 +53,7 @@ export const Items = () => {
     fetchAllBusinesses,
   } = useBusiness();
   const { canReadItems, canWriteItems } = useUser();
+  const { createItemOption, fetchItemOptions } = useItemOptions();
   const userBusinessId = useAppSelector(getUserBusinessId);
 
   const combinedLoading = itemsLoading || businessLoading;
@@ -93,6 +106,7 @@ export const Items = () => {
 
   const handleSubmit = async () => {
     const values = await form.validateFields();
+    const pendingOptions = values._pendingOptions || [];
 
     if (editingItem?.id) {
       await updateItem(editingItem.id, {
@@ -102,13 +116,29 @@ export const Items = () => {
         trackInventory: values.quantityInStock !== undefined,
       });
     } else if (selectedBusinessId) {
-      await createItem({
+      const newItem = await createItem({
         businessId: selectedBusinessId,
         name: values.name,
         price: values.price,
         quantityInStock: values.quantityInStock,
         trackInventory: values.quantityInStock !== undefined,
       });
+
+      // Create pending options for the new item
+      if (newItem?.id && pendingOptions.length > 0) {
+        for (const option of pendingOptions) {
+          await createItemOption({
+            itemId: newItem.id,
+            name: option.name,
+            priceModifierId: option.priceModifierId,
+            quantityInStock: option.trackInventory
+              ? option.quantityInStock
+              : undefined,
+            trackInventory: option.trackInventory,
+          });
+        }
+        void fetchItemOptions(selectedBusinessId);
+      }
     }
 
     handleCloseModal();
@@ -122,6 +152,16 @@ export const Items = () => {
     if (selectedBusinessId) {
       void fetchItems(selectedBusinessId);
     }
+  };
+
+  const handlePreview = (item: ModelsItemDto) => {
+    setPreviewItem(item);
+    setIsPreviewOpen(true);
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+    setPreviewItem(null);
   };
 
   if (!canReadItems) {
@@ -168,15 +208,24 @@ export const Items = () => {
         selectedBusinessId={selectedBusinessId}
         onEdit={handleOpenModal}
         onDelete={(itemId) => void handleDelete(itemId)}
+        onPreview={handlePreview}
       />
 
       <ItemModal
         open={isModalOpen}
         form={form}
         editingItem={editingItem}
+        businessId={selectedBusinessId ?? null}
         confirmLoading={itemsLoading}
         onCancel={handleCloseModal}
         onSubmit={() => void handleSubmit()}
+      />
+
+      <ItemPreviewModal
+        open={isPreviewOpen}
+        item={previewItem}
+        businessId={selectedBusinessId ?? null}
+        onClose={handleClosePreview}
       />
     </div>
   );

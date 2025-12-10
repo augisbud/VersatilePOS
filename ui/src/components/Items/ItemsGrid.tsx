@@ -9,6 +9,7 @@ type Props = {
   selectedBusinessId?: number | null;
   onEdit: (item: ModelsItemDto) => void;
   onDelete: (itemId: number) => void;
+  onPreview: (item: ModelsItemDto) => void;
 };
 
 export const ItemsGrid = ({
@@ -18,6 +19,7 @@ export const ItemsGrid = ({
   selectedBusinessId,
   onEdit,
   onDelete,
+  onPreview,
 }: Props) => {
   if (!selectedBusinessId) {
     return (
@@ -44,13 +46,14 @@ export const ItemsGrid = ({
   return (
     <Row gutter={[12, 12]}>
       {items.map((item) => (
-        <Col key={item.id} flex="200px">
+        <Col key={item.id} flex="240px">
           <ItemCard
             item={item}
             loading={loading}
             canWriteItems={canWriteItems}
             onEdit={onEdit}
             onDelete={onDelete}
+            onPreview={onPreview}
           />
         </Col>
       ))}

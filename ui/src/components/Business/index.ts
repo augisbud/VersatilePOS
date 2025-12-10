@@ -14,3 +14,9 @@ export { BusinessEmployees, EmployeeRoleFormModal } from './Employees';
 
 // Service components
 export { BusinessServices, ServiceFormModal } from './Services';
+
+// Price Modifier components
+export {
+  BusinessPriceModifiers,
+  PriceModifierFormModal,
+} from './PriceModifiers';

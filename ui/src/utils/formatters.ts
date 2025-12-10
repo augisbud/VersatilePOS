@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { ModelsPriceModifierDto } from '@/api/types.gen';
 
 export const formatDateTime = (date: string | undefined): string => {
   if (!date) {
@@ -46,4 +47,29 @@ export const formatDuration = (minutes: number | undefined): string => {
   }
 
   return `${minutes} min`;
+};
+
+export const formatPriceModifierValue = (
+  pm: ModelsPriceModifierDto
+): string => {
+  return pm.isPercentage ? `${pm.value}%` : `$${pm.value?.toFixed(2)}`;
+};
+
+export const getPriceModifierDisplay = (
+  priceModifiers: ModelsPriceModifierDto[],
+  priceModifierId?: number
+): string => {
+  if (!priceModifierId) return '-';
+  const pm = priceModifiers.find((p) => p.id === priceModifierId);
+  if (!pm) return '-';
+  return `${pm.name} (${formatPriceModifierValue(pm)})`;
+};
+
+export const getPriceModifierSelectOptions = (
+  priceModifiers: ModelsPriceModifierDto[]
+) => {
+  return priceModifiers.map((pm) => ({
+    value: pm.id,
+    label: `${pm.name} (${formatPriceModifierValue(pm)})`,
+  }));
 };

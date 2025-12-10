@@ -3,6 +3,7 @@ import {
   HomeOutlined,
   ShopOutlined,
   ShoppingCartOutlined,
+  ShoppingOutlined,
 } from '@ant-design/icons';
 import { ScreenConfig, RouteId } from '@/types/routes';
 import { Unauthorized } from '@/pages/Unauthorized';
@@ -13,6 +14,7 @@ import { NewReservation } from '@/pages/NewReservation';
 import { Orders } from '@/pages/Orders';
 import { NewOrder } from '@/pages/NewOrder';
 import { OrderItems } from '@/pages/OrderItems';
+import { Items } from '@/pages/Items';
 
 export const routesConfig: ScreenConfig[] = [
   {
@@ -69,6 +71,14 @@ export const routesConfig: ScreenConfig[] = [
     component: NewReservation,
     showInNav: false,
     parentPage: RouteId.RESERVATIONS,
+  },
+  {
+    id: RouteId.ITEMS,
+    path: '/items',
+    title: 'Items',
+    component: Items,
+    icon: <ShoppingOutlined />,
+    showInNav: true,
   },
   {
     id: RouteId.BUSINESS,

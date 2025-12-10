@@ -6,6 +6,7 @@ export enum RouteId {
   NOT_FOUND = 'not_found',
   UNAUTHORIZED = 'unauthorized',
   BUSINESS = 'business',
+  ITEMS = 'items',
   OVERVIEW = 'overview',
   ORDERS = 'orders',
   NEW_ORDER = 'new_order',
@@ -22,4 +23,5 @@ export interface ScreenConfig {
   icon?: ReactNode;
   showInNav?: boolean;
   parentPage?: RouteId;
+  fullScreen?: boolean;
 }

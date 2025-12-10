@@ -8,7 +8,7 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { useItems } from '@/hooks/useItems';
 import { getUserBusinessId } from '@/selectors/user';
 import { ModelsCreateOrderRequest } from '@/api/types.gen';
-import { OrderBusinessSelector } from '@/components/Orders/OrderBusinessSelector';
+import { BusinessSelectorCard } from '@/components/Items';
 import { CustomerDetailsForm } from '@/components/Orders/CustomerDetailsForm';
 import { OrderItemsCard } from '@/components/Orders/OrderItemsCard';
 
@@ -164,7 +164,7 @@ export const NewOrder = () => {
         }
       >
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <OrderBusinessSelector
+          <BusinessSelectorCard
             businesses={businesses}
             selectedBusinessId={selectedBusinessId}
             loading={businessLoading}

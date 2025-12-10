@@ -8,7 +8,7 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { getUserBusinessId } from '@/selectors/user';
 import { ModelsOrderDto } from '@/api/types.gen';
 import { OrdersHeader } from '@/components/Orders/OrdersHeader';
-import { OrdersBusinessSelectorCard } from '@/components/Orders/OrdersBusinessSelectorCard';
+import { BusinessSelectorCard } from '@/components/Items';
 import { OrdersTable } from '@/components/Orders/OrdersTable';
 import { OrderEditModal } from '@/components/Orders/OrderEditModal';
 
@@ -137,7 +137,7 @@ export const Orders = () => {
         onRefresh={handleRefresh}
       />
 
-      <OrdersBusinessSelectorCard
+      <BusinessSelectorCard
         businesses={businesses}
         selectedBusinessId={selectedBusinessId}
         onChange={handleBusinessChange}

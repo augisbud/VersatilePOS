@@ -1,21 +1,40 @@
 import { useEffect, useState } from 'react';
-import { Alert, Card, Form } from 'antd';
+import { Alert, Form } from 'antd';
 import { useItems } from '@/hooks/useItems';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
-import { ModelsItemDto } from '@/api/types.gen';
+import { useItemOptions } from '@/hooks/useItemOptions';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { getUserBusinessId } from '@/selectors/user';
-import { BusinessSelectorCard } from '@/components/Orders/BusinessSelectorCard';
-import { ItemsHeader } from '@/components/Orders/ItemsHeader';
-import { ItemsTable } from '@/components/Orders/ItemsTable';
-import { ItemModal } from '@/components/Orders/ItemModal';
+import { ModelsItemDto } from '@/api/types.gen';
+import {
+  ItemsHeader,
+  ItemsGrid,
+  ItemModal,
+  ItemPreviewModal,
+  BusinessSelectorCard,
+} from '@/components/Items';
+
+type PendingOption = {
+  name: string;
+  priceModifierId: number;
+  quantityInStock?: number;
+  trackInventory?: boolean;
+};
+
+type ItemFormValues = {
+  name: string;
+  price: number;
+  quantityInStock?: number;
+  _pendingOptions?: PendingOption[];
+};
 
 export const Items = () => {
+  const [form] = Form.useForm<ItemFormValues>();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingItem, setEditingItem] = useState<ModelsItemDto | null>(null);
-  const [form] = Form.useForm();
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewItem, setPreviewItem] = useState<ModelsItemDto | null>(null);
 
   const {
     items,
@@ -34,6 +53,7 @@ export const Items = () => {
     fetchAllBusinesses,
   } = useBusiness();
   const { canReadItems, canWriteItems } = useUser();
+  const { createItemOption, fetchItemOptions } = useItemOptions();
   const userBusinessId = useAppSelector(getUserBusinessId);
 
   const combinedLoading = itemsLoading || businessLoading;
@@ -54,70 +74,94 @@ export const Items = () => {
   }, [businesses, selectedBusinessId, userBusinessId]);
 
   useEffect(() => {
-    if (selectedBusinessId) {
+    if (selectedBusinessId && canReadItems) {
       void fetchItems(selectedBusinessId);
     }
-  }, [selectedBusinessId]);
+  }, [selectedBusinessId, canReadItems]);
 
   const handleBusinessChange = (businessId: number) => {
     selectBusiness(businessId);
   };
 
   const handleOpenModal = (item?: ModelsItemDto) => {
-    setEditingItem(item ?? null);
+    if (item) {
+      setEditingItem(item);
+      form.setFieldsValue({
+        name: item.name,
+        price: item.price,
+        quantityInStock: item.quantityInStock,
+      });
+    } else {
+      setEditingItem(null);
+      form.resetFields();
+    }
     setIsModalOpen(true);
-    form.setFieldsValue({
-      name: item?.name,
-      price: item?.price,
-      quantityInStock: item?.quantityInStock,
-    });
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setIsSubmitting(false);
     setEditingItem(null);
     form.resetFields();
   };
 
   const handleSubmit = async () => {
-    if (!selectedBusinessId) {
-      return;
-    }
+    const values = await form.validateFields();
+    const pendingOptions = values._pendingOptions || [];
 
-    setIsSubmitting(true);
-    try {
-      const values = await form.validateFields();
-      const quantityInStock =
-        values.quantityInStock === null || values.quantityInStock === undefined
-          ? undefined
-          : values.quantityInStock;
-      const payload = {
+    if (editingItem?.id) {
+      await updateItem(editingItem.id, {
         name: values.name,
         price: values.price,
-        quantityInStock,
-      };
+        quantityInStock: values.quantityInStock,
+        trackInventory: values.quantityInStock !== undefined,
+      });
+    } else if (selectedBusinessId) {
+      const newItem = await createItem({
+        businessId: selectedBusinessId,
+        name: values.name,
+        price: values.price,
+        quantityInStock: values.quantityInStock,
+        trackInventory: values.quantityInStock !== undefined,
+      });
 
-      if (editingItem?.id) {
-        await updateItem(editingItem.id, payload);
-      } else {
-        await createItem({ ...payload, businessId: selectedBusinessId });
+      // Create pending options for the new item
+      if (newItem?.id && pendingOptions.length > 0) {
+        for (const option of pendingOptions) {
+          await createItemOption({
+            itemId: newItem.id,
+            name: option.name,
+            priceModifierId: option.priceModifierId,
+            quantityInStock: option.trackInventory
+              ? option.quantityInStock
+              : undefined,
+            trackInventory: option.trackInventory,
+          });
+        }
+        void fetchItemOptions(selectedBusinessId);
       }
+    }
 
-      handleCloseModal();
-    } catch (err) {
-      console.error('Failed to save item', err);
-    } finally {
-      setIsSubmitting(false);
+    handleCloseModal();
+    if (selectedBusinessId) {
+      void fetchItems(selectedBusinessId);
     }
   };
 
   const handleDelete = async (itemId: number) => {
-    try {
-      await deleteItem(itemId);
-    } catch (err) {
-      console.error('Failed to delete item', err);
+    await deleteItem(itemId);
+    if (selectedBusinessId) {
+      void fetchItems(selectedBusinessId);
     }
+  };
+
+  const handlePreview = (item: ModelsItemDto) => {
+    setPreviewItem(item);
+    setIsPreviewOpen(true);
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+    setPreviewItem(null);
   };
 
   if (!canReadItems) {
@@ -133,11 +177,11 @@ export const Items = () => {
   }
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: '24px', maxWidth: '1800px', margin: '0 auto' }}>
       <ItemsHeader
+        onNewItem={() => handleOpenModal()}
         canWriteItems={canWriteItems}
         selectedBusinessId={selectedBusinessId}
-        onNewItem={() => handleOpenModal()}
       />
 
       <BusinessSelectorCard
@@ -157,24 +201,31 @@ export const Items = () => {
         />
       )}
 
-      <Card>
-        <ItemsTable
-          items={items}
-          loading={combinedLoading}
-          canWriteItems={canWriteItems}
-          selectedBusinessId={selectedBusinessId}
-          onEdit={handleOpenModal}
-          onDelete={(id) => void handleDelete(id)}
-        />
-      </Card>
+      <ItemsGrid
+        items={items}
+        loading={combinedLoading}
+        canWriteItems={canWriteItems}
+        selectedBusinessId={selectedBusinessId}
+        onEdit={handleOpenModal}
+        onDelete={(itemId) => void handleDelete(itemId)}
+        onPreview={handlePreview}
+      />
 
       <ItemModal
         open={isModalOpen}
         form={form}
         editingItem={editingItem}
-        confirmLoading={isSubmitting}
+        businessId={selectedBusinessId ?? null}
+        confirmLoading={itemsLoading}
         onCancel={handleCloseModal}
         onSubmit={() => void handleSubmit()}
+      />
+
+      <ItemPreviewModal
+        open={isPreviewOpen}
+        item={previewItem}
+        businessId={selectedBusinessId ?? null}
+        onClose={handleClosePreview}
       />
     </div>
   );

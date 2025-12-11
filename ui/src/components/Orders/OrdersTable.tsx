@@ -1,4 +1,4 @@
-import { Button, Space, Table, Tag } from 'antd';
+import { Button, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { ModelsOrderDto } from '@/api/types.gen';
 
@@ -8,7 +8,6 @@ type Props = {
   selectedBusinessId?: number | null;
   canReadOrders: boolean;
   onEdit: (order: ModelsOrderDto) => void;
-  onItems: (orderId: number) => void;
 };
 
 const ORDER_STATUS_COLOR: Record<string, string> = {
@@ -23,7 +22,6 @@ export const OrdersTable = ({
   selectedBusinessId,
   canReadOrders,
   onEdit,
-  onItems,
 }: Props) => {
   const columns: ColumnsType<ModelsOrderDto> = [
     {
@@ -73,22 +71,12 @@ export const OrdersTable = ({
     {
       title: 'Actions',
       key: 'actions',
-      width: 140,
+      width: 100,
       render: (_, record) =>
-        canReadOrders ? (
-          <Space size="small">
-            <Button type="link" onClick={() => onEdit(record)}>
-              Edit
-            </Button>
-            {record.id && (
-              <Button
-                type="link"
-                onClick={() => record.id && onItems(record.id)}
-              >
-                Items
-              </Button>
-            )}
-          </Space>
+        canReadOrders && record.id ? (
+          <Button type="link" onClick={() => onEdit(record)}>
+            Edit
+          </Button>
         ) : null,
     },
   ];

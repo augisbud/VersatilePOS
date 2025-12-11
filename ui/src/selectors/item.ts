@@ -13,3 +13,13 @@ export const getItemsBusinessId = (state: State) => state.item.selectedBusinessI
 
 export const getItemById = (items: ModelsItemDto[], id: number) =>
   items.find((item) => item.id === id);
+
+export const getItemName = (items: ModelsItemDto[], itemId: number): string => {
+  const item = getItemById(items, itemId);
+  return item?.name || `Item #${itemId}`;
+};
+
+export const getItemPrice = (items: ModelsItemDto[], itemId: number): number => {
+  const item = getItemById(items, itemId);
+  return item?.price || 0;
+};

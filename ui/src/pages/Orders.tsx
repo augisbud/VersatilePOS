@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Card, Form } from 'antd';
+import { Alert, Card } from 'antd';
 import { useOrders } from '@/hooks/useOrders';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
@@ -10,29 +10,15 @@ import { ModelsOrderDto } from '@/api/types.gen';
 import { OrdersHeader } from '@/components/Orders/OrdersHeader';
 import { BusinessSelectorCard } from '@/components/Items';
 import { OrdersTable } from '@/components/Orders/OrdersTable';
-import { OrderEditModal } from '@/components/Orders/OrderEditModal';
-
-type OrderFormValues = {
-  customer?: string;
-  customerEmail?: string;
-  customerPhone?: string;
-  serviceCharge?: number;
-  status?: string;
-  tipAmount?: number;
-};
 
 export const Orders = () => {
   const navigate = useNavigate();
-  const [form] = Form.useForm<OrderFormValues>();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingOrder, setEditingOrder] = useState<ModelsOrderDto | null>(null);
   const {
     orders,
     selectedBusinessId,
     loading: ordersLoading,
     error,
     fetchOrders,
-    updateOrder,
     selectBusiness,
   } = useOrders();
   const {
@@ -80,41 +66,10 @@ export const Orders = () => {
     void navigate('/orders/new');
   };
 
-  const handleOpenModal = (order: ModelsOrderDto) => {
-    setEditingOrder(order);
-    form.setFieldsValue({
-      customer: order.customer,
-      customerEmail: order.customerEmail,
-      customerPhone: order.customerPhone,
-      serviceCharge: order.serviceCharge,
-      status: order.status,
-      tipAmount: order.tipAmount,
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingOrder(null);
-    form.resetFields();
-  };
-
-  const handleSubmit = async () => {
-    const values = await form.validateFields();
-    if (!editingOrder?.id) {
-      return;
+  const handleEditOrder = (order: ModelsOrderDto) => {
+    if (order.id) {
+      void navigate(`/orders/${order.id}/edit`);
     }
-
-    await updateOrder(editingOrder.id, {
-      customer: values.customer || undefined,
-      customerEmail: values.customerEmail || undefined,
-      customerPhone: values.customerPhone || undefined,
-      serviceCharge: values.serviceCharge,
-      status: values.status || undefined,
-      tipAmount: values.tipAmount,
-    });
-
-    handleCloseModal();
   };
 
   if (!canReadOrders) {
@@ -160,20 +115,9 @@ export const Orders = () => {
           loading={combinedLoading}
           selectedBusinessId={selectedBusinessId}
           canReadOrders={canReadOrders}
-          onEdit={handleOpenModal}
-          onItems={(orderId) => {
-            void navigate(`/orders/${orderId}/items`);
-          }}
+          onEdit={handleEditOrder}
         />
       </Card>
-
-      <OrderEditModal
-        open={isModalOpen}
-        form={form}
-        loading={ordersLoading}
-        onCancel={handleCloseModal}
-        onSubmit={() => void handleSubmit()}
-      />
     </div>
   );
 };

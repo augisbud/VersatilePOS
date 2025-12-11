@@ -10,6 +10,7 @@ type Props = {
   selectedBusinessId?: number | null;
   onChange: (businessId: number) => void;
   loading?: boolean;
+  disabled?: boolean;
 };
 
 const { Text } = Typography;
@@ -19,6 +20,7 @@ export const BusinessSelectorCard = ({
   selectedBusinessId,
   onChange,
   loading,
+  disabled,
 }: Props) => {
   if (businesses.length <= 1) {
     return null;
@@ -32,6 +34,7 @@ export const BusinessSelectorCard = ({
           style={{ minWidth: 240 }}
           placeholder="Choose a business"
           loading={loading}
+          disabled={disabled}
           value={selectedBusinessId}
           onChange={onChange}
           options={businesses

@@ -21,6 +21,8 @@ type Props = {
   onCancel: () => void;
   selectedBusinessId?: number | null;
   loading?: boolean;
+  primaryActionLabel?: string;
+  secondaryActionLabel?: string;
 };
 
 const { Text } = Typography;
@@ -37,6 +39,8 @@ export const OrderSummaryCard = ({
   onCancel,
   selectedBusinessId,
   loading,
+  primaryActionLabel = 'Create order',
+  secondaryActionLabel = 'Cancel order',
 }: Props) => (
   <Card title="Order information" bodyStyle={{ padding: 16 }}>
     <div
@@ -155,10 +159,10 @@ export const OrderSummaryCard = ({
         disabled={!selectedBusinessId || !items.length}
         loading={loading}
       >
-        Create order
+        {primaryActionLabel}
       </Button>
       <Button danger block onClick={onCancel}>
-        Cancel order
+        {secondaryActionLabel}
       </Button>
     </Space>
   </Card>

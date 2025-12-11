@@ -17,6 +17,7 @@ type Action =
   | { type: 'addItem'; payload: number }
   | { type: 'setQuantity'; payload: { itemId: number; value: number } }
   | { type: 'removeItem'; payload: number }
+  | { type: 'setItems'; payload: SelectedOrderItem[] }
   | { type: 'openOptions'; payload: { itemId: number; initialCounts: Record<number, number> } }
   | { type: 'closeOptions' }
   | { type: 'setOptionCount'; payload: { optionId: number; value: number } }
@@ -34,6 +35,11 @@ const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'setSearch':
       return { ...state, searchTerm: action.payload };
+    case 'setItems':
+      return {
+        ...state,
+        selectedItems: action.payload,
+      };
     case 'addItem': {
       const existing = state.selectedItems.find((i) => i.itemId === action.payload);
       if (existing) {
@@ -241,6 +247,8 @@ export const useNewOrderBuilder = (
     closeOptionModal,
     setOptionCount,
     saveOptions,
+    setInitialItems: (items: SelectedOrderItem[]) =>
+      dispatch({ type: 'setItems', payload: items }),
   };
 };
 

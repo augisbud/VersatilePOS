@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Col, Input, Row, Space, Typography } from 'antd';
+import { Alert, Button, Card, Col, Form, Input, InputNumber, Row, Space, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useOrders } from '@/hooks/useOrders';
 import { useBusiness } from '@/hooks/useBusiness';
@@ -21,6 +21,13 @@ const { Title } = Typography;
 
 export const NewOrder = () => {
   const navigate = useNavigate();
+  const [form] = Form.useForm<{
+    customer?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    serviceCharge?: number;
+    tipAmount?: number;
+  }>();
 
   const {
     createOrder,
@@ -92,12 +99,18 @@ export const NewOrder = () => {
   };
 
   const handleSubmit = async () => {
+    const values = await form.validateFields();
     if (!selectedBusinessId || !state.selectedItems.length) {
       return;
     }
 
     const payload: ModelsCreateOrderRequest = {
       businessId: selectedBusinessId,
+      customer: values.customer || undefined,
+      customerEmail: values.customerEmail || undefined,
+      customerPhone: values.customerPhone || undefined,
+      serviceCharge: values.serviceCharge,
+      tipAmount: values.tipAmount,
     };
 
     const created = await createOrder(payload);
@@ -217,6 +230,26 @@ export const NewOrder = () => {
               selectedBusinessId={selectedBusinessId}
               loading={loading}
             />
+
+            <Card title="Order details">
+              <Form layout="vertical" form={form} requiredMark={false}>
+                <Form.Item label="Customer name" name="customer">
+                  <Input placeholder="Optional" />
+                </Form.Item>
+                <Form.Item label="Customer email" name="customerEmail">
+                  <Input type="email" placeholder="Optional" />
+                </Form.Item>
+                <Form.Item label="Customer phone" name="customerPhone">
+                  <Input placeholder="Optional" />
+                </Form.Item>
+                <Form.Item label="Service charge" name="serviceCharge">
+                  <InputNumber min={0} step={0.01} prefix="$" style={{ width: '100%' }} />
+                </Form.Item>
+                <Form.Item label="Tip amount" name="tipAmount">
+                  <InputNumber min={0} step={0.01} prefix="$" style={{ width: '100%' }} />
+                </Form.Item>
+              </Form>
+            </Card>
           </Space>
         </Col>
       </Row>

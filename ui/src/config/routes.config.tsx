@@ -14,6 +14,7 @@ import { NewReservation } from '@/pages/NewReservation';
 import { Orders } from '@/pages/Orders';
 import { NewOrder } from '@/pages/NewOrder';
 import { OrderItems } from '@/pages/OrderItems';
+import { EditOrder } from '@/pages/EditOrder';
 import { Items } from '@/pages/Items';
 
 export const routesConfig: ScreenConfig[] = [
@@ -45,6 +46,14 @@ export const routesConfig: ScreenConfig[] = [
     path: '/orders/new',
     title: 'New Order',
     component: NewOrder,
+    showInNav: false,
+    parentPage: RouteId.ORDERS,
+  },
+  {
+    id: RouteId.EDIT_ORDER,
+    path: '/orders/:orderId/edit',
+    title: 'Edit Order',
+    component: EditOrder,
     showInNav: false,
     parentPage: RouteId.ORDERS,
   },

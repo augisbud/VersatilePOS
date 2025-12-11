@@ -8,7 +8,6 @@ type Props = {
   selectedBusinessId?: number | null;
   canReadOrders: boolean;
   onEdit: (order: ModelsOrderDto) => void;
-  onItems: (orderId: number) => void;
 };
 
 const ORDER_STATUS_COLOR: Record<string, string> = {
@@ -23,25 +22,30 @@ export const OrdersTable = ({
   selectedBusinessId,
   canReadOrders,
   onEdit,
-  onItems,
 }: Props) => {
   const columns: ColumnsType<ModelsOrderDto> = [
     {
       title: 'Order #',
       dataIndex: 'id',
       key: 'id',
+      sorter: (a, b) => (a.id ?? 0) - (b.id ?? 0),
+      sortDirections: ['descend', 'ascend'],
       render: (value?: number) => (value ? `#${value}` : '—'),
     },
     {
       title: 'Customer',
       dataIndex: 'customer',
       key: 'customer',
+      sorter: (a, b) => (a.customer ?? '').localeCompare(b.customer ?? ''),
+      sortDirections: ['ascend', 'descend'],
       render: (value?: string) => value || 'Walk-in',
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
+      sorter: (a, b) => (a.status ?? '').localeCompare(b.status ?? ''),
+      sortDirections: ['ascend', 'descend'],
       render: (value?: string) => {
         const color = value
           ? (ORDER_STATUS_COLOR[value] ?? 'default')
@@ -53,6 +57,8 @@ export const OrdersTable = ({
       title: 'Service Charge',
       dataIndex: 'serviceCharge',
       key: 'serviceCharge',
+      sorter: (a, b) => (a.serviceCharge ?? 0) - (b.serviceCharge ?? 0),
+      sortDirections: ['descend', 'ascend'],
       render: (value?: number) =>
         value !== undefined ? `$${value.toFixed(2)}` : '—',
     },
@@ -60,6 +66,8 @@ export const OrdersTable = ({
       title: 'Tip',
       dataIndex: 'tipAmount',
       key: 'tipAmount',
+      sorter: (a, b) => (a.tipAmount ?? 0) - (b.tipAmount ?? 0),
+      sortDirections: ['descend', 'ascend'],
       render: (value?: number) =>
         value !== undefined ? `$${value.toFixed(2)}` : '—',
     },
@@ -67,27 +75,23 @@ export const OrdersTable = ({
       title: 'Placed At',
       dataIndex: 'datePlaced',
       key: 'datePlaced',
+      sorter: (a, b) =>
+        new Date(a.datePlaced ?? 0).getTime() - new Date(b.datePlaced ?? 0).getTime(),
+      defaultSortOrder: 'descend',
+      sortDirections: ['descend', 'ascend'],
       render: (value?: string) =>
         value ? new Date(value).toLocaleString() : '—',
     },
     {
       title: 'Actions',
       key: 'actions',
-      width: 140,
+      width: 100,
       render: (_, record) =>
         canReadOrders ? (
           <Space size="small">
             <Button type="link" onClick={() => onEdit(record)}>
               Edit
             </Button>
-            {record.id && (
-              <Button
-                type="link"
-                onClick={() => record.id && onItems(record.id)}
-              >
-                Items
-              </Button>
-            )}
           </Space>
         ) : null,
     },

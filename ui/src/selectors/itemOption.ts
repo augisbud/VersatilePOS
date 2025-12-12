@@ -23,3 +23,11 @@ export const getItemOptionsByItemId = (
   itemOptions: ModelsItemOptionDto[],
   itemId: number
 ) => itemOptions.filter((itemOption) => itemOption.itemId === itemId);
+
+export const getItemOptionName = (
+  itemOptions: ModelsItemOptionDto[],
+  optionId: number
+): string => {
+  const option = getItemOptionById(itemOptions, optionId);
+  return option?.name || `Option #${optionId}`;
+};

@@ -10,7 +10,7 @@ export enum RouteId {
   OVERVIEW = 'overview',
   ORDERS = 'orders',
   NEW_ORDER = 'new_order',
-  ORDER_ITEMS = 'order_items',
+  EDIT_ORDER = 'edit_order',
   RESERVATIONS = 'reservations',
   NEW_RESERVATION = 'new_reservation',
 }

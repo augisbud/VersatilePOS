@@ -1,147 +1,66 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Card, Form, Typography, Space } from 'antd';
-import { useOrders } from '@/hooks/useOrders';
-import { useBusiness } from '@/hooks/useBusiness';
-import { useUser } from '@/hooks/useUser';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { useItems } from '@/hooks/useItems';
-import { getUserBusinessId } from '@/selectors/user';
-import { ModelsCreateOrderRequest } from '@/api/types.gen';
-import { BusinessSelectorCard } from '@/components/Items';
-import { CustomerDetailsForm } from '@/components/Orders/CustomerDetailsForm';
-import { OrderItemsCard } from '@/components/Orders/OrderItemsCard';
-
-const { Title } = Typography;
-
-type OrderFormValues = {
-  customer?: string;
-  customerEmail?: string;
-  customerPhone?: string;
-  serviceCharge?: number;
-  tipAmount?: number;
-};
+import { useState, useCallback } from 'react';
+import { Alert, Modal } from 'antd';
+import { useOrderEditor } from '@/hooks/useOrderEditor';
+import { ItemsGrid } from '@/components/Orders/ItemsGrid';
+import { OrderEditorHeader } from '@/components/Orders/OrderEditorHeader';
+import { OrderInfoPanel } from '@/components/Orders/OrderInfoPanel';
+import { OrderItemEditModal } from '@/components/Orders/OrderItemEditModal';
 
 export const NewOrder = () => {
-  const [form] = Form.useForm<OrderFormValues>();
-  const navigate = useNavigate();
-  const [selectedItems, setSelectedItems] = useState<
-    { itemId: number; count: number }[]
-  >([]);
-  const [itemToAdd, setItemToAdd] = useState<number | undefined>();
-  const [itemQuantity, setItemQuantity] = useState<number>(1);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
   const {
-    createOrder,
-    selectedBusinessId,
-    selectBusiness,
-    loading,
+    isEditMode,
+    editingItem,
+    optionToAdd,
     error,
-    addItemToOrder,
-  } = useOrders();
-  const {
-    businesses,
-    loading: businessLoading,
-    fetchAllBusinesses,
-  } = useBusiness();
-  const { canWriteOrders } = useUser();
-  const { items, fetchItems, loading: itemsLoading } = useItems();
-  const userBusinessId = useAppSelector(getUserBusinessId);
+    total,
+    orderInfoItems,
+    availableOptionsForEdit,
+    loading,
+    itemsLoading,
+    businessLoading,
+    initialLoadComplete,
+    canWriteOrders,
+    canReadOrders,
+    items,
+    getItemNameLocal,
+    getOptionNameLocal,
+    getOptionPriceLabel,
+    handleItemClick,
+    handleEditItem,
+    handleEditSave,
+    handleEditCancel,
+    handleRemoveItem,
+    handleAddOption,
+    handleRemoveOption,
+    handleAddDiscount,
+    handleGenerateBill,
+    handleGenerateSplitBill,
+    confirmCancelOrder,
+    handleQuantityChange,
+    setOptionToAdd,
+    navigateBack,
+  } = useOrderEditor();
 
-  useEffect(() => {
-    void fetchAllBusinesses();
+  const handleCancelOrderClick = useCallback(() => {
+    setConfirmModalOpen(true);
   }, []);
 
-  useEffect(() => {
-    if (!businesses.length) {
-      return;
-    }
+  const handleConfirmCancel = useCallback(async () => {
+    setConfirmModalOpen(false);
+    await confirmCancelOrder();
+  }, [confirmCancelOrder]);
 
-    const fallbackBusinessId =
-      selectedBusinessId ?? userBusinessId ?? businesses[0].id;
+  const handleDismissConfirm = useCallback(() => {
+    setConfirmModalOpen(false);
+  }, []);
 
-    if (fallbackBusinessId && fallbackBusinessId !== selectedBusinessId) {
-      selectBusiness(fallbackBusinessId);
-    }
-  }, [businesses, selectedBusinessId, userBusinessId]);
-
-  useEffect(() => {
-    if (selectedBusinessId) {
-      void fetchItems(selectedBusinessId);
-    }
-  }, [selectedBusinessId]);
-
-  const itemOptions = useMemo(
-    () =>
-      items
-        .filter((item) => item.id !== undefined)
-        .map((item) => ({
-          label: item.name ?? `Item #${item.id}`,
-          value: item.id as number,
-        })),
-    [items]
-  );
-
-  const handleAddItem = () => {
-    if (!itemToAdd || itemQuantity <= 0) {
-      return;
-    }
-
-    setSelectedItems((prev) => {
-      const existing = prev.find((p) => p.itemId === itemToAdd);
-      if (existing) {
-        return prev.map((p) =>
-          p.itemId === itemToAdd ? { ...p, count: itemQuantity } : p
-        );
-      }
-      return [...prev, { itemId: itemToAdd, count: itemQuantity }];
-    });
-  };
-
-  const handleRemoveItem = (itemId: number) => {
-    setSelectedItems((prev) => prev.filter((item) => item.itemId !== itemId));
-  };
-
-  const handleCancel = () => {
-    void navigate('/orders');
-  };
-
-  const handleSubmit = async () => {
-    const values = await form.validateFields();
-
-    if (!selectedBusinessId || !selectedItems.length) {
-      return;
-    }
-
-    const payload: ModelsCreateOrderRequest = {
-      businessId: selectedBusinessId,
-      customer: values.customer || undefined,
-      customerEmail: values.customerEmail || undefined,
-      customerPhone: values.customerPhone || undefined,
-      serviceCharge: values.serviceCharge,
-      tipAmount: values.tipAmount,
-    };
-
-    const created = await createOrder(payload);
-    if (!created?.id) {
-      return;
-    }
-
-    for (const item of selectedItems) {
-      await addItemToOrder(created.id, {
-        itemId: item.itemId,
-        count: item.count,
-      });
-    }
-
-    void navigate('/orders');
-  };
-
-  if (!canWriteOrders) {
+  if (!canWriteOrders && !canReadOrders) {
     return (
       <div style={{ padding: '24px' }}>
         <Alert
-          message="You don't have permission to create orders."
+          message="You don't have permission to view orders."
           type="error"
           showIcon
         />
@@ -150,59 +69,99 @@ export const NewOrder = () => {
   }
 
   return (
-    <div style={{ padding: '24px', maxWidth: '900px', margin: '0 auto' }}>
-      <Card
-        title={
-          <Title level={4} style={{ margin: 0 }}>
-            New Order
-          </Title>
-        }
-        extra={
-          <Button onClick={handleCancel} type="text">
-            Cancel
-          </Button>
-        }
+    <div
+      style={{
+        height: 'calc(100vh - 64px - 48px)',
+        display: 'flex',
+        flexDirection: 'column',
+        background: '#f5f5f5',
+        overflow: 'hidden',
+        margin: -24,
+      }}
+    >
+      <OrderEditorHeader onBack={navigateBack} />
+
+      {error && (
+        <Alert
+          message="Error"
+          description={error}
+          type="error"
+          showIcon
+          style={{ margin: 16 }}
+        />
+      )}
+
+      <div
+        style={{
+          flex: 1,
+          display: 'grid',
+          gridTemplateColumns: '1fr 350px',
+          gap: 16,
+          padding: 16,
+          overflow: 'hidden',
+        }}
       >
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <BusinessSelectorCard
-            businesses={businesses}
-            selectedBusinessId={selectedBusinessId}
-            loading={businessLoading}
-            onChange={(businessId) => selectBusiness(businessId)}
+        <div
+          style={{
+            background: '#fff',
+            borderRadius: 8,
+            padding: 16,
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <ItemsGrid
+            items={items}
+            loading={itemsLoading || businessLoading || !initialLoadComplete}
+            onItemClick={(item) => void handleItemClick(item)}
           />
+        </div>
 
-          {error && (
-            <Alert message="Error" description={error} type="error" showIcon />
-          )}
+        <OrderInfoPanel
+          items={orderInfoItems}
+          total={total}
+          loading={loading || !initialLoadComplete}
+          canWriteOrders={canWriteOrders}
+          onEditItem={handleEditItem}
+          onAddDiscount={handleAddDiscount}
+          onGenerateBill={() => void handleGenerateBill()}
+          onGenerateSplitBill={handleGenerateSplitBill}
+          onCancelOrder={handleCancelOrderClick}
+        />
+      </div>
 
-          <CustomerDetailsForm form={form} />
+      <OrderItemEditModal
+        open={!!editingItem}
+        itemName={editingItem ? getItemNameLocal(editingItem.itemId) : ''}
+        quantity={editingItem?.count || 1}
+        selectedOptions={editingItem?.options || []}
+        availableOptions={availableOptionsForEdit}
+        optionToAdd={optionToAdd}
+        getOptionName={getOptionNameLocal}
+        getOptionPriceLabel={getOptionPriceLabel}
+        onQuantityChange={handleQuantityChange}
+        onOptionToAddChange={setOptionToAdd}
+        onAddOption={handleAddOption}
+        onRemoveOption={handleRemoveOption}
+        onSave={() => void handleEditSave()}
+        onCancel={handleEditCancel}
+        onRemove={() => void handleRemoveItem()}
+      />
 
-          <OrderItemsCard
-            itemOptions={itemOptions}
-            selectedItems={selectedItems}
-            itemToAdd={itemToAdd}
-            itemQuantity={itemQuantity}
-            onItemToAddChange={setItemToAdd}
-            onItemQuantityChange={(value) => setItemQuantity(value)}
-            onAddItem={handleAddItem}
-            onRemoveItem={handleRemoveItem}
-            loading={itemsLoading}
-            disabled={!selectedBusinessId}
-          />
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-            <Button onClick={handleCancel}>Cancel</Button>
-            <Button
-              type="primary"
-              onClick={() => void handleSubmit()}
-              loading={loading}
-              disabled={!selectedBusinessId || !selectedItems.length}
-            >
-              Create Order
-            </Button>
-          </div>
-        </Space>
-      </Card>
+      <Modal
+        title={isEditMode ? 'Cancel Order' : 'Discard Order'}
+        open={confirmModalOpen}
+        onOk={() => void handleConfirmCancel()}
+        onCancel={handleDismissConfirm}
+        okText={isEditMode ? 'Yes, cancel order' : 'Yes, discard'}
+        okType="danger"
+        cancelText="No"
+      >
+        {isEditMode
+          ? 'Are you sure you want to cancel this order?'
+          : 'Are you sure you want to discard this order? All items will be removed.'}
+      </Modal>
     </div>
   );
 };

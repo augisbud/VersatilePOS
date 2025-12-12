@@ -13,7 +13,6 @@ import { Reservations } from '@/pages/Reservations';
 import { NewReservation } from '@/pages/NewReservation';
 import { Orders } from '@/pages/Orders';
 import { NewOrder } from '@/pages/NewOrder';
-import { OrderItems } from '@/pages/OrderItems';
 import { Items } from '@/pages/Items';
 
 export const routesConfig: ScreenConfig[] = [
@@ -49,10 +48,10 @@ export const routesConfig: ScreenConfig[] = [
     parentPage: RouteId.ORDERS,
   },
   {
-    id: RouteId.ORDER_ITEMS,
-    path: '/orders/:orderId/items',
-    title: 'Order Items',
-    component: OrderItems,
+    id: RouteId.EDIT_ORDER,
+    path: '/orders/:orderId/edit',
+    title: 'Edit Order',
+    component: NewOrder,
     showInNav: false,
     parentPage: RouteId.ORDERS,
   },

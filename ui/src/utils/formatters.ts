@@ -73,3 +73,9 @@ export const getPriceModifierSelectOptions = (
     label: `${pm.name} (${formatPriceModifierValue(pm)})`,
   }));
 };
+
+export const formatPriceChange = (change: number): string => {
+  if (change === 0) return '';
+  const sign = change > 0 ? '+' : '';
+  return ` (${sign}$${change.toFixed(2)})`;
+};

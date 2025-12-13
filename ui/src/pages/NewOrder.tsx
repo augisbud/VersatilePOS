@@ -11,6 +11,7 @@ import {
   OrderBillModal,
   SplitBillModal,
 } from '@/components/Orders/OrderEditor';
+import { StripePaymentModal } from '@/components/StripePaymentModal';
 
 export const NewOrder = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -19,8 +20,9 @@ export const NewOrder = () => {
   const [billLoading, setBillLoading] = useState(false);
   const [splitBillModalOpen, setSplitBillModalOpen] = useState(false);
   const [splitBillLoading, setSplitBillLoading] = useState(false);
+  const [stripeModalOpen, setStripeModalOpen] = useState(false);
 
-  const { createPayment, linkPaymentToOrder } = usePayments();
+  const { createPayment, linkPaymentToOrder, fetchPayments } = usePayments();
 
   const {
     isEditMode,
@@ -102,6 +104,14 @@ export const NewOrder = () => {
         return;
       }
 
+      // For CreditCard, open Stripe payment modal
+      if (paymentType === 'CreditCard') {
+        setBillModalOpen(false);
+        setStripeModalOpen(true);
+        return;
+      }
+
+      // For Cash and GiftCard, process directly
       setBillLoading(true);
       try {
         const payment = await createPayment({
@@ -124,6 +134,65 @@ export const NewOrder = () => {
     },
     [parsedOrderId, total, createPayment, linkPaymentToOrder, navigateBack]
   );
+
+  const handleStripePaymentSuccess = useCallback(
+    async (paymentIntentId: string) => {
+      try {
+        setStripeModalOpen(false);
+        
+        // For local demos, poll for payment status
+        // The payment should already be created by the payment intent creation
+        const pollForPayment = async (attempts = 0): Promise<void> => {
+          if (attempts > 10) {
+            // After 5 seconds, give up and show warning
+            void message.warning(
+              'Payment processed, but linking to order may take a moment.'
+            );
+            navigateBack();
+            return;
+          }
+
+          try {
+            // Get all payments and find the one with matching payment intent ID
+            const payments = await fetchPayments();
+            const stripePayment = payments.find(
+              (p) => (p as any).stripePaymentIntentId === paymentIntentId
+            );
+
+            if (stripePayment?.id) {
+              if (parsedOrderId) {
+                await linkPaymentToOrder(parsedOrderId, stripePayment.id);
+                void message.success('Payment processed successfully');
+                navigateBack();
+              } else {
+                void message.success('Payment processed successfully');
+                navigateBack();
+              }
+            } else {
+              // Payment not found yet, wait and retry
+              setTimeout(() => pollForPayment(attempts + 1), 500);
+            }
+          } catch (err) {
+            console.error('Failed to link payment:', err);
+            // Retry on error
+            setTimeout(() => pollForPayment(attempts + 1), 500);
+          }
+        };
+
+        // Start polling immediately
+        await pollForPayment();
+      } catch (err) {
+        console.error('Stripe payment success handler error:', err);
+        void message.error('Failed to complete payment process');
+      }
+    },
+    [parsedOrderId, linkPaymentToOrder, navigateBack, fetchPayments]
+  );
+
+  const handleStripePaymentCancel = useCallback(() => {
+    setStripeModalOpen(false);
+    setBillModalOpen(true);
+  }, []);
 
   const handleAddTip = useCallback(() => {
     void message.info('Tip feature coming soon');
@@ -302,6 +371,14 @@ export const NewOrder = () => {
         loading={splitBillLoading}
         onPayBill={handlePaySplitBill}
         onClose={handleSplitBillClose}
+      />
+
+      <StripePaymentModal
+        open={stripeModalOpen}
+        amount={total}
+        orderId={parsedOrderId || undefined}
+        onSuccess={handleStripePaymentSuccess}
+        onCancel={handleStripePaymentCancel}
       />
     </div>
   );

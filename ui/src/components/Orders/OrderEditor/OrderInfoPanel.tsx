@@ -22,8 +22,11 @@ type Props = {
   total: number;
   loading?: boolean;
   canWriteOrders: boolean;
+  isEditMode?: boolean;
   onEditItem: (itemId: number, orderItemId?: number) => void;
   onAddDiscount: () => void;
+  onSaveOrder: () => void;
+  onDoneEditing: () => void;
   onGenerateBill: () => void;
   onGenerateSplitBill: () => void;
   onCancelOrder: () => void;
@@ -36,8 +39,11 @@ export const OrderInfoPanel = ({
   total,
   loading,
   canWriteOrders,
+  isEditMode,
   onEditItem,
   onAddDiscount,
+  onSaveOrder,
+  onDoneEditing,
   onGenerateBill,
   onGenerateSplitBill,
   onCancelOrder,
@@ -139,23 +145,38 @@ export const OrderInfoPanel = ({
       <Divider style={{ margin: '16px 0' }} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <Button
-          block
-          type="primary"
-          onClick={onGenerateBill}
-          disabled={items.length === 0}
-        >
-          Generate bill
-        </Button>
-        <Button
-          block
-          onClick={onGenerateSplitBill}
-          disabled={items.length === 0}
-        >
-          Generate split bill
-        </Button>
+        {isEditMode ? (
+          <Button block type="primary" onClick={onDoneEditing}>
+            Done Editing
+          </Button>
+        ) : (
+          <Button
+            block
+            type="primary"
+            onClick={onSaveOrder}
+            disabled={items.length === 0 || !canWriteOrders}
+          >
+            Save Order
+          </Button>
+        )}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button
+            style={{ flex: 1 }}
+            onClick={onGenerateBill}
+            disabled={items.length === 0}
+          >
+            Generate bill
+          </Button>
+          <Button
+            style={{ flex: 1 }}
+            onClick={onGenerateSplitBill}
+            disabled={items.length === 0}
+          >
+            Split bill
+          </Button>
+        </div>
         <Button block danger onClick={onCancelOrder} disabled={!canWriteOrders}>
-          Cancel order
+          {isEditMode ? 'Cancel order' : 'Discard'}
         </Button>
       </div>
     </div>

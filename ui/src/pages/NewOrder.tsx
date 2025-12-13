@@ -1,15 +1,17 @@
 import { useState, useCallback } from 'react';
 import { Alert, Modal } from 'antd';
-import { useOrderEditor } from '@/hooks/useOrderEditor';
+import { useOrderEditor, CustomerDetails } from '@/hooks/useOrderEditor';
 import {
   ItemsGrid,
   OrderEditorHeader,
   OrderInfoPanel,
   OrderItemEditModal,
-} from '@/components/Orders';
+  CustomerDetailsModal,
+} from '@/components/Orders/OrderEditor';
 
 export const NewOrder = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [customerModalOpen, setCustomerModalOpen] = useState(false);
 
   const {
     isEditMode,
@@ -37,6 +39,7 @@ export const NewOrder = () => {
     handleAddOption,
     handleRemoveOption,
     handleAddDiscount,
+    handleSaveOrder,
     handleGenerateBill,
     handleGenerateSplitBill,
     confirmCancelOrder,
@@ -56,6 +59,22 @@ export const NewOrder = () => {
 
   const handleDismissConfirm = useCallback(() => {
     setConfirmModalOpen(false);
+  }, []);
+
+  const handleSaveOrderClick = useCallback(() => {
+    setCustomerModalOpen(true);
+  }, []);
+
+  const handleCustomerModalSave = useCallback(
+    async (details: CustomerDetails) => {
+      await handleSaveOrder(details);
+      setCustomerModalOpen(false);
+    },
+    [handleSaveOrder]
+  );
+
+  const handleCustomerModalCancel = useCallback(() => {
+    setCustomerModalOpen(false);
   }, []);
 
   if (!canWriteOrders && !canReadOrders) {
@@ -125,8 +144,11 @@ export const NewOrder = () => {
           total={total}
           loading={loading || !initialLoadComplete}
           canWriteOrders={canWriteOrders}
+          isEditMode={isEditMode}
           onEditItem={handleEditItem}
           onAddDiscount={handleAddDiscount}
+          onSaveOrder={handleSaveOrderClick}
+          onDoneEditing={navigateBack}
           onGenerateBill={() => void handleGenerateBill()}
           onGenerateSplitBill={handleGenerateSplitBill}
           onCancelOrder={handleCancelOrderClick}
@@ -164,6 +186,13 @@ export const NewOrder = () => {
           ? 'Are you sure you want to cancel this order?'
           : 'Are you sure you want to discard this order? All items will be removed.'}
       </Modal>
+
+      <CustomerDetailsModal
+        open={customerModalOpen}
+        loading={loading}
+        onSave={(details) => void handleCustomerModalSave(details)}
+        onCancel={handleCustomerModalCancel}
+      />
     </div>
   );
 };

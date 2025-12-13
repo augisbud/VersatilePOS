@@ -121,7 +121,12 @@ export const orderReducer = createReducer(initialState, (builder) => {
     })
     .addCase(fetchOrderItems.fulfilled, (state, { payload }) => {
       state.orderItems = payload;
-      state.itemOptionsByOrderItem = {};
+      const currentOrderItemIds = new Set(payload.map((item) => item.id));
+      for (const itemId of Object.keys(state.itemOptionsByOrderItem)) {
+        if (!currentOrderItemIds.has(Number(itemId))) {
+          delete state.itemOptionsByOrderItem[Number(itemId)];
+        }
+      }
       state.loading = false;
     })
     .addCase(fetchOrderItems.rejected, (state, action) => {

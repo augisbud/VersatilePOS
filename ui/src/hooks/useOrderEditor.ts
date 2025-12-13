@@ -468,22 +468,15 @@ export const useOrderEditor = () => {
         // Error handled by redux
       }
     },
-    [selectedBusinessId, selectedItems, createOrder, addItemToOrder, addOptionToOrderItem, navigate]
+    [
+      selectedBusinessId,
+      selectedItems,
+      createOrder,
+      addItemToOrder,
+      addOptionToOrderItem,
+      navigate,
+    ]
   );
-
-  const handleGenerateBill = useCallback(async () => {
-    if (isEditMode) {
-      void navigate('/orders');
-      return;
-    }
-
-    // For non-edit mode, this now just navigates back (order should be saved first)
-    void navigate('/orders');
-  }, [isEditMode, navigate]);
-
-  const handleGenerateSplitBill = useCallback(() => {
-    // Feature not yet available
-  }, []);
 
   const confirmCancelOrder = useCallback(async () => {
     if (isEditMode && parsedOrderId) {
@@ -558,8 +551,6 @@ export const useOrderEditor = () => {
     handleRemoveOption,
     handleAddDiscount,
     handleSaveOrder,
-    handleGenerateBill,
-    handleGenerateSplitBill,
     confirmCancelOrder,
     handleQuantityChange,
     setOptionToAdd,

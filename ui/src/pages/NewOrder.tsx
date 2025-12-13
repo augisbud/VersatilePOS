@@ -1,10 +1,12 @@
 import { useState, useCallback } from 'react';
 import { Alert, Modal } from 'antd';
 import { useOrderEditor } from '@/hooks/useOrderEditor';
-import { ItemsGrid } from '@/components/Orders/ItemsGrid';
-import { OrderEditorHeader } from '@/components/Orders/OrderEditorHeader';
-import { OrderInfoPanel } from '@/components/Orders/OrderInfoPanel';
-import { OrderItemEditModal } from '@/components/Orders/OrderItemEditModal';
+import {
+  ItemsGrid,
+  OrderEditorHeader,
+  OrderInfoPanel,
+  OrderItemEditModal,
+} from '@/components/Orders';
 
 export const NewOrder = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);

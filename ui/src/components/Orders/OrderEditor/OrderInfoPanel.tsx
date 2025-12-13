@@ -154,16 +154,10 @@ export const OrderInfoPanel = ({
         >
           Generate split bill
         </Button>
-        <Button
-          block
-          danger
-          onClick={onCancelOrder}
-          disabled={!canWriteOrders}
-        >
+        <Button block danger onClick={onCancelOrder} disabled={!canWriteOrders}>
           Cancel order
         </Button>
       </div>
     </div>
   </Card>
 );
-

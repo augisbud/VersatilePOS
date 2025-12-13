@@ -1,10 +1,12 @@
 import { useAppDispatch } from './useAppDispatch';
 import { useAppSelector } from './useAppSelector';
 import {
+  getAllItemOptionLinks,
   getOrderById as getOrderByIdSelector,
   getOrderItemById as getOrderItemByIdSelector,
   getOrderItemOptionsMap,
   getOrderItems,
+  getOrderItemsByOrderId,
   getOrders,
   getOrdersBusinessId,
   getOrdersError,
@@ -22,6 +24,7 @@ import {
   fetchOrderById as fetchOrderByIdAction,
   fetchOrderItemOptions as fetchOrderItemOptionsAction,
   fetchOrderItems as fetchOrderItemsAction,
+  fetchOrderItemsForAllOrders as fetchOrderItemsForAllOrdersAction,
   fetchOrders as fetchOrdersAction,
   linkPayment as linkPaymentAction,
   removeOrderItem as removeOrderItemAction,
@@ -43,6 +46,8 @@ export const useOrders = () => {
   const selectedOrder = useAppSelector(getSelectedOrder);
   const selectedBusinessId = useAppSelector(getOrdersBusinessId);
   const orderItems = useAppSelector(getOrderItems);
+  const orderItemsByOrderId = useAppSelector(getOrderItemsByOrderId);
+  const allItemOptionLinks = useAppSelector(getAllItemOptionLinks);
   const itemOptionsMap = useAppSelector(getOrderItemOptionsMap);
   const loading = useAppSelector(getOrdersLoading);
   const error = useAppSelector(getOrdersError);
@@ -66,6 +71,10 @@ export const useOrders = () => {
 
   const fetchItemsForOrder = async (orderId: number) => {
     return dispatch(fetchOrderItemsAction(orderId)).unwrap();
+  };
+
+  const fetchItemsForAllOrders = async (orderIds: number[]) => {
+    return dispatch(fetchOrderItemsForAllOrdersAction(orderIds)).unwrap();
   };
 
   const addItemToOrder = async (orderId: number, data: ModelsCreateOrderItemRequest) => {
@@ -138,6 +147,8 @@ export const useOrders = () => {
     selectedOrder,
     selectedBusinessId,
     orderItems,
+    orderItemsByOrderId,
+    allItemOptionLinks,
     itemOptionsMap,
     loading,
     error,
@@ -146,6 +157,7 @@ export const useOrders = () => {
     createOrder,
     updateOrder,
     fetchItemsForOrder,
+    fetchItemsForAllOrders,
     addItemToOrder,
     updateOrderItem,
     removeItemFromOrder,

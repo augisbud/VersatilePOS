@@ -18,6 +18,8 @@
     "@ant-design/icons": "^6.1.0",
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@reduxjs/toolkit": "^2.10.1",
+    "@stripe/react-stripe-js": "^5.4.1",
+    "@stripe/stripe-js": "^8.5.3",
     "antd": "^5.28.1",
     "axios": "^1.13.2",
     "react": "^19.1.1",

@@ -1,20 +1,30 @@
 import { useState, useCallback } from 'react';
-import { Alert, Modal } from 'antd';
+import { Alert, Modal, message } from 'antd';
 import { useOrderEditor, CustomerDetails } from '@/hooks/useOrderEditor';
+import { usePayments } from '@/hooks/usePayments';
 import {
   ItemsGrid,
   OrderEditorHeader,
   OrderInfoPanel,
   OrderItemEditModal,
   CustomerDetailsModal,
+  OrderBillModal,
+  SplitBillModal,
 } from '@/components/Orders/OrderEditor';
 
 export const NewOrder = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [customerModalOpen, setCustomerModalOpen] = useState(false);
+  const [billModalOpen, setBillModalOpen] = useState(false);
+  const [billLoading, setBillLoading] = useState(false);
+  const [splitBillModalOpen, setSplitBillModalOpen] = useState(false);
+  const [splitBillLoading, setSplitBillLoading] = useState(false);
+
+  const { createPayment, linkPaymentToOrder } = usePayments();
 
   const {
     isEditMode,
+    parsedOrderId,
     editingItem,
     optionToAdd,
     error,
@@ -40,8 +50,6 @@ export const NewOrder = () => {
     handleRemoveOption,
     handleAddDiscount,
     handleSaveOrder,
-    handleGenerateBill,
-    handleGenerateSplitBill,
     confirmCancelOrder,
     handleQuantityChange,
     setOptionToAdd,
@@ -76,6 +84,89 @@ export const NewOrder = () => {
   const handleCustomerModalCancel = useCallback(() => {
     setCustomerModalOpen(false);
   }, []);
+
+  const handleGenerateBillClick = useCallback(() => {
+    setBillModalOpen(true);
+  }, []);
+
+  const handleBillModalClose = useCallback(() => {
+    setBillModalOpen(false);
+  }, []);
+
+  const handlePayment = useCallback(
+    async (paymentType: 'Cash' | 'CreditCard' | 'GiftCard') => {
+      if (!parsedOrderId) {
+        void message.warning(
+          'Please save the order first before processing payment.'
+        );
+        return;
+      }
+
+      setBillLoading(true);
+      try {
+        const payment = await createPayment({
+          amount: total,
+          type: paymentType,
+          status: 'Completed',
+        });
+
+        if (payment?.id) {
+          await linkPaymentToOrder(parsedOrderId, payment.id);
+          void message.success('Payment processed successfully');
+          setBillModalOpen(false);
+          navigateBack();
+        }
+      } catch {
+        void message.error('Failed to process payment');
+      } finally {
+        setBillLoading(false);
+      }
+    },
+    [parsedOrderId, total, createPayment, linkPaymentToOrder, navigateBack]
+  );
+
+  const handleAddTip = useCallback(() => {
+    void message.info('Tip feature coming soon');
+  }, []);
+
+  const handleSplitBillClick = useCallback(() => {
+    setSplitBillModalOpen(true);
+  }, []);
+
+  const handleSplitBillClose = useCallback(() => {
+    setSplitBillModalOpen(false);
+  }, []);
+
+  const handlePaySplitBill = useCallback(
+    async (billId: number, amount: number) => {
+      if (!parsedOrderId) {
+        void message.warning(
+          'Please save the order first before processing payment.'
+        );
+        return;
+      }
+
+      setSplitBillLoading(true);
+      try {
+        const payment = await createPayment({
+          amount,
+          type: 'Cash',
+          status: 'Completed',
+        });
+
+        if (payment?.id) {
+          await linkPaymentToOrder(parsedOrderId, payment.id);
+          void message.success(`Bill ${billId} paid successfully`);
+        }
+      } catch {
+        void message.error('Failed to process payment');
+        throw new Error('Payment failed');
+      } finally {
+        setSplitBillLoading(false);
+      }
+    },
+    [parsedOrderId, createPayment, linkPaymentToOrder]
+  );
 
   if (!canWriteOrders && !canReadOrders) {
     return (
@@ -149,8 +240,8 @@ export const NewOrder = () => {
           onAddDiscount={handleAddDiscount}
           onSaveOrder={handleSaveOrderClick}
           onDoneEditing={navigateBack}
-          onGenerateBill={() => void handleGenerateBill()}
-          onGenerateSplitBill={handleGenerateSplitBill}
+          onGenerateBill={handleGenerateBillClick}
+          onGenerateSplitBill={handleSplitBillClick}
           onCancelOrder={handleCancelOrderClick}
         />
       </div>
@@ -192,6 +283,25 @@ export const NewOrder = () => {
         loading={loading}
         onSave={(details) => void handleCustomerModalSave(details)}
         onCancel={handleCustomerModalCancel}
+      />
+
+      <OrderBillModal
+        open={billModalOpen}
+        items={orderInfoItems}
+        total={total}
+        loading={billLoading}
+        onPayment={(type) => void handlePayment(type)}
+        onAddTip={handleAddTip}
+        onClose={handleBillModalClose}
+      />
+
+      <SplitBillModal
+        open={splitBillModalOpen}
+        items={orderInfoItems}
+        total={total}
+        loading={splitBillLoading}
+        onPayBill={handlePaySplitBill}
+        onClose={handleSplitBillClose}
       />
     </div>
   );

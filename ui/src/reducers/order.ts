@@ -9,6 +9,7 @@ import {
   fetchOrderById,
   fetchOrderItemOptions,
   fetchOrderItems,
+  fetchOrderItemsForAllOrders,
   fetchOrders,
   linkPayment,
   removeOrderItem,
@@ -24,7 +25,9 @@ import {
 export interface OrderState {
   orders: ModelsOrderDto[];
   orderItems: ModelsOrderItemDto[];
+  orderItemsByOrderId: Record<number, ModelsOrderItemDto[]>;
   itemOptionsByOrderItem: Record<number, ModelsItemOptionLinkDto[]>;
+  allItemOptionLinks: Record<number, ModelsItemOptionLinkDto[]>; // for order card totals
   selectedOrder?: ModelsOrderDto;
   selectedBusinessId?: number;
   loading: boolean;
@@ -34,7 +37,9 @@ export interface OrderState {
 const initialState: OrderState = {
   orders: [],
   orderItems: [],
+  orderItemsByOrderId: {},
   itemOptionsByOrderItem: {},
+  allItemOptionLinks: {},
   selectedOrder: undefined,
   selectedBusinessId: undefined,
   loading: false,
@@ -46,7 +51,9 @@ export const orderReducer = createReducer(initialState, (builder) => {
       state.selectedBusinessId = payload;
       state.orders = [];
       state.orderItems = [];
+      state.orderItemsByOrderId = {};
       state.itemOptionsByOrderItem = {};
+      state.allItemOptionLinks = {};
       state.selectedOrder = undefined;
       state.error = undefined;
     })
@@ -114,7 +121,12 @@ export const orderReducer = createReducer(initialState, (builder) => {
     })
     .addCase(fetchOrderItems.fulfilled, (state, { payload }) => {
       state.orderItems = payload;
-      state.itemOptionsByOrderItem = {};
+      const currentOrderItemIds = new Set(payload.map((item) => item.id));
+      for (const itemId of Object.keys(state.itemOptionsByOrderItem)) {
+        if (!currentOrderItemIds.has(Number(itemId))) {
+          delete state.itemOptionsByOrderItem[Number(itemId)];
+        }
+      }
       state.loading = false;
     })
     .addCase(fetchOrderItems.rejected, (state, action) => {
@@ -233,5 +245,10 @@ export const orderReducer = createReducer(initialState, (builder) => {
     .addCase(applyPriceModifier.rejected, (state, action) => {
       state.loading = false;
       state.error = action.error.message;
+    })
+    // Fetch order items for all orders
+    .addCase(fetchOrderItemsForAllOrders.fulfilled, (state, { payload }) => {
+      state.orderItemsByOrderId = payload.orderItems;
+      state.allItemOptionLinks = payload.itemOptionLinks;
     });
 });

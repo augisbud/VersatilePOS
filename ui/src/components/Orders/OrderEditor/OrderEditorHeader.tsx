@@ -26,4 +26,3 @@ export const OrderEditorHeader = ({ onBack }: Props) => (
     </Button>
   </div>
 );
-

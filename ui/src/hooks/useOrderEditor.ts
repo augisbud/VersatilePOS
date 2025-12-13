@@ -19,11 +19,13 @@ import {
   mapItemsToOrderInfo,
   getAvailableOptionsForEdit,
 } from '@/utils/orderCalculations';
-import {
-  ModelsCreateOrderRequest,
-  ModelsItemDto,
-  ModelsItemOptionLinkDto,
-} from '@/api/types.gen';
+import { ModelsItemDto, ModelsItemOptionLinkDto } from '@/api/types.gen';
+
+export type CustomerDetails = {
+  customer?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+};
 import {
   EditingItem,
   OrderInfoItem,
@@ -428,59 +430,53 @@ export const useOrderEditor = () => {
     // Feature not yet available
   }, []);
 
-  const handleGenerateBill = useCallback(async () => {
-    if (isEditMode) {
-      void navigate('/orders');
-      return;
-    }
-
-    if (!selectedBusinessId || !selectedItems.length) {
-      return;
-    }
-
-    const payload: ModelsCreateOrderRequest = {
-      businessId: selectedBusinessId,
-    };
-
-    try {
-      const created = await createOrder(payload);
-      if (!created?.id) {
+  const handleSaveOrder = useCallback(
+    async (customerDetails?: CustomerDetails) => {
+      if (!selectedBusinessId || !selectedItems.length) {
         return;
       }
 
-      for (const item of selectedItems) {
-        const orderItem = await addItemToOrder(created.id, {
-          itemId: item.itemId,
-          count: item.count,
+      try {
+        const created = await createOrder({
+          businessId: selectedBusinessId,
+          customer: customerDetails?.customer,
+          customerEmail: customerDetails?.customerEmail,
+          customerPhone: customerDetails?.customerPhone,
         });
+        if (!created?.id) {
+          return;
+        }
 
-        if (item.options && item.options.length > 0 && orderItem?.id) {
-          for (const option of item.options) {
-            await addOptionToOrderItem(created.id, orderItem.id, {
-              itemOptionId: option.itemOptionId,
-              count: option.count,
-            });
+        for (const item of selectedItems) {
+          const orderItem = await addItemToOrder(created.id, {
+            itemId: item.itemId,
+            count: item.count,
+          });
+
+          if (item.options && item.options.length > 0 && orderItem?.id) {
+            for (const option of item.options) {
+              await addOptionToOrderItem(created.id, orderItem.id, {
+                itemOptionId: option.itemOptionId,
+                count: option.count,
+              });
+            }
           }
         }
+
+        void navigate('/orders');
+      } catch {
+        // Error handled by redux
       }
-
-      void navigate('/orders');
-    } catch {
-      // Error handled by redux
-    }
-  }, [
-    isEditMode,
-    selectedBusinessId,
-    selectedItems,
-    createOrder,
-    addItemToOrder,
-    addOptionToOrderItem,
-    navigate,
-  ]);
-
-  const handleGenerateSplitBill = useCallback(() => {
-    // Feature not yet available
-  }, []);
+    },
+    [
+      selectedBusinessId,
+      selectedItems,
+      createOrder,
+      addItemToOrder,
+      addOptionToOrderItem,
+      navigate,
+    ]
+  );
 
   const confirmCancelOrder = useCallback(async () => {
     if (isEditMode && parsedOrderId) {
@@ -554,8 +550,7 @@ export const useOrderEditor = () => {
     handleAddOption,
     handleRemoveOption,
     handleAddDiscount,
-    handleGenerateBill,
-    handleGenerateSplitBill,
+    handleSaveOrder,
     confirmCancelOrder,
     handleQuantityChange,
     setOptionToAdd,

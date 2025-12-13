@@ -105,6 +105,67 @@ export const fetchOrderItems = createAsyncThunk<ModelsOrderItemDto[], number>(
   }
 );
 
+export type OrderItemsWithOptions = {
+  orderItems: Record<number, ModelsOrderItemDto[]>;
+  itemOptionLinks: Record<number, ModelsItemOptionLinkDto[]>; // keyed by orderItemId
+};
+
+export const fetchOrderItemsForAllOrders = createAsyncThunk<
+  OrderItemsWithOptions,
+  number[]
+>('order/fetchOrderItemsForAllOrders', async (orderIds: number[]) => {
+  // First fetch all order items for all orders
+  const orderItemsResults = await Promise.all(
+    orderIds.map(async (orderId) => {
+      const response = await getOrderItems({ path: { id: orderId } });
+      return {
+        orderId,
+        items: Array.isArray(response.data) ? response.data : [],
+      };
+    })
+  );
+
+  const orderItems = orderItemsResults.reduce(
+    (acc, { orderId, items }) => {
+      acc[orderId] = items;
+      return acc;
+    },
+    {} as Record<number, ModelsOrderItemDto[]>
+  );
+
+  // Then fetch item option links for each order item
+  const allOrderItems: { orderId: number; orderItemId: number }[] = [];
+  for (const { orderId, items } of orderItemsResults) {
+    for (const item of items) {
+      if (item.id) {
+        allOrderItems.push({ orderId, orderItemId: item.id });
+      }
+    }
+  }
+
+  const optionLinksResults = await Promise.all(
+    allOrderItems.map(async ({ orderId, orderItemId }) => {
+      const response = await getItemOptionsInOrder({
+        path: { orderId, itemId: orderItemId },
+      });
+      return {
+        orderItemId,
+        options: Array.isArray(response.data) ? response.data : [],
+      };
+    })
+  );
+
+  const itemOptionLinks = optionLinksResults.reduce(
+    (acc, { orderItemId, options }) => {
+      acc[orderItemId] = options;
+      return acc;
+    },
+    {} as Record<number, ModelsItemOptionLinkDto[]>
+  );
+
+  return { orderItems, itemOptionLinks };
+});
+
 export const addOrderItem = createAsyncThunk<
   ModelsOrderItemDto,
   { orderId: number; data: ModelsCreateOrderItemRequest }

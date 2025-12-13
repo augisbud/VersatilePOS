@@ -17,22 +17,6 @@ export const formatDate = (date: string | undefined): string => {
   return dayjs(date).format('MMM D, YYYY');
 };
 
-export const formatDateShort = (date: string | undefined): string => {
-  if (!date) {
-    return '-';
-  }
-
-  return dayjs(date).format('MM-DD');
-};
-
-export const formatTime = (date: string | undefined): string => {
-  if (!date) {
-    return '-';
-  }
-
-  return dayjs(date).format('HH:mm');
-};
-
 export const formatCurrency = (amount: number | undefined): string => {
   if (amount === undefined || amount === null) {
     return '-';

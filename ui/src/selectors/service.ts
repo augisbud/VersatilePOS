@@ -17,14 +17,6 @@ export const getServicesError = (state: State) => state.service.error;
 export const getServiceById = (services: ModelsServiceDto[], id: number) =>
   services.find((service) => service.id === id);
 
-export const selectServiceById = (
-  state: State,
-  id: number | null
-): ModelsServiceDto | null =>
-  id !== null
-    ? (state.service.services.find((s) => s.id === id) ?? null)
-    : null;
-
 export const getServiceEmployees = (
   services: ModelsServiceDto[],
   serviceId: number

@@ -18,6 +18,14 @@ export const getOrdersBusinessId = (state: State) => state.order.selectedBusines
 export const getOrderItems = (state: State): ModelsOrderItemDto[] =>
   state.order.orderItems;
 
+export const getOrderItemsByOrderId = (
+  state: State
+): Record<number, ModelsOrderItemDto[]> => state.order.orderItemsByOrderId;
+
+export const getAllItemOptionLinks = (
+  state: State
+): Record<number, ModelsItemOptionLinkDto[]> => state.order.allItemOptionLinks;
+
 export const getOrderItemOptionsMap = (
   state: State
 ): Record<number, ModelsItemOptionLinkDto[]> => state.order.itemOptionsByOrderItem;

@@ -12,4 +12,5 @@ const (
 	Items          	Action = "items"
 	ItemOptions    	Action = "itemOptions"
 	Orders         	Action = "orders"
+	Tags           	Action = "tags"
 )

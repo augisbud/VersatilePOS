@@ -10,6 +10,7 @@ import { itemReducer } from './item';
 import { itemOptionReducer } from './itemOption';
 import { priceModifierReducer } from './priceModifier';
 import { orderReducer } from './order';
+import { paymentReducer } from './payment';
 
 export const rootReducer = combineReducers({
   user: userReducer,
@@ -23,4 +24,5 @@ export const rootReducer = combineReducers({
   itemOption: itemOptionReducer,
   priceModifier: priceModifierReducer,
   order: orderReducer,
+  payment: paymentReducer,
 });

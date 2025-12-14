@@ -26,6 +26,7 @@ func NewController() *Controller {
 // @Accept  json
 // @Produce  json
 // @Param   payment  body  models.CreatePaymentRequest  true  "Payment to create"
+// @Success 201 {object} models.PaymentDto
 // @Failure 400 {object} models.HTTPError
 // @Failure 500 {object} models.HTTPError
 // @Router /payment [post]
@@ -55,6 +56,7 @@ func (ctrl *Controller) CreatePayment(c *gin.Context) {
 // @Description Get all payments
 // @Tags payment
 // @Produce  json
+// @Success 200 {array} models.PaymentDto
 // @Failure 500 {object} models.HTTPError
 // @Router /payment [get]
 // @Id getPayments

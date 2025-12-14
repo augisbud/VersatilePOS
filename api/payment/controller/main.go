@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"VersatilePOS/generic/models"
 	paymentModels "VersatilePOS/payment/models"
 	"VersatilePOS/payment/service"
+	"VersatilePOS/generic/models"
 	"log"
 	"net/http"
 

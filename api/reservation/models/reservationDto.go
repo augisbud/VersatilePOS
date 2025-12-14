@@ -3,15 +3,9 @@ package models
 import (
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
+	"VersatilePOS/payment/models"
 	"time"
 )
-
-type PaymentDto struct {
-	ID     uint    `json:"id"`
-	Amount float64 `json:"amount"`
-	Type   string  `json:"type"`
-	Status string  `json:"status"`
-}
 
 type ReservationDto struct {
 	ID                uint                      `json:"id"`
@@ -25,20 +19,15 @@ type ReservationDto struct {
 	Customer          string                    `json:"customer"`
 	CustomerEmail     string                    `json:"customerEmail"`
 	CustomerPhone     string                    `json:"customerPhone"`
-	Payments          []PaymentDto `json:"payments"`
+	Payments          []models.PaymentDto `json:"payments"`
 	CreatedAt         time.Time                 `json:"createdAt"`
 	UpdatedAt         time.Time                 `json:"updatedAt"`
 }
 
 func NewReservationDtoFromEntity(reservation entities.Reservation) ReservationDto {
-	var payments []PaymentDto
+	var payments []models.PaymentDto
 	for _, link := range reservation.ReservationPaymentLinks {
-		payments = append(payments, PaymentDto{
-			ID:     link.Payment.ID,
-			Amount: link.Payment.Amount,
-			Type:   string(link.Payment.Type),
-			Status: string(link.Payment.Status),
-		})
+		payments = append(payments, models.NewPaymentDtoFromEntity(link.Payment))
 	}
 
 	return ReservationDto{

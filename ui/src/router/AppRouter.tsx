@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router';
+import { Routes, Route } from 'react-router-dom';
 import { routesConfig } from '@/config/routes.config';
 import { AuthGateway } from '@/layouts/AuthGateway';
 import { RouteId } from '@/types/routes';

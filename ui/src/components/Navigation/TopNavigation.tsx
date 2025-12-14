@@ -1,5 +1,5 @@
 import { Menu } from 'antd';
-import { Link, useLocation } from 'react-router';
+import { Link, useLocation } from 'react-router-dom';
 import { routesConfig } from '@/config/routes.config';
 
 export const TopNavigation = () => {

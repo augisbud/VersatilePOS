@@ -157,6 +157,17 @@ export type ModelsCreateServiceRequest = {
     serviceCharge?: number;
 };
 
+export type ModelsCreateStripePaymentRequest = {
+    amount: number;
+    currency: string;
+    orderId?: number;
+};
+
+export type ModelsCreateStripePaymentResponse = {
+    clientSecret?: string;
+    paymentIntentId?: string;
+};
+
 export type ModelsFunctionDto = {
     action?: ConstantsAction;
     description?: string;
@@ -222,6 +233,8 @@ export type ModelsPaymentDto = {
     amount?: number;
     id?: number;
     status?: string;
+    stripeCustomerId?: string;
+    stripePaymentIntentId?: string;
     type?: string;
 };
 
@@ -2169,6 +2182,103 @@ export type CreatePaymentResponses = {
 };
 
 export type CreatePaymentResponse = CreatePaymentResponses[keyof CreatePaymentResponses];
+
+export type CreateStripePaymentIntentData = {
+    /**
+     * Stripe payment request
+     */
+    body: ModelsCreateStripePaymentRequest;
+    path?: never;
+    query?: never;
+    url: '/payment/stripe/create-intent';
+};
+
+export type CreateStripePaymentIntentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type CreateStripePaymentIntentError = CreateStripePaymentIntentErrors[keyof CreateStripePaymentIntentErrors];
+
+export type CreateStripePaymentIntentResponses = {
+    /**
+     * Created
+     */
+    201: ModelsCreateStripePaymentResponse;
+};
+
+export type CreateStripePaymentIntentResponse = CreateStripePaymentIntentResponses[keyof CreateStripePaymentIntentResponses];
+
+export type HandleStripeWebhookData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/payment/stripe/webhook';
+};
+
+export type HandleStripeWebhookErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type HandleStripeWebhookError = HandleStripeWebhookErrors[keyof HandleStripeWebhookErrors];
+
+export type HandleStripeWebhookResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type GetPaymentByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Payment ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/payment/{id}';
+};
+
+export type GetPaymentByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetPaymentByIdError = GetPaymentByIdErrors[keyof GetPaymentByIdErrors];
+
+export type GetPaymentByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsPaymentDto;
+};
+
+export type GetPaymentByIdResponse = GetPaymentByIdResponses[keyof GetPaymentByIdResponses];
 
 export type GetPriceModifiersData = {
     body?: never;

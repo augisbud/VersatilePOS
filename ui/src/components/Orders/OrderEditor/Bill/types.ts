@@ -9,6 +9,7 @@ export type BillItem = {
 export type Bill = {
   id: number;
   isPaid: boolean;
+  paymentType?: PaymentType;
 };
 
 export type ItemBillAssignment = {
@@ -16,3 +17,10 @@ export type ItemBillAssignment = {
 };
 
 export type PaymentType = 'Cash' | 'CreditCard' | 'GiftCard';
+
+export type SplitBillPaymentRequest = {
+  billId: number;
+  amount: number;
+  itemIndices: number[];
+  paymentType: PaymentType;
+};

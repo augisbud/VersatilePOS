@@ -23,6 +23,7 @@ type Props = {
   loading?: boolean;
   canWriteOrders: boolean;
   isEditMode?: boolean;
+  hasOrderId?: boolean;
   onEditItem: (itemId: number, orderItemId?: number) => void;
   onAddDiscount: () => void;
   onSaveOrder: () => void;
@@ -40,6 +41,7 @@ export const OrderInfoPanel = ({
   loading,
   canWriteOrders,
   isEditMode,
+  hasOrderId,
   onEditItem,
   onAddDiscount,
   onSaveOrder,
@@ -47,7 +49,11 @@ export const OrderInfoPanel = ({
   onGenerateBill,
   onGenerateSplitBill,
   onCancelOrder,
-}: Props) => (
+}: Props) => {
+  // Bills can only be generated for saved orders
+  const canGenerateBill = items.length > 0 && hasOrderId;
+
+  return (
   <Card
     loading={loading}
     style={{
@@ -163,14 +169,16 @@ export const OrderInfoPanel = ({
           <Button
             style={{ flex: 1 }}
             onClick={onGenerateBill}
-            disabled={items.length === 0}
+            disabled={!canGenerateBill}
+            title={!hasOrderId ? 'Save the order first to generate a bill' : undefined}
           >
             Generate bill
           </Button>
           <Button
             style={{ flex: 1 }}
             onClick={onGenerateSplitBill}
-            disabled={items.length === 0}
+            disabled={!canGenerateBill}
+            title={!hasOrderId ? 'Save the order first to split the bill' : undefined}
           >
             Split bill
           </Button>
@@ -181,4 +189,5 @@ export const OrderInfoPanel = ({
       </div>
     </div>
   </Card>
-);
+  );
+};

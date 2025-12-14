@@ -26,5 +26,7 @@ type Reservation struct {
 	Customer      string `json:"customer"`
 	CustomerEmail string `json:"customerEmail"`
 	CustomerPhone string `json:"customerPhone"`
+
+	PriceModifierLinks []PriceModifierReservationLink `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:ReservationID"`
 }
 

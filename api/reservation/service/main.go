@@ -257,3 +257,42 @@ func (s *Service) UpdateReservation(id uint, req reservationModels.UpdateReserva
 	return &dto, nil
 }
 
+func (s *Service) ApplyPriceModifierToReservation(reservationID uint, req reservationModels.ApplyPriceModifierToReservationRequest, userID uint) error {
+	reservation, err := s.repo.GetReservationByID(reservationID)
+	if err != nil {
+		return errors.New("failed to get reservation")
+	}
+	if reservation == nil {
+		return errors.New("reservation not found")
+	}
+
+	if len(reservation.Account.MemberOf) == 0 {
+		return errors.New("reservation account does not belong to any business")
+	}
+
+	hasAccess := false
+	for _, business := range reservation.Account.MemberOf {
+		ok, err := s.hasReservationAccess(business.ID, userID, constants.Write)
+		if err == nil && ok {
+			hasAccess = true
+			break
+		}
+	}
+
+	if !hasAccess {
+		return errors.New("unauthorized")
+	}
+
+	link := &entities.PriceModifierReservationLink{
+		PriceModifierID: req.PriceModifierID,
+		ReservationID:   reservationID,
+	}
+
+	_, err = s.repo.CreatePriceModifierReservationLink(link)
+	if err != nil {
+		return errors.New("failed to apply price modifier")
+	}
+
+	return nil
+}
+

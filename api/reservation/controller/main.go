@@ -181,6 +181,56 @@ func (ctrl *Controller) UpdateReservation(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, reservation)
 }
 
+// @Summary Apply price modifier to reservation
+// @Description Apply a price modifier to a reservation
+// @Tags reservation
+// @Accept  json
+// @Produce  json
+// @Param   id   path      int  true  "Reservation ID"
+// @Param   modifier  body  models.ApplyPriceModifierToReservationRequest  true  "Price modifier to apply"
+// @Success 201
+// @Failure 400 {object} models.HTTPError
+// @Failure 401 {object} models.HTTPError
+// @Failure 403 {object} models.HTTPError
+// @Failure 404 {object} models.HTTPError
+// @Failure 500 {object} models.HTTPError
+// @Security BearerAuth
+// @Router /reservation/{id}/price-modifier [post]
+// @Id applyPriceModifierToReservation
+func (ctrl *Controller) ApplyPriceModifierToReservation(c *gin.Context) {
+	userID, err := middleware.GetUserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: err.Error()})
+		return
+	}
+
+	reservationID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "Invalid reservation ID"})
+		return
+	}
+
+	var req reservationModels.ApplyPriceModifierToReservationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: err.Error()})
+		return
+	}
+
+	err = ctrl.service.ApplyPriceModifierToReservation(uint(reservationID), req, userID)
+	if err != nil {
+		if err.Error() == "reservation not found" {
+			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: err.Error()})
+		} else if err.Error() == "unauthorized" {
+			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: err.Error()})
+		} else {
+			c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: err.Error()})
+		}
+		return
+	}
+
+	c.Status(http.StatusCreated)
+}
+
 func (ctrl *Controller) RegisterRoutes(r *gin.Engine) {
 	reservationGroup := r.Group("/reservation")
 	reservationGroup.Use(middleware.AuthMiddleware())
@@ -189,6 +239,7 @@ func (ctrl *Controller) RegisterRoutes(r *gin.Engine) {
 		reservationGroup.GET("", ctrl.GetReservations)
 		reservationGroup.GET("/:id", ctrl.GetReservationById)
 		reservationGroup.PUT("/:id", ctrl.UpdateReservation)
+		reservationGroup.POST("/:id/price-modifier", ctrl.ApplyPriceModifierToReservation)
 	}
 }
 

@@ -36,3 +36,10 @@ func (r *Repository) UpdateReservation(reservation *entities.Reservation) error 
 	return database.DB.Save(reservation).Error
 }
 
+func (r *Repository) CreatePriceModifierReservationLink(link *entities.PriceModifierReservationLink) (*entities.PriceModifierReservationLink, error) {
+	if err := database.DB.Create(link).Error; err != nil {
+		return nil, err
+	}
+	return link, nil
+}
+

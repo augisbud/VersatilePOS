@@ -1,19 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Form } from 'antd';
 import { useItems } from '@/hooks/useItems';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
 import { useItemOptions } from '@/hooks/useItemOptions';
+import { useTags } from '@/hooks/useTags';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { getUserBusinessId } from '@/selectors/user';
 import { ModelsItemDto } from '@/api/types.gen';
+import { getTagByIdItems } from '@/api';
 import {
   ItemsHeader,
   ItemsGrid,
   ItemModal,
   ItemPreviewModal,
   BusinessSelectorCard,
+  CategorySelectorCard,
 } from '@/components/Items';
+import './Items.css';
 
 type PendingOption = {
   name: string;
@@ -35,6 +39,12 @@ export const Items = () => {
   const [editingItem, setEditingItem] = useState<ModelsItemDto | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewItem, setPreviewItem] = useState<ModelsItemDto | null>(null);
+  const [selectedTagId, setSelectedTagId] = useState<number | null>(null);
+  const [itemsByTag, setItemsByTag] = useState<ModelsItemDto[]>([]);
+  const [itemsByTagLoading, setItemsByTagLoading] = useState(false);
+  const [itemsByTagError, setItemsByTagError] = useState<string | undefined>(
+    undefined
+  );
 
   const {
     items,
@@ -53,10 +63,16 @@ export const Items = () => {
     fetchAllBusinesses,
   } = useBusiness();
   const { canReadItems, canWriteItems } = useUser();
+  const { tags, fetchTags, loading: tagsLoading } = useTags();
   const { createItemOption, fetchItemOptions } = useItemOptions();
   const userBusinessId = useAppSelector(getUserBusinessId);
 
-  const combinedLoading = itemsLoading || businessLoading;
+  const combinedLoading =
+    itemsLoading || businessLoading || itemsByTagLoading || tagsLoading;
+
+  const displayedItems = useMemo(() => {
+    return selectedTagId ? itemsByTag : items;
+  }, [selectedTagId, itemsByTag, items]);
 
   useEffect(() => {
     void fetchAllBusinesses();
@@ -79,8 +95,53 @@ export const Items = () => {
     }
   }, [selectedBusinessId, canReadItems]);
 
+  useEffect(() => {
+    if (selectedBusinessId && canReadItems) {
+      void fetchTags(selectedBusinessId);
+    }
+  }, [selectedBusinessId, canReadItems]);
+
+  useEffect(() => {
+    const loadByTag = async () => {
+      if (!selectedTagId) {
+        setItemsByTag([]);
+        setItemsByTagError(undefined);
+        setItemsByTagLoading(false);
+        return;
+      }
+
+      setItemsByTagLoading(true);
+      setItemsByTagError(undefined);
+      try {
+        const res = await getTagByIdItems({ path: { id: selectedTagId } });
+        if (res.error) {
+          throw new Error(res.error.error);
+        }
+        const arr = Array.isArray(res.data) ? res.data : [];
+        // Swagger/openapi currently types these as `object[]` / `unknown[]`.
+        // Backend returns item-like objects; filter to objects and cast.
+        const parsed = arr.filter((x) => x && typeof x === 'object') as ModelsItemDto[];
+        setItemsByTag(parsed);
+      } catch (e) {
+        setItemsByTag([]);
+        setItemsByTagError(e instanceof Error ? e.message : 'Failed to load items by category');
+      } finally {
+        setItemsByTagLoading(false);
+      }
+    };
+
+    void loadByTag();
+  }, [selectedTagId]);
+
   const handleBusinessChange = (businessId: number) => {
     selectBusiness(businessId);
+    setSelectedTagId(null);
+    setItemsByTag([]);
+    setItemsByTagError(undefined);
+  };
+
+  const handleTagChange = (tagId: number | null) => {
+    setSelectedTagId(tagId);
   };
 
   const handleOpenModal = (item?: ModelsItemDto) => {
@@ -143,14 +204,36 @@ export const Items = () => {
 
     handleCloseModal();
     if (selectedBusinessId) {
-      void fetchItems(selectedBusinessId);
+      if (selectedTagId) {
+        void (async () => {
+          setItemsByTagLoading(true);
+          setItemsByTagError(undefined);
+          try {
+            const res = await getTagByIdItems({ path: { id: selectedTagId } });
+            if (res.error) throw new Error(res.error.error);
+            const arr = Array.isArray(res.data) ? res.data : [];
+            setItemsByTag(arr.filter((x) => x && typeof x === 'object') as ModelsItemDto[]);
+          } catch (e) {
+            setItemsByTag([]);
+            setItemsByTagError(e instanceof Error ? e.message : 'Failed to load items by category');
+          } finally {
+            setItemsByTagLoading(false);
+          }
+        })();
+      } else {
+        void fetchItems(selectedBusinessId);
+      }
     }
   };
 
   const handleDelete = async (itemId: number) => {
     await deleteItem(itemId);
     if (selectedBusinessId) {
-      void fetchItems(selectedBusinessId);
+      if (selectedTagId) {
+        setItemsByTag((prev) => prev.filter((i) => i.id !== itemId));
+      } else {
+        void fetchItems(selectedBusinessId);
+      }
     }
   };
 
@@ -166,7 +249,7 @@ export const Items = () => {
 
   if (!canReadItems) {
     return (
-      <div style={{ padding: '24px' }}>
+      <div className="itemsPageNoAccess">
         <Alert
           message="You don't have permission to view items."
           type="error"
@@ -177,7 +260,7 @@ export const Items = () => {
   }
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1800px', margin: '0 auto' }}>
+    <div className="itemsPage">
       <ItemsHeader
         onNewItem={() => handleOpenModal()}
         canWriteItems={canWriteItems}
@@ -191,18 +274,36 @@ export const Items = () => {
         loading={businessLoading}
       />
 
+      <CategorySelectorCard
+        tags={tags}
+        selectedTagId={selectedTagId}
+        onChange={handleTagChange}
+        loading={tagsLoading}
+        disabled={!selectedBusinessId}
+      />
+
       {error && (
         <Alert
           message="Error"
           description={error}
           type="error"
           showIcon
-          style={{ marginBottom: '16px' }}
+          className="itemsPageAlert"
+        />
+      )}
+
+      {itemsByTagError && (
+        <Alert
+          message="Error"
+          description={itemsByTagError}
+          type="error"
+          showIcon
+          className="itemsPageAlert"
         />
       )}
 
       <ItemsGrid
-        items={items}
+        items={displayedItems}
         loading={combinedLoading}
         canWriteItems={canWriteItems}
         selectedBusinessId={selectedBusinessId}

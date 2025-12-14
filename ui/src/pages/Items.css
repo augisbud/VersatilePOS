@@ -1,0 +1,15 @@
+.itemsPage {
+  padding: 24px;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.itemsPageNoAccess {
+  padding: 24px;
+}
+
+.itemsPageAlert {
+  margin-bottom: 16px;
+}
+
+

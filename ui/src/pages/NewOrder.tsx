@@ -12,6 +12,7 @@ import {
   SplitBillModal,
 } from '@/components/Orders/OrderEditor';
 import { StripePaymentModal, StripePaymentResult } from '@/components/Payment';
+import { CategorySelectorCard } from '@/components/Items';
 
 export const NewOrder = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -36,10 +37,16 @@ export const NewOrder = () => {
     loading,
     itemsLoading,
     businessLoading,
+    tagsLoading,
+    itemsByTagLoading,
     initialLoadComplete,
     canWriteOrders,
     canReadOrders,
-    items,
+    displayedItems,
+    tags,
+    selectedTagId,
+    setSelectedTagId,
+    itemsByTagError,
     getItemNameLocal,
     getOptionNameLocal,
     getOptionPriceLabel,
@@ -343,9 +350,33 @@ export const NewOrder = () => {
             flexDirection: 'column',
           }}
         >
+          <CategorySelectorCard
+            tags={tags}
+            selectedTagId={selectedTagId}
+            onChange={setSelectedTagId}
+            loading={tagsLoading}
+            disabled={!initialLoadComplete}
+          />
+
+          {itemsByTagError && (
+            <Alert
+              message="Error"
+              description={itemsByTagError}
+              type="error"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
+
           <ItemsGrid
-            items={items}
-            loading={itemsLoading || businessLoading || !initialLoadComplete}
+            items={displayedItems}
+            loading={
+              itemsLoading ||
+              businessLoading ||
+              tagsLoading ||
+              itemsByTagLoading ||
+              !initialLoadComplete
+            }
             onItemClick={(item) => void handleItemClick(item)}
           />
         </div>

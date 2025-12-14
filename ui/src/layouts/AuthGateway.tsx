@@ -1,6 +1,6 @@
 import { useUser } from '@/hooks/useUser';
 import { DashboardLayout } from './DashboardLayout';
-import { Navigate, Outlet } from 'react-router';
+import { Navigate, Outlet } from 'react-router-dom';
 import { RouteId } from '@/types/routes';
 
 export const AuthGateway = () => {

@@ -1,6 +1,11 @@
-import { ModelsCreatePaymentRequest, ModelsPaymentDto } from '@/api/types.gen';
+import {
+  ModelsCreatePaymentRequest,
+  ModelsPaymentDto,
+  ModelsCreateStripePaymentRequest,
+  ModelsCreateStripePaymentResponse,
+} from '@/api/types.gen';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { createPayment, getPayments } from '@/api';
+import { createPayment, getPayments, createStripePaymentIntent } from '@/api';
 
 export const fetchPayments = createAsyncThunk<ModelsPaymentDto[], void>(
   'payment/fetchPayments',
@@ -31,3 +36,23 @@ export const addPayment = createAsyncThunk<
 
   return response.data;
 });
+
+export const createStripeIntent = createAsyncThunk<
+  ModelsCreateStripePaymentResponse,
+  ModelsCreateStripePaymentRequest
+>(
+  'payment/createStripeIntent',
+  async (stripePaymentData: ModelsCreateStripePaymentRequest) => {
+    const response = await createStripePaymentIntent({ body: stripePaymentData });
+
+    if (response.error) {
+      throw new Error(response.error.error);
+    }
+
+    if (!response.data) {
+      throw new Error('No data returned from createStripePaymentIntent');
+    }
+
+    return response.data;
+  }
+);

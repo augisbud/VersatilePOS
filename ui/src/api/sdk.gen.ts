@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddItemToOrderData, AddItemToOrderErrors, AddItemToOrderResponses, AddOptionToOrderItemData, AddOptionToOrderItemErrors, AddOptionToOrderItemResponses, ApplyPriceModifierToOrderData, ApplyPriceModifierToOrderErrors, ApplyPriceModifierToOrderResponses, AssignFunctionToRoleData, AssignFunctionToRoleErrors, AssignFunctionToRoleResponses, AssignRoleToAccountData, AssignRoleToAccountErrors, AssignRoleToAccountResponses, AssignServiceToEmployeeData, AssignServiceToEmployeeErrors, AssignServiceToEmployeeResponses, CreateAccountData, CreateAccountErrors, CreateAccountResponses, CreateAccountRoleData, CreateAccountRoleErrors, CreateAccountRoleResponses, CreateBusinessData, CreateBusinessErrors, CreateBusinessResponses, CreateOrderData, CreateOrderErrors, CreateOrderResponses, CreatePaymentData, CreatePaymentErrors, CreatePaymentResponses, CreatePriceModifierData, CreatePriceModifierErrors, CreatePriceModifierResponses, CreateReservationData, CreateReservationErrors, CreateReservationResponses, CreateServiceData, CreateServiceErrors, CreateServiceResponses, DeleteAccountByIdData, DeleteAccountByIdErrors, DeleteAccountByIdResponses, DeleteAccountRoleByIdData, DeleteAccountRoleByIdErrors, DeleteAccountRoleByIdResponses, DeleteItemByIdData, DeleteItemByIdErrors, DeleteItemByIdResponses, DeleteItemOptionByIdData, DeleteItemOptionByIdErrors, DeleteItemOptionByIdResponses, DeletePriceModifierData, DeletePriceModifierErrors, DeletePriceModifierResponses, DeleteServiceData, DeleteServiceErrors, DeleteServiceResponses, GetAccountRoleByIdData, GetAccountRoleByIdErrors, GetAccountRoleByIdResponses, GetAccountsData, GetAccountsErrors, GetAccountsResponses, GetAllFunctionsData, GetAllFunctionsErrors, GetAllFunctionsResponses, GetBusinessByIdData, GetBusinessByIdErrors, GetBusinessByIdResponses, GetBusinessesData, GetBusinessesErrors, GetBusinessesResponses, GetBusinessRolesData, GetBusinessRolesErrors, GetBusinessRolesResponses, GetItemByIdData, GetItemByIdErrors, GetItemByIdResponses, GetItemData, GetItemErrors, GetItemOptionByIdData, GetItemOptionByIdErrors, GetItemOptionByIdResponses, GetItemOptionData, GetItemOptionErrors, GetItemOptionResponses, GetItemOptionsInOrderData, GetItemOptionsInOrderErrors, GetItemOptionsInOrderResponses, GetItemResponses, GetMyAccountData, GetMyAccountErrors, GetMyAccountResponses, GetOrderByIdData, GetOrderByIdErrors, GetOrderByIdResponses, GetOrderItemsData, GetOrderItemsErrors, GetOrderItemsResponses, GetOrdersData, GetOrdersErrors, GetOrdersResponses, GetPaymentsData, GetPaymentsErrors, GetPaymentsResponses, GetPriceModifierByIdData, GetPriceModifierByIdErrors, GetPriceModifierByIdResponses, GetPriceModifiersData, GetPriceModifiersErrors, GetPriceModifiersResponses, GetReservationByIdData, GetReservationByIdErrors, GetReservationByIdResponses, GetReservationsData, GetReservationsErrors, GetReservationsResponses, GetServiceByIdData, GetServiceByIdErrors, GetServiceByIdResponses, GetServicesData, GetServicesErrors, GetServicesResponses, LinkPaymentToOrderData, LinkPaymentToOrderErrors, LinkPaymentToOrderResponses, LoginAccountData, LoginAccountErrors, LoginAccountResponses, PostItemData, PostItemErrors, PostItemOptionData, PostItemOptionErrors, PostItemOptionResponses, PostItemResponses, PutItemByIdData, PutItemByIdErrors, PutItemByIdResponses, PutItemOptionByIdData, PutItemOptionByIdErrors, PutItemOptionByIdResponses, RemoveItemFromOrderData, RemoveItemFromOrderErrors, RemoveItemFromOrderResponses, RemoveOptionFromOrderItemData, RemoveOptionFromOrderItemErrors, RemoveOptionFromOrderItemResponses, RemoveServiceFromEmployeeData, RemoveServiceFromEmployeeErrors, RemoveServiceFromEmployeeResponses, UpdateAccountRoleByIdData, UpdateAccountRoleByIdErrors, UpdateAccountRoleByIdResponses, UpdateAccountRoleStatusData, UpdateAccountRoleStatusErrors, UpdateAccountRoleStatusResponses, UpdateOrderData, UpdateOrderErrors, UpdateOrderItemData, UpdateOrderItemErrors, UpdateOrderItemResponses, UpdateOrderResponses, UpdatePriceModifierData, UpdatePriceModifierErrors, UpdatePriceModifierResponses, UpdateReservationData, UpdateReservationErrors, UpdateReservationResponses, UpdateServiceData, UpdateServiceErrors, UpdateServiceResponses } from './types.gen';
+import type { AddItemToOrderData, AddItemToOrderErrors, AddItemToOrderResponses, AddOptionToOrderItemData, AddOptionToOrderItemErrors, AddOptionToOrderItemResponses, ApplyPriceModifierToOrderData, ApplyPriceModifierToOrderErrors, ApplyPriceModifierToOrderResponses, AssignFunctionToRoleData, AssignFunctionToRoleErrors, AssignFunctionToRoleResponses, AssignRoleToAccountData, AssignRoleToAccountErrors, AssignRoleToAccountResponses, AssignServiceToEmployeeData, AssignServiceToEmployeeErrors, AssignServiceToEmployeeResponses, CreateAccountData, CreateAccountErrors, CreateAccountResponses, CreateAccountRoleData, CreateAccountRoleErrors, CreateAccountRoleResponses, CreateBusinessData, CreateBusinessErrors, CreateBusinessResponses, CreateOrderData, CreateOrderErrors, CreateOrderResponses, CreatePaymentData, CreatePaymentErrors, CreatePaymentResponses, CreatePriceModifierData, CreatePriceModifierErrors, CreatePriceModifierResponses, CreateReservationData, CreateReservationErrors, CreateReservationResponses, CreateServiceData, CreateServiceErrors, CreateServiceResponses, CreateStripePaymentIntentData, CreateStripePaymentIntentErrors, CreateStripePaymentIntentResponses, DeleteAccountByIdData, DeleteAccountByIdErrors, DeleteAccountByIdResponses, DeleteAccountRoleByIdData, DeleteAccountRoleByIdErrors, DeleteAccountRoleByIdResponses, DeleteItemByIdData, DeleteItemByIdErrors, DeleteItemByIdResponses, DeleteItemOptionByIdData, DeleteItemOptionByIdErrors, DeleteItemOptionByIdResponses, DeletePriceModifierData, DeletePriceModifierErrors, DeletePriceModifierResponses, DeleteServiceData, DeleteServiceErrors, DeleteServiceResponses, GetAccountRoleByIdData, GetAccountRoleByIdErrors, GetAccountRoleByIdResponses, GetAccountsData, GetAccountsErrors, GetAccountsResponses, GetAllFunctionsData, GetAllFunctionsErrors, GetAllFunctionsResponses, GetBusinessByIdData, GetBusinessByIdErrors, GetBusinessByIdResponses, GetBusinessesData, GetBusinessesErrors, GetBusinessesResponses, GetBusinessRolesData, GetBusinessRolesErrors, GetBusinessRolesResponses, GetItemByIdData, GetItemByIdErrors, GetItemByIdResponses, GetItemData, GetItemErrors, GetItemOptionByIdData, GetItemOptionByIdErrors, GetItemOptionByIdResponses, GetItemOptionData, GetItemOptionErrors, GetItemOptionResponses, GetItemOptionsInOrderData, GetItemOptionsInOrderErrors, GetItemOptionsInOrderResponses, GetItemResponses, GetMyAccountData, GetMyAccountErrors, GetMyAccountResponses, GetOrderByIdData, GetOrderByIdErrors, GetOrderByIdResponses, GetOrderItemsData, GetOrderItemsErrors, GetOrderItemsResponses, GetOrdersData, GetOrdersErrors, GetOrdersResponses, GetPaymentByIdData, GetPaymentByIdErrors, GetPaymentByIdResponses, GetPaymentsData, GetPaymentsErrors, GetPaymentsResponses, GetPriceModifierByIdData, GetPriceModifierByIdErrors, GetPriceModifierByIdResponses, GetPriceModifiersData, GetPriceModifiersErrors, GetPriceModifiersResponses, GetReservationByIdData, GetReservationByIdErrors, GetReservationByIdResponses, GetReservationsData, GetReservationsErrors, GetReservationsResponses, GetServiceByIdData, GetServiceByIdErrors, GetServiceByIdResponses, GetServicesData, GetServicesErrors, GetServicesResponses, HandleStripeWebhookData, HandleStripeWebhookErrors, HandleStripeWebhookResponses, LinkPaymentToOrderData, LinkPaymentToOrderErrors, LinkPaymentToOrderResponses, LoginAccountData, LoginAccountErrors, LoginAccountResponses, PostItemData, PostItemErrors, PostItemOptionData, PostItemOptionErrors, PostItemOptionResponses, PostItemResponses, PutItemByIdData, PutItemByIdErrors, PutItemByIdResponses, PutItemOptionByIdData, PutItemOptionByIdErrors, PutItemOptionByIdResponses, RemoveItemFromOrderData, RemoveItemFromOrderErrors, RemoveItemFromOrderResponses, RemoveOptionFromOrderItemData, RemoveOptionFromOrderItemErrors, RemoveOptionFromOrderItemResponses, RemoveServiceFromEmployeeData, RemoveServiceFromEmployeeErrors, RemoveServiceFromEmployeeResponses, UpdateAccountRoleByIdData, UpdateAccountRoleByIdErrors, UpdateAccountRoleByIdResponses, UpdateAccountRoleStatusData, UpdateAccountRoleStatusErrors, UpdateAccountRoleStatusResponses, UpdateOrderData, UpdateOrderErrors, UpdateOrderItemData, UpdateOrderItemErrors, UpdateOrderItemResponses, UpdateOrderResponses, UpdatePriceModifierData, UpdatePriceModifierErrors, UpdatePriceModifierResponses, UpdateReservationData, UpdateReservationErrors, UpdateReservationResponses, UpdateServiceData, UpdateServiceErrors, UpdateServiceResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -871,6 +871,49 @@ export const createPayment = <ThrowOnError extends boolean = false>(options: Opt
             'Content-Type': 'application/json',
             ...options.headers
         }
+    });
+};
+
+/**
+ * Create a Stripe payment intent
+ *
+ * Create a Stripe payment intent for card payments
+ */
+export const createStripePaymentIntent = <ThrowOnError extends boolean = false>(options: Options<CreateStripePaymentIntentData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreateStripePaymentIntentResponses, CreateStripePaymentIntentErrors, ThrowOnError>({
+        responseType: 'json',
+        url: '/payment/stripe/create-intent',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Handle Stripe webhook
+ *
+ * Handle webhook events from Stripe
+ */
+export const handleStripeWebhook = <ThrowOnError extends boolean = false>(options?: Options<HandleStripeWebhookData, ThrowOnError>) => {
+    return (options?.client ?? client).post<HandleStripeWebhookResponses, HandleStripeWebhookErrors, ThrowOnError>({
+        responseType: 'json',
+        url: '/payment/stripe/webhook',
+        ...options
+    });
+};
+
+/**
+ * Get payment by ID
+ *
+ * Get a payment by its ID
+ */
+export const getPaymentById = <ThrowOnError extends boolean = false>(options: Options<GetPaymentByIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetPaymentByIdResponses, GetPaymentByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        url: '/payment/{id}',
+        ...options
     });
 };
 

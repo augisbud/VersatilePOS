@@ -16,6 +16,8 @@ require github.com/gin-contrib/cors v1.7.6
 
 require github.com/lib/pq v1.10.9
 
+require github.com/stripe/stripe-go/v78 v78.12.0 // indirect
+
 require (
 	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/go-openapi/swag/conv v0.25.1 // indirect

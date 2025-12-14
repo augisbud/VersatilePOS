@@ -9,6 +9,8 @@ import {
   BillItem,
   Bill,
   ItemBillAssignment,
+  PaymentType,
+  SplitBillPaymentRequest,
 } from './Bill';
 
 type Props = {
@@ -17,11 +19,7 @@ type Props = {
   total: number;
   orderCreatedAt?: string;
   loading?: boolean;
-  onPayBill: (
-    billId: number,
-    amount: number,
-    itemIndices: number[]
-  ) => Promise<void>;
+  onPayBill: (request: SplitBillPaymentRequest) => Promise<void>;
   onClose: () => void;
 };
 
@@ -91,7 +89,7 @@ export const SplitBillModal = ({
   );
 
   const handlePayBill = useCallback(
-    async (billId: number) => {
+    async (billId: number, paymentType: PaymentType) => {
       const billTotal = billTotals[billId] || 0;
       if (billTotal === 0) return;
 
@@ -101,9 +99,16 @@ export const SplitBillModal = ({
 
       setPayingBillId(billId);
       try {
-        await onPayBill(billId, billTotal, itemIndices);
+        await onPayBill({
+          billId,
+          amount: billTotal,
+          itemIndices,
+          paymentType,
+        });
         setBills((prev) =>
-          prev.map((b) => (b.id === billId ? { ...b, isPaid: true } : b))
+          prev.map((b) =>
+            b.id === billId ? { ...b, isPaid: true, paymentType } : b
+          )
         );
       } finally {
         setPayingBillId(null);
@@ -186,7 +191,7 @@ export const SplitBillModal = ({
               isSelected={selectedBillId === bill.id}
               isPaying={payingBillId === bill.id}
               onSelect={() => handleSelectBill(bill.id)}
-              onPay={() => void handlePayBill(bill.id)}
+              onPay={(paymentType) => void handlePayBill(bill.id, paymentType)}
             />
           ))}
         </div>

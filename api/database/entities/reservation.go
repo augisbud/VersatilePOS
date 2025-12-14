@@ -26,5 +26,17 @@ type Reservation struct {
 	Customer      string `json:"customer"`
 	CustomerEmail string `json:"customerEmail"`
 	CustomerPhone string `json:"customerPhone"`
+
+	ReservationPaymentLinks []ReservationPaymentLink `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:ReservationID"`
+}
+
+type ReservationPaymentLink struct {
+	gorm.Model
+
+	ReservationID uint        `json:"reservationId"`
+	Reservation   Reservation `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:ReservationID"`
+
+	PaymentID uint    `json:"paymentId"`
+	Payment   Payment `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:PaymentID"`
 }
 

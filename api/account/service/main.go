@@ -300,3 +300,26 @@ func (s *Service) UpdateAccountRoleLinkStatus(accountID, roleID uint, req accoun
 
 	return accountModels.NewAccountRoleLinkDtoFromEntity(*link, roleDto), nil
 }
+
+func GetBusinessIDsFromAccount(accountID uint) ([]uint, error) {
+	repo := accountRepository.Repository{}
+	account, err := repo.GetAccountByID(accountID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.New("account not found")
+		}
+		return nil, errors.New("failed to get account")
+	}
+
+	businessIDMap := make(map[uint]bool)
+	for _, accountRoleLink := range account.AccountRoleLinks {
+		businessIDMap[accountRoleLink.AccountRole.BusinessID] = true
+	}
+
+	var businessIDs []uint
+	for businessID := range businessIDMap {
+		businessIDs = append(businessIDs, businessID)
+	}
+
+	return businessIDs, nil
+}

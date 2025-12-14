@@ -10,6 +10,7 @@ import (
 	"VersatilePOS/priceModifier"
 	"VersatilePOS/reservation"
 	"VersatilePOS/service"
+	"VersatilePOS/tag"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -25,6 +26,7 @@ func RegisterRoutes(r *gin.Engine) {
 	payment.RegisterHandlers(r)
 	priceModifier.RegisterHandlers(r)
 	service.RegisterHandlers(r)
+	tag.RegisterHandlers(r)
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

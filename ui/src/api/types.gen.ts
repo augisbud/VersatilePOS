@@ -8,7 +8,7 @@ export type ConstantsAccessLevel = 'Read' | 'Write';
 
 export type ConstantsAccountRoleLinkStatus = 'Active' | 'Suspended' | 'Deactivated';
 
-export type ConstantsAction = 'accounts' | 'businesses' | 'roles' | 'reservations' | 'priceModifiers' | 'services' | 'items' | 'itemOptions' | 'orders';
+export type ConstantsAction = 'accounts' | 'businesses' | 'roles' | 'reservations' | 'priceModifiers' | 'services' | 'items' | 'itemOptions' | 'orders' | 'tags';
 
 export type ConstantsReservationStatus = 'Confirmed' | 'Completed' | 'Cancelled' | 'NoShow';
 
@@ -168,6 +168,11 @@ export type ModelsCreateStripePaymentResponse = {
     paymentIntentId?: string;
 };
 
+export type ModelsCreateTagRequest = {
+    businessId: number;
+    value: string;
+};
+
 export type ModelsFunctionDto = {
     action?: ConstantsAction;
     description?: string;
@@ -200,6 +205,18 @@ export type ModelsItemOptionLinkDto = {
     id?: number;
     itemOptionId?: number;
     orderItemId?: number;
+};
+
+export type ModelsLinkItemOptionRequest = {
+    itemOptionId: number;
+};
+
+export type ModelsLinkItemRequest = {
+    itemId: number;
+};
+
+export type ModelsLinkServiceRequest = {
+    serviceId: number;
 };
 
 export type ModelsLoginRequest = {
@@ -277,6 +294,18 @@ export type ModelsServiceDto = {
     updatedAt?: string;
 };
 
+export type ModelsTagDto = {
+    businessId?: number;
+    id?: number;
+    value?: string;
+};
+
+export type ModelsTagEntitiesResponse = {
+    itemOptions?: Array<unknown>;
+    items?: Array<unknown>;
+    services?: Array<unknown>;
+};
+
 export type ModelsUpdateAccountRoleLinkRequest = {
     status: 'Active' | 'Suspended' | 'Deactivated';
 };
@@ -340,6 +369,10 @@ export type ModelsUpdateServiceRequest = {
     provisioningInterval?: number;
     provisioningStartTime?: string;
     serviceCharge?: number;
+};
+
+export type ModelsUpdateTagRequest = {
+    value: string;
 };
 
 export type CreateAccountData = {
@@ -2999,3 +3032,851 @@ export type RemoveServiceFromEmployeeResponses = {
      */
     204: unknown;
 };
+
+export type GetTagData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Business ID
+         */
+        businessId: number;
+    };
+    url: '/tag';
+};
+
+export type GetTagErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetTagError = GetTagErrors[keyof GetTagErrors];
+
+export type GetTagResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsTagDto>;
+};
+
+export type GetTagResponse = GetTagResponses[keyof GetTagResponses];
+
+export type PostTagData = {
+    /**
+     * Tag to create
+     */
+    body: ModelsCreateTagRequest;
+    path?: never;
+    query?: never;
+    url: '/tag';
+};
+
+export type PostTagErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type PostTagError = PostTagErrors[keyof PostTagErrors];
+
+export type PostTagResponses = {
+    /**
+     * Created
+     */
+    201: ModelsTagDto;
+};
+
+export type PostTagResponse = PostTagResponses[keyof PostTagResponses];
+
+export type GetTagItemOptionByItemOptionIdData = {
+    body?: never;
+    path: {
+        /**
+         * Item Option ID
+         */
+        itemOptionId: number;
+    };
+    query?: never;
+    url: '/tag/item-option/{itemOptionId}';
+};
+
+export type GetTagItemOptionByItemOptionIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetTagItemOptionByItemOptionIdError = GetTagItemOptionByItemOptionIdErrors[keyof GetTagItemOptionByItemOptionIdErrors];
+
+export type GetTagItemOptionByItemOptionIdResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsTagDto>;
+};
+
+export type GetTagItemOptionByItemOptionIdResponse = GetTagItemOptionByItemOptionIdResponses[keyof GetTagItemOptionByItemOptionIdResponses];
+
+export type GetTagItemByItemIdData = {
+    body?: never;
+    path: {
+        /**
+         * Item ID
+         */
+        itemId: number;
+    };
+    query?: never;
+    url: '/tag/item/{itemId}';
+};
+
+export type GetTagItemByItemIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetTagItemByItemIdError = GetTagItemByItemIdErrors[keyof GetTagItemByItemIdErrors];
+
+export type GetTagItemByItemIdResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsTagDto>;
+};
+
+export type GetTagItemByItemIdResponse = GetTagItemByItemIdResponses[keyof GetTagItemByItemIdResponses];
+
+export type GetTagServiceByServiceIdData = {
+    body?: never;
+    path: {
+        /**
+         * Service ID
+         */
+        serviceId: number;
+    };
+    query?: never;
+    url: '/tag/service/{serviceId}';
+};
+
+export type GetTagServiceByServiceIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetTagServiceByServiceIdError = GetTagServiceByServiceIdErrors[keyof GetTagServiceByServiceIdErrors];
+
+export type GetTagServiceByServiceIdResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsTagDto>;
+};
+
+export type GetTagServiceByServiceIdResponse = GetTagServiceByServiceIdResponses[keyof GetTagServiceByServiceIdResponses];
+
+export type DeleteTagByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Tag ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/tag/{id}';
+};
+
+export type DeleteTagByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type DeleteTagByIdError = DeleteTagByIdErrors[keyof DeleteTagByIdErrors];
+
+export type DeleteTagByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsHttpError;
+};
+
+export type DeleteTagByIdResponse = DeleteTagByIdResponses[keyof DeleteTagByIdResponses];
+
+export type GetTagByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Tag ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/tag/{id}';
+};
+
+export type GetTagByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetTagByIdError = GetTagByIdErrors[keyof GetTagByIdErrors];
+
+export type GetTagByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsTagDto;
+};
+
+export type GetTagByIdResponse = GetTagByIdResponses[keyof GetTagByIdResponses];
+
+export type PutTagByIdData = {
+    /**
+     * Tag to update
+     */
+    body: ModelsUpdateTagRequest;
+    path: {
+        /**
+         * Tag ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/tag/{id}';
+};
+
+export type PutTagByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type PutTagByIdError = PutTagByIdErrors[keyof PutTagByIdErrors];
+
+export type PutTagByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsTagDto;
+};
+
+export type PutTagByIdResponse = PutTagByIdResponses[keyof PutTagByIdResponses];
+
+export type GetTagByIdEntitiesData = {
+    body?: never;
+    path: {
+        /**
+         * Tag ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/tag/{id}/entities';
+};
+
+export type GetTagByIdEntitiesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetTagByIdEntitiesError = GetTagByIdEntitiesErrors[keyof GetTagByIdEntitiesErrors];
+
+export type GetTagByIdEntitiesResponses = {
+    /**
+     * OK
+     */
+    200: ModelsTagEntitiesResponse;
+};
+
+export type GetTagByIdEntitiesResponse = GetTagByIdEntitiesResponses[keyof GetTagByIdEntitiesResponses];
+
+export type PostTagByIdItemData = {
+    /**
+     * Item link request
+     */
+    body: ModelsLinkItemRequest;
+    path: {
+        /**
+         * Tag ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/tag/{id}/item';
+};
+
+export type PostTagByIdItemErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type PostTagByIdItemError = PostTagByIdItemErrors[keyof PostTagByIdItemErrors];
+
+export type PostTagByIdItemResponses = {
+    /**
+     * OK
+     */
+    200: ModelsHttpError;
+};
+
+export type PostTagByIdItemResponse = PostTagByIdItemResponses[keyof PostTagByIdItemResponses];
+
+export type PostTagByIdItemOptionData = {
+    /**
+     * Item option link request
+     */
+    body: ModelsLinkItemOptionRequest;
+    path: {
+        /**
+         * Tag ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/tag/{id}/item-option';
+};
+
+export type PostTagByIdItemOptionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type PostTagByIdItemOptionError = PostTagByIdItemOptionErrors[keyof PostTagByIdItemOptionErrors];
+
+export type PostTagByIdItemOptionResponses = {
+    /**
+     * OK
+     */
+    200: ModelsHttpError;
+};
+
+export type PostTagByIdItemOptionResponse = PostTagByIdItemOptionResponses[keyof PostTagByIdItemOptionResponses];
+
+export type DeleteTagByIdItemOptionByItemOptionIdData = {
+    body?: never;
+    path: {
+        /**
+         * Tag ID
+         */
+        id: number;
+        /**
+         * Item Option ID
+         */
+        itemOptionId: number;
+    };
+    query?: never;
+    url: '/tag/{id}/item-option/{itemOptionId}';
+};
+
+export type DeleteTagByIdItemOptionByItemOptionIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type DeleteTagByIdItemOptionByItemOptionIdError = DeleteTagByIdItemOptionByItemOptionIdErrors[keyof DeleteTagByIdItemOptionByItemOptionIdErrors];
+
+export type DeleteTagByIdItemOptionByItemOptionIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsHttpError;
+};
+
+export type DeleteTagByIdItemOptionByItemOptionIdResponse = DeleteTagByIdItemOptionByItemOptionIdResponses[keyof DeleteTagByIdItemOptionByItemOptionIdResponses];
+
+export type GetTagByIdItemOptionsData = {
+    body?: never;
+    path: {
+        /**
+         * Tag ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/tag/{id}/item-options';
+};
+
+export type GetTagByIdItemOptionsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetTagByIdItemOptionsError = GetTagByIdItemOptionsErrors[keyof GetTagByIdItemOptionsErrors];
+
+export type GetTagByIdItemOptionsResponses = {
+    /**
+     * OK
+     */
+    200: Array<{
+        [key: string]: unknown;
+    }>;
+};
+
+export type GetTagByIdItemOptionsResponse = GetTagByIdItemOptionsResponses[keyof GetTagByIdItemOptionsResponses];
+
+export type DeleteTagByIdItemByItemIdData = {
+    body?: never;
+    path: {
+        /**
+         * Tag ID
+         */
+        id: number;
+        /**
+         * Item ID
+         */
+        itemId: number;
+    };
+    query?: never;
+    url: '/tag/{id}/item/{itemId}';
+};
+
+export type DeleteTagByIdItemByItemIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type DeleteTagByIdItemByItemIdError = DeleteTagByIdItemByItemIdErrors[keyof DeleteTagByIdItemByItemIdErrors];
+
+export type DeleteTagByIdItemByItemIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsHttpError;
+};
+
+export type DeleteTagByIdItemByItemIdResponse = DeleteTagByIdItemByItemIdResponses[keyof DeleteTagByIdItemByItemIdResponses];
+
+export type GetTagByIdItemsData = {
+    body?: never;
+    path: {
+        /**
+         * Tag ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/tag/{id}/items';
+};
+
+export type GetTagByIdItemsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetTagByIdItemsError = GetTagByIdItemsErrors[keyof GetTagByIdItemsErrors];
+
+export type GetTagByIdItemsResponses = {
+    /**
+     * OK
+     */
+    200: Array<{
+        [key: string]: unknown;
+    }>;
+};
+
+export type GetTagByIdItemsResponse = GetTagByIdItemsResponses[keyof GetTagByIdItemsResponses];
+
+export type PostTagByIdServiceData = {
+    /**
+     * Service link request
+     */
+    body: ModelsLinkServiceRequest;
+    path: {
+        /**
+         * Tag ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/tag/{id}/service';
+};
+
+export type PostTagByIdServiceErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type PostTagByIdServiceError = PostTagByIdServiceErrors[keyof PostTagByIdServiceErrors];
+
+export type PostTagByIdServiceResponses = {
+    /**
+     * OK
+     */
+    200: ModelsHttpError;
+};
+
+export type PostTagByIdServiceResponse = PostTagByIdServiceResponses[keyof PostTagByIdServiceResponses];
+
+export type DeleteTagByIdServiceByServiceIdData = {
+    body?: never;
+    path: {
+        /**
+         * Tag ID
+         */
+        id: number;
+        /**
+         * Service ID
+         */
+        serviceId: number;
+    };
+    query?: never;
+    url: '/tag/{id}/service/{serviceId}';
+};
+
+export type DeleteTagByIdServiceByServiceIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type DeleteTagByIdServiceByServiceIdError = DeleteTagByIdServiceByServiceIdErrors[keyof DeleteTagByIdServiceByServiceIdErrors];
+
+export type DeleteTagByIdServiceByServiceIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsHttpError;
+};
+
+export type DeleteTagByIdServiceByServiceIdResponse = DeleteTagByIdServiceByServiceIdResponses[keyof DeleteTagByIdServiceByServiceIdResponses];
+
+export type GetTagByIdServicesData = {
+    body?: never;
+    path: {
+        /**
+         * Tag ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/tag/{id}/services';
+};
+
+export type GetTagByIdServicesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetTagByIdServicesError = GetTagByIdServicesErrors[keyof GetTagByIdServicesErrors];
+
+export type GetTagByIdServicesResponses = {
+    /**
+     * OK
+     */
+    200: Array<{
+        [key: string]: unknown;
+    }>;
+};
+
+export type GetTagByIdServicesResponse = GetTagByIdServicesResponses[keyof GetTagByIdServicesResponses];

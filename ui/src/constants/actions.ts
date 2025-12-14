@@ -10,6 +10,7 @@ export const FUNCTION_ACTIONS: ConstantsAction[] = [
   'items',
   'itemOptions',
   'orders',
+  'tags',
 ];
 
 export const FUNCTION_ACTION_DESCRIPTIONS: Record<ConstantsAction, string> = {
@@ -22,6 +23,7 @@ export const FUNCTION_ACTION_DESCRIPTIONS: Record<ConstantsAction, string> = {
   items: 'Manage items and inventory',
   itemOptions: 'Manage item options and variations',
   orders: 'Manage orders and payments',
+  tags: 'Manage tags and categories',
 };
 
 export const getFunctionActionDescription = (action: ConstantsAction): string =>

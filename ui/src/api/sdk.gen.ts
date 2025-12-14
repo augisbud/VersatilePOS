@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddItemToOrderData, AddItemToOrderErrors, AddItemToOrderResponses, AddOptionToOrderItemData, AddOptionToOrderItemErrors, AddOptionToOrderItemResponses, ApplyPriceModifierToOrderData, ApplyPriceModifierToOrderErrors, ApplyPriceModifierToOrderResponses, AssignFunctionToRoleData, AssignFunctionToRoleErrors, AssignFunctionToRoleResponses, AssignRoleToAccountData, AssignRoleToAccountErrors, AssignRoleToAccountResponses, AssignServiceToEmployeeData, AssignServiceToEmployeeErrors, AssignServiceToEmployeeResponses, CreateAccountData, CreateAccountErrors, CreateAccountResponses, CreateAccountRoleData, CreateAccountRoleErrors, CreateAccountRoleResponses, CreateBusinessData, CreateBusinessErrors, CreateBusinessResponses, CreateOrderData, CreateOrderErrors, CreateOrderResponses, CreatePaymentData, CreatePaymentErrors, CreatePaymentResponses, CreatePriceModifierData, CreatePriceModifierErrors, CreatePriceModifierResponses, CreateReservationData, CreateReservationErrors, CreateReservationResponses, CreateServiceData, CreateServiceErrors, CreateServiceResponses, CreateStripePaymentIntentData, CreateStripePaymentIntentErrors, CreateStripePaymentIntentResponses, DeleteAccountByIdData, DeleteAccountByIdErrors, DeleteAccountByIdResponses, DeleteAccountRoleByIdData, DeleteAccountRoleByIdErrors, DeleteAccountRoleByIdResponses, DeleteItemByIdData, DeleteItemByIdErrors, DeleteItemByIdResponses, DeleteItemOptionByIdData, DeleteItemOptionByIdErrors, DeleteItemOptionByIdResponses, DeletePriceModifierData, DeletePriceModifierErrors, DeletePriceModifierResponses, DeleteServiceData, DeleteServiceErrors, DeleteServiceResponses, GetAccountRoleByIdData, GetAccountRoleByIdErrors, GetAccountRoleByIdResponses, GetAccountsData, GetAccountsErrors, GetAccountsResponses, GetAllFunctionsData, GetAllFunctionsErrors, GetAllFunctionsResponses, GetBusinessByIdData, GetBusinessByIdErrors, GetBusinessByIdResponses, GetBusinessesData, GetBusinessesErrors, GetBusinessesResponses, GetBusinessRolesData, GetBusinessRolesErrors, GetBusinessRolesResponses, GetItemByIdData, GetItemByIdErrors, GetItemByIdResponses, GetItemData, GetItemErrors, GetItemOptionByIdData, GetItemOptionByIdErrors, GetItemOptionByIdResponses, GetItemOptionData, GetItemOptionErrors, GetItemOptionResponses, GetItemOptionsInOrderData, GetItemOptionsInOrderErrors, GetItemOptionsInOrderResponses, GetItemResponses, GetMyAccountData, GetMyAccountErrors, GetMyAccountResponses, GetOrderByIdData, GetOrderByIdErrors, GetOrderByIdResponses, GetOrderItemsData, GetOrderItemsErrors, GetOrderItemsResponses, GetOrdersData, GetOrdersErrors, GetOrdersResponses, GetPaymentByIdData, GetPaymentByIdErrors, GetPaymentByIdResponses, GetPaymentsData, GetPaymentsErrors, GetPaymentsResponses, GetPriceModifierByIdData, GetPriceModifierByIdErrors, GetPriceModifierByIdResponses, GetPriceModifiersData, GetPriceModifiersErrors, GetPriceModifiersResponses, GetReservationByIdData, GetReservationByIdErrors, GetReservationByIdResponses, GetReservationsData, GetReservationsErrors, GetReservationsResponses, GetServiceByIdData, GetServiceByIdErrors, GetServiceByIdResponses, GetServicesData, GetServicesErrors, GetServicesResponses, HandleStripeWebhookData, HandleStripeWebhookErrors, HandleStripeWebhookResponses, LinkPaymentToOrderData, LinkPaymentToOrderErrors, LinkPaymentToOrderResponses, LoginAccountData, LoginAccountErrors, LoginAccountResponses, PostItemData, PostItemErrors, PostItemOptionData, PostItemOptionErrors, PostItemOptionResponses, PostItemResponses, PutItemByIdData, PutItemByIdErrors, PutItemByIdResponses, PutItemOptionByIdData, PutItemOptionByIdErrors, PutItemOptionByIdResponses, RemoveItemFromOrderData, RemoveItemFromOrderErrors, RemoveItemFromOrderResponses, RemoveOptionFromOrderItemData, RemoveOptionFromOrderItemErrors, RemoveOptionFromOrderItemResponses, RemoveServiceFromEmployeeData, RemoveServiceFromEmployeeErrors, RemoveServiceFromEmployeeResponses, UpdateAccountRoleByIdData, UpdateAccountRoleByIdErrors, UpdateAccountRoleByIdResponses, UpdateAccountRoleStatusData, UpdateAccountRoleStatusErrors, UpdateAccountRoleStatusResponses, UpdateOrderData, UpdateOrderErrors, UpdateOrderItemData, UpdateOrderItemErrors, UpdateOrderItemResponses, UpdateOrderResponses, UpdatePriceModifierData, UpdatePriceModifierErrors, UpdatePriceModifierResponses, UpdateReservationData, UpdateReservationErrors, UpdateReservationResponses, UpdateServiceData, UpdateServiceErrors, UpdateServiceResponses } from './types.gen';
+import type { AddItemToOrderData, AddItemToOrderErrors, AddItemToOrderResponses, AddOptionToOrderItemData, AddOptionToOrderItemErrors, AddOptionToOrderItemResponses, ApplyPriceModifierToOrderData, ApplyPriceModifierToOrderErrors, ApplyPriceModifierToOrderResponses, AssignFunctionToRoleData, AssignFunctionToRoleErrors, AssignFunctionToRoleResponses, AssignRoleToAccountData, AssignRoleToAccountErrors, AssignRoleToAccountResponses, AssignServiceToEmployeeData, AssignServiceToEmployeeErrors, AssignServiceToEmployeeResponses, CreateAccountData, CreateAccountErrors, CreateAccountResponses, CreateAccountRoleData, CreateAccountRoleErrors, CreateAccountRoleResponses, CreateBusinessData, CreateBusinessErrors, CreateBusinessResponses, CreateOrderData, CreateOrderErrors, CreateOrderResponses, CreatePaymentData, CreatePaymentErrors, CreatePaymentResponses, CreatePriceModifierData, CreatePriceModifierErrors, CreatePriceModifierResponses, CreateReservationData, CreateReservationErrors, CreateReservationResponses, CreateServiceData, CreateServiceErrors, CreateServiceResponses, CreateStripePaymentIntentData, CreateStripePaymentIntentErrors, CreateStripePaymentIntentResponses, DeleteAccountByIdData, DeleteAccountByIdErrors, DeleteAccountByIdResponses, DeleteAccountRoleByIdData, DeleteAccountRoleByIdErrors, DeleteAccountRoleByIdResponses, DeleteItemByIdData, DeleteItemByIdErrors, DeleteItemByIdResponses, DeleteItemOptionByIdData, DeleteItemOptionByIdErrors, DeleteItemOptionByIdResponses, DeletePriceModifierData, DeletePriceModifierErrors, DeletePriceModifierResponses, DeleteServiceData, DeleteServiceErrors, DeleteServiceResponses, DeleteTagByIdData, DeleteTagByIdErrors, DeleteTagByIdItemByItemIdData, DeleteTagByIdItemByItemIdErrors, DeleteTagByIdItemByItemIdResponses, DeleteTagByIdItemOptionByItemOptionIdData, DeleteTagByIdItemOptionByItemOptionIdErrors, DeleteTagByIdItemOptionByItemOptionIdResponses, DeleteTagByIdResponses, DeleteTagByIdServiceByServiceIdData, DeleteTagByIdServiceByServiceIdErrors, DeleteTagByIdServiceByServiceIdResponses, GetAccountRoleByIdData, GetAccountRoleByIdErrors, GetAccountRoleByIdResponses, GetAccountsData, GetAccountsErrors, GetAccountsResponses, GetAllFunctionsData, GetAllFunctionsErrors, GetAllFunctionsResponses, GetBusinessByIdData, GetBusinessByIdErrors, GetBusinessByIdResponses, GetBusinessesData, GetBusinessesErrors, GetBusinessesResponses, GetBusinessRolesData, GetBusinessRolesErrors, GetBusinessRolesResponses, GetItemByIdData, GetItemByIdErrors, GetItemByIdResponses, GetItemData, GetItemErrors, GetItemOptionByIdData, GetItemOptionByIdErrors, GetItemOptionByIdResponses, GetItemOptionData, GetItemOptionErrors, GetItemOptionResponses, GetItemOptionsInOrderData, GetItemOptionsInOrderErrors, GetItemOptionsInOrderResponses, GetItemResponses, GetMyAccountData, GetMyAccountErrors, GetMyAccountResponses, GetOrderByIdData, GetOrderByIdErrors, GetOrderByIdResponses, GetOrderItemsData, GetOrderItemsErrors, GetOrderItemsResponses, GetOrdersData, GetOrdersErrors, GetOrdersResponses, GetPaymentByIdData, GetPaymentByIdErrors, GetPaymentByIdResponses, GetPaymentsData, GetPaymentsErrors, GetPaymentsResponses, GetPriceModifierByIdData, GetPriceModifierByIdErrors, GetPriceModifierByIdResponses, GetPriceModifiersData, GetPriceModifiersErrors, GetPriceModifiersResponses, GetReservationByIdData, GetReservationByIdErrors, GetReservationByIdResponses, GetReservationsData, GetReservationsErrors, GetReservationsResponses, GetServiceByIdData, GetServiceByIdErrors, GetServiceByIdResponses, GetServicesData, GetServicesErrors, GetServicesResponses, GetTagByIdData, GetTagByIdEntitiesData, GetTagByIdEntitiesErrors, GetTagByIdEntitiesResponses, GetTagByIdErrors, GetTagByIdItemOptionsData, GetTagByIdItemOptionsErrors, GetTagByIdItemOptionsResponses, GetTagByIdItemsData, GetTagByIdItemsErrors, GetTagByIdItemsResponses, GetTagByIdResponses, GetTagByIdServicesData, GetTagByIdServicesErrors, GetTagByIdServicesResponses, GetTagData, GetTagErrors, GetTagItemByItemIdData, GetTagItemByItemIdErrors, GetTagItemByItemIdResponses, GetTagItemOptionByItemOptionIdData, GetTagItemOptionByItemOptionIdErrors, GetTagItemOptionByItemOptionIdResponses, GetTagResponses, GetTagServiceByServiceIdData, GetTagServiceByServiceIdErrors, GetTagServiceByServiceIdResponses, HandleStripeWebhookData, HandleStripeWebhookErrors, HandleStripeWebhookResponses, LinkPaymentToOrderData, LinkPaymentToOrderErrors, LinkPaymentToOrderResponses, LoginAccountData, LoginAccountErrors, LoginAccountResponses, PostItemData, PostItemErrors, PostItemOptionData, PostItemOptionErrors, PostItemOptionResponses, PostItemResponses, PostTagByIdItemData, PostTagByIdItemErrors, PostTagByIdItemOptionData, PostTagByIdItemOptionErrors, PostTagByIdItemOptionResponses, PostTagByIdItemResponses, PostTagByIdServiceData, PostTagByIdServiceErrors, PostTagByIdServiceResponses, PostTagData, PostTagErrors, PostTagResponses, PutItemByIdData, PutItemByIdErrors, PutItemByIdResponses, PutItemOptionByIdData, PutItemOptionByIdErrors, PutItemOptionByIdResponses, PutTagByIdData, PutTagByIdErrors, PutTagByIdResponses, RemoveItemFromOrderData, RemoveItemFromOrderErrors, RemoveItemFromOrderResponses, RemoveOptionFromOrderItemData, RemoveOptionFromOrderItemErrors, RemoveOptionFromOrderItemResponses, RemoveServiceFromEmployeeData, RemoveServiceFromEmployeeErrors, RemoveServiceFromEmployeeResponses, UpdateAccountRoleByIdData, UpdateAccountRoleByIdErrors, UpdateAccountRoleByIdResponses, UpdateAccountRoleStatusData, UpdateAccountRoleStatusErrors, UpdateAccountRoleStatusResponses, UpdateOrderData, UpdateOrderErrors, UpdateOrderItemData, UpdateOrderItemErrors, UpdateOrderItemResponses, UpdateOrderResponses, UpdatePriceModifierData, UpdatePriceModifierErrors, UpdatePriceModifierResponses, UpdateReservationData, UpdateReservationErrors, UpdateReservationResponses, UpdateServiceData, UpdateServiceErrors, UpdateServiceResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -1245,6 +1245,368 @@ export const removeServiceFromEmployee = <ThrowOnError extends boolean = false>(
             }
         ],
         url: '/service/{id}/employee/{employeeId}',
+        ...options
+    });
+};
+
+/**
+ * Get all tags
+ *
+ * Get all tags of a business
+ */
+export const getTag = <ThrowOnError extends boolean = false>(options: Options<GetTagData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetTagResponses, GetTagErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag',
+        ...options
+    });
+};
+
+/**
+ * Create a tag
+ *
+ * Create a tag for a business
+ */
+export const postTag = <ThrowOnError extends boolean = false>(options: Options<PostTagData, ThrowOnError>) => {
+    return (options.client ?? client).post<PostTagResponses, PostTagErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get tags by item option
+ *
+ * Get all tags linked to an item option
+ */
+export const getTagItemOptionByItemOptionId = <ThrowOnError extends boolean = false>(options: Options<GetTagItemOptionByItemOptionIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetTagItemOptionByItemOptionIdResponses, GetTagItemOptionByItemOptionIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/item-option/{itemOptionId}',
+        ...options
+    });
+};
+
+/**
+ * Get tags by item
+ *
+ * Get all tags linked to an item
+ */
+export const getTagItemByItemId = <ThrowOnError extends boolean = false>(options: Options<GetTagItemByItemIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetTagItemByItemIdResponses, GetTagItemByItemIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/item/{itemId}',
+        ...options
+    });
+};
+
+/**
+ * Get tags by service
+ *
+ * Get all tags linked to a service
+ */
+export const getTagServiceByServiceId = <ThrowOnError extends boolean = false>(options: Options<GetTagServiceByServiceIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetTagServiceByServiceIdResponses, GetTagServiceByServiceIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/service/{serviceId}',
+        ...options
+    });
+};
+
+/**
+ * Delete tag
+ *
+ * Delete a tag
+ */
+export const deleteTagById = <ThrowOnError extends boolean = false>(options: Options<DeleteTagByIdData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteTagByIdResponses, DeleteTagByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/{id}',
+        ...options
+    });
+};
+
+/**
+ * Get tag by ID
+ *
+ * Get tag by id
+ */
+export const getTagById = <ThrowOnError extends boolean = false>(options: Options<GetTagByIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetTagByIdResponses, GetTagByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/{id}',
+        ...options
+    });
+};
+
+/**
+ * Update tag
+ *
+ * Update a tag
+ */
+export const putTagById = <ThrowOnError extends boolean = false>(options: Options<PutTagByIdData, ThrowOnError>) => {
+    return (options.client ?? client).put<PutTagByIdResponses, PutTagByIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/{id}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get all entities by tag
+ *
+ * Get all items, item options, and services linked to a tag
+ */
+export const getTagByIdEntities = <ThrowOnError extends boolean = false>(options: Options<GetTagByIdEntitiesData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetTagByIdEntitiesResponses, GetTagByIdEntitiesErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/{id}/entities',
+        ...options
+    });
+};
+
+/**
+ * Link item to tag
+ *
+ * Link an item to a tag
+ */
+export const postTagByIdItem = <ThrowOnError extends boolean = false>(options: Options<PostTagByIdItemData, ThrowOnError>) => {
+    return (options.client ?? client).post<PostTagByIdItemResponses, PostTagByIdItemErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/{id}/item',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Link item option to tag
+ *
+ * Link an item option to a tag
+ */
+export const postTagByIdItemOption = <ThrowOnError extends boolean = false>(options: Options<PostTagByIdItemOptionData, ThrowOnError>) => {
+    return (options.client ?? client).post<PostTagByIdItemOptionResponses, PostTagByIdItemOptionErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/{id}/item-option',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Unlink item option from tag
+ *
+ * Unlink an item option from a tag
+ */
+export const deleteTagByIdItemOptionByItemOptionId = <ThrowOnError extends boolean = false>(options: Options<DeleteTagByIdItemOptionByItemOptionIdData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteTagByIdItemOptionByItemOptionIdResponses, DeleteTagByIdItemOptionByItemOptionIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/{id}/item-option/{itemOptionId}',
+        ...options
+    });
+};
+
+/**
+ * Get item options by tag
+ *
+ * Get all item options linked to a tag
+ */
+export const getTagByIdItemOptions = <ThrowOnError extends boolean = false>(options: Options<GetTagByIdItemOptionsData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetTagByIdItemOptionsResponses, GetTagByIdItemOptionsErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/{id}/item-options',
+        ...options
+    });
+};
+
+/**
+ * Unlink item from tag
+ *
+ * Unlink an item from a tag
+ */
+export const deleteTagByIdItemByItemId = <ThrowOnError extends boolean = false>(options: Options<DeleteTagByIdItemByItemIdData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteTagByIdItemByItemIdResponses, DeleteTagByIdItemByItemIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/{id}/item/{itemId}',
+        ...options
+    });
+};
+
+/**
+ * Get items by tag
+ *
+ * Get all items linked to a tag
+ */
+export const getTagByIdItems = <ThrowOnError extends boolean = false>(options: Options<GetTagByIdItemsData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetTagByIdItemsResponses, GetTagByIdItemsErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/{id}/items',
+        ...options
+    });
+};
+
+/**
+ * Link service to tag
+ *
+ * Link a service to a tag
+ */
+export const postTagByIdService = <ThrowOnError extends boolean = false>(options: Options<PostTagByIdServiceData, ThrowOnError>) => {
+    return (options.client ?? client).post<PostTagByIdServiceResponses, PostTagByIdServiceErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/{id}/service',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Unlink service from tag
+ *
+ * Unlink a service from a tag
+ */
+export const deleteTagByIdServiceByServiceId = <ThrowOnError extends boolean = false>(options: Options<DeleteTagByIdServiceByServiceIdData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteTagByIdServiceByServiceIdResponses, DeleteTagByIdServiceByServiceIdErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/{id}/service/{serviceId}',
+        ...options
+    });
+};
+
+/**
+ * Get services by tag
+ *
+ * Get all services linked to a tag
+ */
+export const getTagByIdServices = <ThrowOnError extends boolean = false>(options: Options<GetTagByIdServicesData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetTagByIdServicesResponses, GetTagByIdServicesErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                name: 'Authorization',
+                type: 'apiKey'
+            }
+        ],
+        url: '/tag/{id}/services',
         ...options
     });
 };

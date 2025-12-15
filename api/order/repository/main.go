@@ -150,10 +150,26 @@ func (r *Repository) CreateOrderPaymentLink(link *entities.OrderPaymentLink) (*e
 
 // GetOrdersByPaymentID gets all orders linked to a specific payment
 func (r *Repository) GetOrdersByPaymentID(paymentID uint) ([]entities.Order, error) {
+	// First get the payment links for this payment
+	var paymentLinks []entities.OrderPaymentLink
+	if result := database.DB.Where("payment_id = ?", paymentID).Find(&paymentLinks); result.Error != nil {
+		return nil, result.Error
+	}
+
+	if len(paymentLinks) == 0 {
+		return []entities.Order{}, nil
+	}
+
+	// Extract order IDs
+	orderIDs := make([]uint, len(paymentLinks))
+	for i, link := range paymentLinks {
+		orderIDs[i] = link.OrderID
+	}
+
+	// Get orders with preloaded relationships
 	var orders []entities.Order
 	if result := database.DB.
-		Joins("JOIN order_payment_links ON orders.id = order_payment_links.order_id").
-		Where("order_payment_links.payment_id = ?", paymentID).
+		Where("id IN ?", orderIDs).
 		Preload("OrderItems.Item").
 		Preload("OrderItems.ItemOptionLinks.ItemOption").
 		Preload("OrderItems.PriceModifierOrderLinks.PriceModifier").
@@ -161,5 +177,6 @@ func (r *Repository) GetOrdersByPaymentID(paymentID uint) ([]entities.Order, err
 		Find(&orders); result.Error != nil {
 		return nil, result.Error
 	}
+	
 	return orders, nil
 }

@@ -8,4 +8,6 @@ type Item struct {
 	Business   Business `gorm:"foreignKey:BusinessID"`
 	Name       string   `json:"name"`
 	Price      float64  `json:"price" gorm:"type:decimal(10,2)"`
+
+	ItemOptions []ItemOption `gorm:"foreignKey:ItemID" json:"-"`
 }

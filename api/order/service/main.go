@@ -10,6 +10,7 @@ import (
 	"VersatilePOS/generic/constants"
 	"VersatilePOS/generic/rbac"
 	"errors"
+	"log"
 	"gorm.io/gorm"
 	"time"
 )
@@ -556,5 +557,17 @@ func (s *Service) LinkPaymentToOrder(orderID, paymentID uint, userID uint) error
 	}
 
 	_, err = s.repo.CreateOrderPaymentLink(link)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Update order status if payment is already completed and order is pending
+	if payment.Status == constants.Completed && order.Status == constants.OrderPending {
+		order.Status = constants.OrderConfirmed
+		if err := s.repo.UpdateOrder(order); err != nil {
+			log.Printf("Warning: Failed to update order %d status after linking completed payment: %v", orderID, err)
+		}
+	}
+
+	return nil
 }

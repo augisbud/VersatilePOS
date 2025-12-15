@@ -9,4 +9,6 @@ type ItemOption struct {
 	Name            string        `json:"name"`
 	PriceModifierID uint          `json:"priceModifierId"`
 	PriceModifier   PriceModifier `gorm:"foreignKey:PriceModifierID"`
+
+	Inventory *ItemOptionInventory `gorm:"foreignKey:ItemOptionID" json:"-"`
 }

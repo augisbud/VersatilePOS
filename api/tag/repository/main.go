@@ -68,23 +68,29 @@ func (r *Repository) DeleteItemTagLink(tagID, itemID uint) error {
 }
 
 func (r *Repository) GetItemsByTag(tagID uint) ([]entities.Item, error) {
-	var items []entities.Item
-	if err := database.DB.
-		Joins("JOIN item_tag_links ON items.id = item_tag_links.item_id").
-		Where("item_tag_links.tag_id = ?", tagID).
-		Find(&items).Error; err != nil {
+	var tag entities.Tag
+	if err := database.DB.Preload("ItemTagLinks.Item").First(&tag, tagID).Error; err != nil {
 		return nil, err
+	}
+	var items []entities.Item
+	for _, link := range tag.ItemTagLinks {
+		if link.Item.ID != 0 { // Leftover, for legacy data safety
+			items = append(items, link.Item)
+		}
 	}
 	return items, nil
 }
 
 func (r *Repository) GetTagsByItem(itemID uint) ([]entities.Tag, error) {
-	var tags []entities.Tag
-	if err := database.DB.
-		Joins("JOIN item_tag_links ON tags.id = item_tag_links.tag_id").
-		Where("item_tag_links.item_id = ?", itemID).
-		Find(&tags).Error; err != nil {
+	var links []entities.ItemTagLink
+	if err := database.DB.Preload("Tag").Where("item_id = ?", itemID).Find(&links).Error; err != nil {
 		return nil, err
+	}
+	var tags []entities.Tag
+	for _, link := range links {
+		if link.Tag.ID != 0 {
+			tags = append(tags, link.Tag)
+		}
 	}
 	return tags, nil
 }
@@ -112,23 +118,29 @@ func (r *Repository) DeleteItemOptionTagLink(tagID, itemOptionID uint) error {
 }
 
 func (r *Repository) GetItemOptionsByTag(tagID uint) ([]entities.ItemOption, error) {
-	var options []entities.ItemOption
-	if err := database.DB.
-		Joins("JOIN item_option_tag_links ON item_options.id = item_option_tag_links.item_option_id").
-		Where("item_option_tag_links.tag_id = ?", tagID).
-		Find(&options).Error; err != nil {
+	var tag entities.Tag
+	if err := database.DB.Preload("ItemOptionTagLinks.ItemOption").First(&tag, tagID).Error; err != nil {
 		return nil, err
+	}
+	var options []entities.ItemOption
+	for _, link := range tag.ItemOptionTagLinks {
+		if link.ItemOption.ID != 0 {
+			options = append(options, link.ItemOption)
+		}
 	}
 	return options, nil
 }
 
 func (r *Repository) GetTagsByItemOption(itemOptionID uint) ([]entities.Tag, error) {
-	var tags []entities.Tag
-	if err := database.DB.
-		Joins("JOIN item_option_tag_links ON tags.id = item_option_tag_links.tag_id").
-		Where("item_option_tag_links.item_option_id = ?", itemOptionID).
-		Find(&tags).Error; err != nil {
+	var links []entities.ItemOptionTagLink
+	if err := database.DB.Preload("Tag").Where("item_option_id = ?", itemOptionID).Find(&links).Error; err != nil {
 		return nil, err
+	}
+	var tags []entities.Tag
+	for _, link := range links {
+		if link.Tag.ID != 0 {
+			tags = append(tags, link.Tag)
+		}
 	}
 	return tags, nil
 }
@@ -156,23 +168,29 @@ func (r *Repository) DeleteServiceTagLink(tagID, serviceID uint) error {
 }
 
 func (r *Repository) GetServicesByTag(tagID uint) ([]entities.Service, error) {
-	var services []entities.Service
-	if err := database.DB.
-		Joins("JOIN service_tag_links ON services.id = service_tag_links.service_id").
-		Where("service_tag_links.tag_id = ?", tagID).
-		Find(&services).Error; err != nil {
+	var tag entities.Tag
+	if err := database.DB.Preload("ServiceTagLinks.Service").First(&tag, tagID).Error; err != nil {
 		return nil, err
+	}
+	var services []entities.Service
+	for _, link := range tag.ServiceTagLinks {
+		if link.Service.ID != 0 {
+			services = append(services, link.Service)
+		}
 	}
 	return services, nil
 }
 
 func (r *Repository) GetTagsByService(serviceID uint) ([]entities.Tag, error) {
-	var tags []entities.Tag
-	if err := database.DB.
-		Joins("JOIN service_tag_links ON tags.id = service_tag_links.tag_id").
-		Where("service_tag_links.service_id = ?", serviceID).
-		Find(&tags).Error; err != nil {
+	var links []entities.ServiceTagLink
+	if err := database.DB.Preload("Tag").Where("service_id = ?", serviceID).Find(&links).Error; err != nil {
 		return nil, err
+	}
+	var tags []entities.Tag
+	for _, link := range links {
+		if link.Tag.ID != 0 {
+			tags = append(tags, link.Tag)
+		}
 	}
 	return tags, nil
 }

@@ -348,18 +348,9 @@ func (s *Service) ApplyPriceModifierToOrder(orderID uint, req orderModels.ApplyP
 		return errors.New("cannot modify order: order is in final state")
 	}
 
-	// Verify order item exists
-	orderItem, err := s.repo.GetOrderItemByID(orderID, req.OrderItemID)
-	if err != nil {
-		return err
-	}
-	if orderItem == nil {
-		return errors.New("order item not found")
-	}
-
 	link := &entities.PriceModifierOrderLink{
 		PriceModifierID: req.PriceModifierID,
-		OrderItemID:     req.OrderItemID,
+		OrderID:         orderID,
 	}
 
 	_, err = s.repo.CreatePriceModifierOrderLink(link)

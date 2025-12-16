@@ -19,6 +19,7 @@ export const BusinessDetails = ({ business, onBack }: BusinessDetailsProps) => {
     canReadAccounts,
     canReadServices,
     canReadPriceModifiers,
+    canReadTags,
     canReadItems,
   } = useUser();
 
@@ -37,7 +38,9 @@ export const BusinessDetails = ({ business, onBack }: BusinessDetailsProps) => {
         {canReadPriceModifiers && (
           <BusinessPriceModifiers businessId={business.id!} />
         )}
-        {canReadItems && <BusinessItemCategories businessId={business.id!} />}
+        {canReadTags && canReadItems && (
+          <BusinessItemCategories businessId={business.id!} />
+        )}
       </Space>
     </div>
   );

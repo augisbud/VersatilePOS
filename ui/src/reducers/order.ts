@@ -196,7 +196,8 @@ export const orderReducer = createReducer(initialState, (builder) => {
       state.error = undefined;
     })
     .addCase(addOrderItemOption.fulfilled, (state, { payload }) => {
-      const existingOptions = state.itemOptionsByOrderItem[payload.itemId] ?? [];
+      const existingOptions =
+        state.itemOptionsByOrderItem[payload.itemId] ?? [];
       state.itemOptionsByOrderItem[payload.itemId] = [
         ...existingOptions,
         payload.option,

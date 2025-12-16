@@ -5,7 +5,12 @@ import {
   ModelsCreateStripePaymentResponse,
 } from '@/api/types.gen';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { createPayment, getPayments, createStripePaymentIntent } from '@/api';
+import {
+  createPayment,
+  getPayments,
+  createStripePaymentIntent,
+  completePayment,
+} from '@/api';
 
 export const fetchPayments = createAsyncThunk<ModelsPaymentDto[], void>(
   'payment/fetchPayments',
@@ -43,7 +48,9 @@ export const createStripeIntent = createAsyncThunk<
 >(
   'payment/createStripeIntent',
   async (stripePaymentData: ModelsCreateStripePaymentRequest) => {
-    const response = await createStripePaymentIntent({ body: stripePaymentData });
+    const response = await createStripePaymentIntent({
+      body: stripePaymentData,
+    });
 
     if (response.error) {
       throw new Error(response.error.error);
@@ -56,3 +63,16 @@ export const createStripeIntent = createAsyncThunk<
     return response.data;
   }
 );
+
+export const completePaymentAction = createAsyncThunk<
+  { paymentId: number },
+  number
+>('payment/completePayment', async (paymentId: number) => {
+  const response = await completePayment({ path: { id: paymentId } });
+
+  if (response.error) {
+    throw new Error(response.error.error);
+  }
+
+  return { paymentId };
+});

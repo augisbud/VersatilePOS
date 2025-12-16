@@ -2580,7 +2580,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Apply a price modifier to an order item. Requires authentication and Orders Write permission.",
+                "description": "Apply a price modifier to the full order. Requires authentication and Orders Write permission.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2834,6 +2834,48 @@
                         "schema": {
                             "$ref": "#/definitions/models.PaymentDto"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/payment/{id}/complete": {
+            "post": {
+                "description": "Complete a payment and update linked order status",
+                "tags": [
+                    "payment"
+                ],
+                "summary": "Complete a payment",
+                "operationId": "completePayment",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Payment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -3437,6 +3479,78 @@
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/reservation/{reservationId}/payment/{paymentId}": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Link a payment to a reservation. Requires authentication and Reservations Write permission.",
+                "tags": [
+                    "reservation"
+                ],
+                "summary": "Link payment to reservation",
+                "operationId": "linkPaymentToReservation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Reservation ID",
+                        "name": "reservationId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Payment ID",
+                        "name": "paymentId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/models.HTTPError"
                         }
@@ -5327,13 +5441,9 @@
         "models.ApplyPriceModifierRequest": {
             "type": "object",
             "required": [
-                "orderItemId",
                 "priceModifierId"
             ],
             "properties": {
-                "orderItemId": {
-                    "type": "integer"
-                },
                 "priceModifierId": {
                     "type": "integer"
                 }
@@ -5998,6 +6108,12 @@
                 },
                 "id": {
                     "type": "integer"
+                },
+                "payments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PaymentDto"
+                    }
                 },
                 "reservationLength": {
                     "type": "integer"

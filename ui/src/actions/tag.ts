@@ -95,19 +95,19 @@ export const removeTag = createAsyncThunk<number, number>(
   }
 );
 
-export const fetchTagEntities = createAsyncThunk<ModelsTagEntitiesResponse, number>(
-  'tag/fetchTagEntities',
-  async (tagId: number) => {
-    const response = await getTagByIdEntities({ path: { id: tagId } });
-    if (response.error) {
-      throw new Error(response.error.error);
-    }
-    if (!response.data) {
-      throw new Error('No data returned from getTagByIdEntities');
-    }
-    return response.data;
+export const fetchTagEntities = createAsyncThunk<
+  ModelsTagEntitiesResponse,
+  number
+>('tag/fetchTagEntities', async (tagId: number) => {
+  const response = await getTagByIdEntities({ path: { id: tagId } });
+  if (response.error) {
+    throw new Error(response.error.error);
   }
-);
+  if (!response.data) {
+    throw new Error('No data returned from getTagByIdEntities');
+  }
+  return response.data;
+});
 
 // Swagger/openapi currently types these as `object[]` / `unknown[]`.
 // Backend returns item/item-option/service-like objects; keep these as `unknown[]` in redux.
@@ -247,4 +247,3 @@ export const unlinkServiceFromTag = createAsyncThunk<
     throw new Error(response.error.error);
   }
 });
-

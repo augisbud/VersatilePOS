@@ -12,7 +12,6 @@ import {
   SplitBillModal,
 } from '@/components/Orders/OrderEditor';
 import { StripePaymentModal, StripePaymentResult } from '@/components/Payment';
-import { CategorySelectorCard } from '@/components/Items';
 
 export const NewOrder = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -153,17 +152,19 @@ export const NewOrder = () => {
         if (parsedOrderId) {
           try {
             await linkPaymentToOrder(parsedOrderId, paymentId);
-            
+
             // Complete the payment since webhooks are not configured
             if (status !== 'Completed') {
               try {
                 // Add a small delay to ensure linking is processed
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 100));
                 await completePayment(paymentId);
                 void message.success('Payment completed successfully!');
               } catch (completeError) {
                 console.error('Failed to complete payment:', completeError);
-                void message.success('Payment processed! Please refresh to see updated status.');
+                void message.success(
+                  'Payment processed! Please refresh to see updated status.'
+                );
               }
             } else {
               void message.success('Payment completed successfully!');
@@ -279,18 +280,18 @@ export const NewOrder = () => {
 
       try {
         await linkPaymentToOrder(parsedOrderId, result.paymentId);
-        
+
         // Complete the payment since webhooks are not configured
         if (result.status !== 'Completed') {
           try {
             // Add a small delay to ensure linking is processed
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 100));
             await completePayment(result.paymentId);
           } catch (completeError) {
             console.error('Failed to complete payment:', completeError);
           }
         }
-        
+
         void message.success(`Bill ${billId} paid successfully with card!`);
         resolve();
       } catch {
@@ -368,14 +369,6 @@ export const NewOrder = () => {
             flexDirection: 'column',
           }}
         >
-          <CategorySelectorCard
-            tags={tags}
-            selectedTagId={selectedTagId}
-            onChange={setSelectedTagId}
-            loading={tagsLoading}
-            disabled={!initialLoadComplete}
-          />
-
           {itemsByTagError && (
             <Alert
               message="Error"
@@ -396,6 +389,10 @@ export const NewOrder = () => {
               !initialLoadComplete
             }
             onItemClick={(item) => void handleItemClick(item)}
+            tags={tags}
+            selectedTagId={selectedTagId}
+            onTagChange={setSelectedTagId}
+            tagsLoading={tagsLoading}
           />
         </div>
 

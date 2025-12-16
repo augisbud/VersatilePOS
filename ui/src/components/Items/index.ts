@@ -6,4 +6,4 @@ export { ItemOptionsSection } from './ItemOptionsSection';
 export { ItemOptionsTable } from './ItemOptionsTable';
 export { ItemOptionInlineForm } from './ItemOptionInlineForm';
 export { BusinessSelectorCard } from './BusinessSelectorCard';
-export { CategorySelectorCard } from './CategorySelectorCard';
+export { CategorySelector } from './CategorySelector';

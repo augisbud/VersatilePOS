@@ -40,7 +40,6 @@ export type ModelsAccountRoleLinkDto = {
 };
 
 export type ModelsApplyPriceModifierRequest = {
-    orderItemId: number;
     priceModifierId: number;
 };
 
@@ -273,6 +272,7 @@ export type ModelsReservationDto = {
     dateOfService?: string;
     datePlaced?: string;
     id?: number;
+    payments?: Array<ModelsPaymentDto>;
     reservationLength?: number;
     serviceId?: number;
     status?: ConstantsReservationStatus;
@@ -2313,6 +2313,42 @@ export type GetPaymentByIdResponses = {
 
 export type GetPaymentByIdResponse = GetPaymentByIdResponses[keyof GetPaymentByIdResponses];
 
+export type CompletePaymentData = {
+    body?: never;
+    path: {
+        /**
+         * Payment ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/payment/{id}/complete';
+};
+
+export type CompletePaymentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type CompletePaymentError = CompletePaymentErrors[keyof CompletePaymentErrors];
+
+export type CompletePaymentResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
 export type GetPriceModifiersData = {
     body?: never;
     path?: never;
@@ -2716,6 +2752,58 @@ export type UpdateReservationResponses = {
 };
 
 export type UpdateReservationResponse = UpdateReservationResponses[keyof UpdateReservationResponses];
+
+export type LinkPaymentToReservationData = {
+    body?: never;
+    path: {
+        /**
+         * Reservation ID
+         */
+        reservationId: number;
+        /**
+         * Payment ID
+         */
+        paymentId: number;
+    };
+    query?: never;
+    url: '/reservation/{reservationId}/payment/{paymentId}';
+};
+
+export type LinkPaymentToReservationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Conflict
+     */
+    409: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type LinkPaymentToReservationError = LinkPaymentToReservationErrors[keyof LinkPaymentToReservationErrors];
+
+export type LinkPaymentToReservationResponses = {
+    /**
+     * Created
+     */
+    201: unknown;
+};
 
 export type GetServicesData = {
     body?: never;

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Alert, Form } from 'antd';
+import { useEffect, useState, useCallback } from 'react';
+import { Alert, Card, Form, Space, Typography } from 'antd';
 import { useItems } from '@/hooks/useItems';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
@@ -15,9 +15,8 @@ import {
   ItemModal,
   ItemPreviewModal,
   BusinessSelectorCard,
-  CategorySelectorCard,
+  CategorySelector,
 } from '@/components/Items';
-import './Items.css';
 
 type PendingOption = {
   name: string;
@@ -37,14 +36,11 @@ export const Items = () => {
   const [form] = Form.useForm<ItemFormValues>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ModelsItemDto | null>(null);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewItem, setPreviewItem] = useState<ModelsItemDto | null>(null);
   const [selectedTagId, setSelectedTagId] = useState<number | null>(null);
   const [itemsByTag, setItemsByTag] = useState<ModelsItemDto[]>([]);
   const [itemsByTagLoading, setItemsByTagLoading] = useState(false);
-  const [itemsByTagError, setItemsByTagError] = useState<string | undefined>(
-    undefined
-  );
+  const [itemsByTagError, setItemsByTagError] = useState<string>();
 
   const {
     items,
@@ -67,12 +63,31 @@ export const Items = () => {
   const { createItemOption, fetchItemOptions } = useItemOptions();
   const userBusinessId = useAppSelector(getUserBusinessId);
 
-  const combinedLoading =
+  const loading =
     itemsLoading || businessLoading || itemsByTagLoading || tagsLoading;
+  const displayedItems = selectedTagId ? itemsByTag : items;
 
-  const displayedItems = useMemo(() => {
-    return selectedTagId ? itemsByTag : items;
-  }, [selectedTagId, itemsByTag, items]);
+  const fetchItemsByTag = useCallback(async (tagId: number) => {
+    setItemsByTagLoading(true);
+    setItemsByTagError(undefined);
+    try {
+      const res = await getTagByIdItems({ path: { id: tagId } });
+      if (res.error) throw new Error(res.error.error);
+      const arr = Array.isArray(res.data) ? res.data : [];
+      setItemsByTag(
+        arr.filter(
+          (x): x is ModelsItemDto => x !== null && typeof x === 'object'
+        )
+      );
+    } catch (e) {
+      setItemsByTag([]);
+      setItemsByTagError(
+        e instanceof Error ? e.message : 'Failed to load items by category'
+      );
+    } finally {
+      setItemsByTagLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     void fetchAllBusinesses();
@@ -80,58 +95,27 @@ export const Items = () => {
 
   useEffect(() => {
     if (!businesses.length) return;
-
-    const fallbackBusinessId =
-      selectedBusinessId ?? userBusinessId ?? businesses[0].id;
-
-    if (fallbackBusinessId && fallbackBusinessId !== selectedBusinessId) {
-      selectBusiness(fallbackBusinessId);
+    const fallbackId = selectedBusinessId ?? userBusinessId ?? businesses[0].id;
+    if (fallbackId && fallbackId !== selectedBusinessId) {
+      selectBusiness(fallbackId);
     }
   }, [businesses, selectedBusinessId, userBusinessId]);
 
   useEffect(() => {
     if (selectedBusinessId && canReadItems) {
       void fetchItems(selectedBusinessId);
-    }
-  }, [selectedBusinessId, canReadItems]);
-
-  useEffect(() => {
-    if (selectedBusinessId && canReadItems) {
       void fetchTags(selectedBusinessId);
     }
   }, [selectedBusinessId, canReadItems]);
 
   useEffect(() => {
-    const loadByTag = async () => {
-      if (!selectedTagId) {
-        setItemsByTag([]);
-        setItemsByTagError(undefined);
-        setItemsByTagLoading(false);
-        return;
-      }
-
-      setItemsByTagLoading(true);
+    if (selectedTagId) {
+      void fetchItemsByTag(selectedTagId);
+    } else {
+      setItemsByTag([]);
       setItemsByTagError(undefined);
-      try {
-        const res = await getTagByIdItems({ path: { id: selectedTagId } });
-        if (res.error) {
-          throw new Error(res.error.error);
-        }
-        const arr = Array.isArray(res.data) ? res.data : [];
-        // Swagger/openapi currently types these as `object[]` / `unknown[]`.
-        // Backend returns item-like objects; filter to objects and cast.
-        const parsed = arr.filter((x) => x && typeof x === 'object') as ModelsItemDto[];
-        setItemsByTag(parsed);
-      } catch (e) {
-        setItemsByTag([]);
-        setItemsByTagError(e instanceof Error ? e.message : 'Failed to load items by category');
-      } finally {
-        setItemsByTagLoading(false);
-      }
-    };
-
-    void loadByTag();
-  }, [selectedTagId]);
+    }
+  }, [selectedTagId, fetchItemsByTag]);
 
   const handleBusinessChange = (businessId: number) => {
     selectBusiness(businessId);
@@ -140,20 +124,15 @@ export const Items = () => {
     setItemsByTagError(undefined);
   };
 
-  const handleTagChange = (tagId: number | null) => {
-    setSelectedTagId(tagId);
-  };
-
   const handleOpenModal = (item?: ModelsItemDto) => {
+    setEditingItem(item ?? null);
     if (item) {
-      setEditingItem(item);
       form.setFieldsValue({
         name: item.name,
         price: item.price,
         quantityInStock: item.quantityInStock,
       });
     } else {
-      setEditingItem(null);
       form.resetFields();
     }
     setIsModalOpen(true);
@@ -165,9 +144,18 @@ export const Items = () => {
     form.resetFields();
   };
 
+  const refreshItems = useCallback(() => {
+    if (!selectedBusinessId) return;
+    if (selectedTagId) {
+      void fetchItemsByTag(selectedTagId);
+    } else {
+      void fetchItems(selectedBusinessId);
+    }
+  }, [selectedBusinessId, selectedTagId, fetchItemsByTag, fetchItems]);
+
   const handleSubmit = async () => {
     const values = await form.validateFields();
-    const pendingOptions = values._pendingOptions || [];
+    const pendingOptions = values._pendingOptions ?? [];
 
     if (editingItem?.id) {
       await updateItem(editingItem.id, {
@@ -185,7 +173,6 @@ export const Items = () => {
         trackInventory: values.quantityInStock !== undefined,
       });
 
-      // Create pending options for the new item
       if (newItem?.id && pendingOptions.length > 0) {
         for (const option of pendingOptions) {
           await createItemOption({
@@ -203,53 +190,21 @@ export const Items = () => {
     }
 
     handleCloseModal();
-    if (selectedBusinessId) {
-      if (selectedTagId) {
-        void (async () => {
-          setItemsByTagLoading(true);
-          setItemsByTagError(undefined);
-          try {
-            const res = await getTagByIdItems({ path: { id: selectedTagId } });
-            if (res.error) throw new Error(res.error.error);
-            const arr = Array.isArray(res.data) ? res.data : [];
-            setItemsByTag(arr.filter((x) => x && typeof x === 'object') as ModelsItemDto[]);
-          } catch (e) {
-            setItemsByTag([]);
-            setItemsByTagError(e instanceof Error ? e.message : 'Failed to load items by category');
-          } finally {
-            setItemsByTagLoading(false);
-          }
-        })();
-      } else {
-        void fetchItems(selectedBusinessId);
-      }
-    }
+    refreshItems();
   };
 
   const handleDelete = async (itemId: number) => {
     await deleteItem(itemId);
-    if (selectedBusinessId) {
-      if (selectedTagId) {
-        setItemsByTag((prev) => prev.filter((i) => i.id !== itemId));
-      } else {
-        void fetchItems(selectedBusinessId);
-      }
+    if (selectedTagId) {
+      setItemsByTag((prev) => prev.filter((i) => i.id !== itemId));
+    } else if (selectedBusinessId) {
+      void fetchItems(selectedBusinessId);
     }
-  };
-
-  const handlePreview = (item: ModelsItemDto) => {
-    setPreviewItem(item);
-    setIsPreviewOpen(true);
-  };
-
-  const handleClosePreview = () => {
-    setIsPreviewOpen(false);
-    setPreviewItem(null);
   };
 
   if (!canReadItems) {
     return (
-      <div className="itemsPageNoAccess">
+      <div style={{ padding: 24 }}>
         <Alert
           message="You don't have permission to view items."
           type="error"
@@ -260,7 +215,7 @@ export const Items = () => {
   }
 
   return (
-    <div className="itemsPage">
+    <div style={{ padding: 24, maxWidth: 1800, margin: '0 auto' }}>
       <ItemsHeader
         onNewItem={() => handleOpenModal()}
         canWriteItems={canWriteItems}
@@ -274,13 +229,20 @@ export const Items = () => {
         loading={businessLoading}
       />
 
-      <CategorySelectorCard
-        tags={tags}
-        selectedTagId={selectedTagId}
-        onChange={handleTagChange}
-        loading={tagsLoading}
-        disabled={!selectedBusinessId}
-      />
+      {tags.length > 0 && (
+        <Card style={{ marginBottom: 16 }}>
+          <Space size="middle" wrap>
+            <Typography.Text strong>Filter by category:</Typography.Text>
+            <CategorySelector
+              tags={tags}
+              selectedTagId={selectedTagId}
+              onChange={setSelectedTagId}
+              loading={tagsLoading}
+              disabled={!selectedBusinessId}
+            />
+          </Space>
+        </Card>
+      )}
 
       {error && (
         <Alert
@@ -288,7 +250,7 @@ export const Items = () => {
           description={error}
           type="error"
           showIcon
-          className="itemsPageAlert"
+          style={{ marginBottom: 16 }}
         />
       )}
 
@@ -298,18 +260,18 @@ export const Items = () => {
           description={itemsByTagError}
           type="error"
           showIcon
-          className="itemsPageAlert"
+          style={{ marginBottom: 16 }}
         />
       )}
 
       <ItemsGrid
         items={displayedItems}
-        loading={combinedLoading}
+        loading={loading}
         canWriteItems={canWriteItems}
         selectedBusinessId={selectedBusinessId}
         onEdit={handleOpenModal}
         onDelete={(itemId) => void handleDelete(itemId)}
-        onPreview={handlePreview}
+        onPreview={setPreviewItem}
       />
 
       <ItemModal
@@ -323,10 +285,10 @@ export const Items = () => {
       />
 
       <ItemPreviewModal
-        open={isPreviewOpen}
+        open={!!previewItem}
         item={previewItem}
         businessId={selectedBusinessId ?? null}
-        onClose={handleClosePreview}
+        onClose={() => setPreviewItem(null)}
       />
     </div>
   );

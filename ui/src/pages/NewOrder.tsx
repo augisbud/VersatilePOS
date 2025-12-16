@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Alert, Modal, message } from 'antd';
+import { AccessDenied } from '@/components/shared';
 import { useOrderEditor, CustomerDetails } from '@/hooks/useOrderEditor';
 import { usePayments } from '@/hooks/usePayments';
 import {
@@ -11,6 +12,7 @@ import {
   OrderBillModal,
   SplitBillModal,
 } from '@/components/Orders/OrderEditor';
+import { StripePaymentModal, StripePaymentResult } from '@/components/Payment';
 
 export const NewOrder = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -19,8 +21,9 @@ export const NewOrder = () => {
   const [billLoading, setBillLoading] = useState(false);
   const [splitBillModalOpen, setSplitBillModalOpen] = useState(false);
   const [splitBillLoading, setSplitBillLoading] = useState(false);
+  const [stripeModalOpen, setStripeModalOpen] = useState(false);
 
-  const { createPayment, linkPaymentToOrder } = usePayments();
+  const { createPayment, linkPaymentToOrder, completePayment } = usePayments();
 
   const {
     isEditMode,
@@ -34,10 +37,16 @@ export const NewOrder = () => {
     loading,
     itemsLoading,
     businessLoading,
+    tagsLoading,
+    itemsByTagLoading,
     initialLoadComplete,
     canWriteOrders,
     canReadOrders,
-    items,
+    displayedItems,
+    tags,
+    selectedTagId,
+    setSelectedTagId,
+    itemsByTagError,
     getItemNameLocal,
     getOptionNameLocal,
     getOptionPriceLabel,
@@ -102,6 +111,14 @@ export const NewOrder = () => {
         return;
       }
 
+      // For CreditCard, open Stripe payment modal
+      if (paymentType === 'CreditCard') {
+        setBillModalOpen(false);
+        setStripeModalOpen(true);
+        return;
+      }
+
+      // For Cash and GiftCard, process directly
       setBillLoading(true);
       try {
         const payment = await createPayment({
@@ -125,6 +142,59 @@ export const NewOrder = () => {
     [parsedOrderId, total, createPayment, linkPaymentToOrder, navigateBack]
   );
 
+  const handleStripePaymentSuccess = useCallback(
+    async (result: StripePaymentResult) => {
+      try {
+        setStripeModalOpen(false);
+
+        const { paymentId, status } = result;
+
+        // Link the payment to the order
+        if (parsedOrderId) {
+          try {
+            await linkPaymentToOrder(parsedOrderId, paymentId);
+
+            // Complete the payment since webhooks are not configured
+            if (status !== 'Completed') {
+              try {
+                // Add a small delay to ensure linking is processed
+                await new Promise((resolve) => setTimeout(resolve, 100));
+                await completePayment(paymentId);
+                void message.success('Payment completed successfully!');
+              } catch (completeError) {
+                console.error('Failed to complete payment:', completeError);
+                void message.success(
+                  'Payment processed! Please refresh to see updated status.'
+                );
+              }
+            } else {
+              void message.success('Payment completed successfully!');
+            }
+          } catch (linkError) {
+            console.error('Failed to link payment to order:', linkError);
+            void message.warning(
+              'Payment was processed but could not be linked to order. Please contact support.'
+            );
+          }
+        } else {
+          // No order ID - this shouldn't happen in normal flow
+          void message.success('Payment processed successfully!');
+        }
+
+        navigateBack();
+      } catch (err) {
+        console.error('Stripe payment success handler error:', err);
+        void message.error('An unexpected error occurred');
+      }
+    },
+    [parsedOrderId, linkPaymentToOrder, completePayment, navigateBack]
+  );
+
+  const handleStripePaymentCancel = useCallback(() => {
+    setStripeModalOpen(false);
+    setBillModalOpen(true);
+  }, []);
+
   const handleAddTip = useCallback(() => {
     void message.info('Tip feature coming soon');
   }, []);
@@ -137,8 +207,24 @@ export const NewOrder = () => {
     setSplitBillModalOpen(false);
   }, []);
 
+  // State for split bill card payment
+  const [splitBillCardPayment, setSplitBillCardPayment] = useState<{
+    billId: number;
+    amount: number;
+    itemIndices: number[];
+    resolve: () => void;
+    reject: (error: Error) => void;
+  } | null>(null);
+
   const handlePaySplitBill = useCallback(
-    async (billId: number, amount: number) => {
+    async (request: {
+      billId: number;
+      amount: number;
+      itemIndices: number[];
+      paymentType: 'Cash' | 'CreditCard' | 'GiftCard';
+    }) => {
+      const { billId, amount, itemIndices, paymentType } = request;
+
       if (!parsedOrderId) {
         void message.warning(
           'Please save the order first before processing payment.'
@@ -146,11 +232,26 @@ export const NewOrder = () => {
         return;
       }
 
+      // For Card payments, we need to open the Stripe modal
+      if (paymentType === 'CreditCard') {
+        return new Promise<void>((resolve, reject) => {
+          setSplitBillCardPayment({
+            billId,
+            amount,
+            itemIndices,
+            resolve,
+            reject,
+          });
+          setStripeModalOpen(true);
+        });
+      }
+
+      // For Cash and GiftCard, process directly
       setSplitBillLoading(true);
       try {
         const payment = await createPayment({
           amount,
-          type: 'Cash',
+          type: paymentType,
           status: 'Completed',
         });
 
@@ -168,16 +269,54 @@ export const NewOrder = () => {
     [parsedOrderId, createPayment, linkPaymentToOrder]
   );
 
+  // Handler for split bill card payment success
+  const handleSplitBillStripeSuccess = useCallback(
+    async (result: StripePaymentResult) => {
+      if (!splitBillCardPayment || !parsedOrderId) {
+        setStripeModalOpen(false);
+        return;
+      }
+
+      const { billId, resolve } = splitBillCardPayment;
+
+      try {
+        await linkPaymentToOrder(parsedOrderId, result.paymentId);
+
+        // Complete the payment since webhooks are not configured
+        if (result.status !== 'Completed') {
+          try {
+            // Add a small delay to ensure linking is processed
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            await completePayment(result.paymentId);
+          } catch (completeError) {
+            console.error('Failed to complete payment:', completeError);
+          }
+        }
+
+        void message.success(`Bill ${billId} paid successfully with card!`);
+        resolve();
+      } catch {
+        void message.error('Failed to link payment to order');
+        splitBillCardPayment.reject(new Error('Failed to link payment'));
+      } finally {
+        setSplitBillCardPayment(null);
+        setStripeModalOpen(false);
+      }
+    },
+    [splitBillCardPayment, parsedOrderId, linkPaymentToOrder, completePayment]
+  );
+
+  // Handler for split bill card payment cancel
+  const handleSplitBillStripeCancel = useCallback(() => {
+    if (splitBillCardPayment) {
+      splitBillCardPayment.reject(new Error('Payment cancelled'));
+      setSplitBillCardPayment(null);
+    }
+    setStripeModalOpen(false);
+  }, [splitBillCardPayment]);
+
   if (!canWriteOrders && !canReadOrders) {
-    return (
-      <div style={{ padding: '24px' }}>
-        <Alert
-          message="You don't have permission to view orders."
-          type="error"
-          showIcon
-        />
-      </div>
-    );
+    return <AccessDenied resource="orders" />;
   }
 
   return (
@@ -223,10 +362,30 @@ export const NewOrder = () => {
             flexDirection: 'column',
           }}
         >
+          {itemsByTagError && (
+            <Alert
+              message="Error"
+              description={itemsByTagError}
+              type="error"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
+
           <ItemsGrid
-            items={items}
-            loading={itemsLoading || businessLoading || !initialLoadComplete}
+            items={displayedItems}
+            loading={
+              itemsLoading ||
+              businessLoading ||
+              tagsLoading ||
+              itemsByTagLoading ||
+              !initialLoadComplete
+            }
             onItemClick={(item) => void handleItemClick(item)}
+            tags={tags}
+            selectedTagId={selectedTagId}
+            onTagChange={setSelectedTagId}
+            tagsLoading={tagsLoading}
           />
         </div>
 
@@ -236,6 +395,7 @@ export const NewOrder = () => {
           loading={loading || !initialLoadComplete}
           canWriteOrders={canWriteOrders}
           isEditMode={isEditMode}
+          hasOrderId={!!parsedOrderId}
           onEditItem={handleEditItem}
           onAddDiscount={handleAddDiscount}
           onSaveOrder={handleSaveOrderClick}
@@ -302,6 +462,24 @@ export const NewOrder = () => {
         loading={splitBillLoading}
         onPayBill={handlePaySplitBill}
         onClose={handleSplitBillClose}
+      />
+
+      <StripePaymentModal
+        open={stripeModalOpen}
+        amount={splitBillCardPayment?.amount ?? total}
+        orderId={parsedOrderId || undefined}
+        onSuccess={(result) => {
+          if (splitBillCardPayment) {
+            void handleSplitBillStripeSuccess(result);
+          } else {
+            void handleStripePaymentSuccess(result);
+          }
+        }}
+        onCancel={
+          splitBillCardPayment
+            ? handleSplitBillStripeCancel
+            : handleStripePaymentCancel
+        }
       />
     </div>
   );

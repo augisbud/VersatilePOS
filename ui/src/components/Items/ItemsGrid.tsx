@@ -1,6 +1,7 @@
-import { Card, Col, Empty, Row } from 'antd';
+import { Col, Row } from 'antd';
 import { ModelsItemDto } from '@/api/types.gen';
 import { ItemCard } from './ItemCard';
+import { EmptyState } from '@/components/shared';
 
 type Props = {
   items: ModelsItemDto[];
@@ -10,6 +11,7 @@ type Props = {
   onEdit: (item: ModelsItemDto) => void;
   onDelete: (itemId: number) => void;
   onPreview: (item: ModelsItemDto) => void;
+  onAddItem?: () => void;
 };
 
 export const ItemsGrid = ({
@@ -20,26 +22,29 @@ export const ItemsGrid = ({
   onEdit,
   onDelete,
   onPreview,
+  onAddItem,
 }: Props) => {
   if (!selectedBusinessId) {
     return (
-      <Card>
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description="Select a business to view items."
-        />
-      </Card>
+      <EmptyState
+        variant="items"
+        title="No Business Selected"
+        description="Select a business from the dropdown above to view and manage your menu items."
+        showAction={false}
+      />
     );
   }
 
   if (!loading && items.length === 0) {
     return (
-      <Card>
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description="No items found for this business."
-        />
-      </Card>
+      <EmptyState
+        variant="items"
+        title="No Items Yet"
+        description="Your menu is empty. Add your first item to start building your offerings."
+        actionLabel={canWriteItems ? 'Add First Item' : undefined}
+        onAction={onAddItem}
+        showAction={canWriteItems && !!onAddItem}
+      />
     );
   }
 

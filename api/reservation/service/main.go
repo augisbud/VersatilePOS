@@ -1,10 +1,12 @@
 package service
 
 import (
-	accountRepository "VersatilePOS/account/repository"
+	accountService "VersatilePOS/account/service"
+	"VersatilePOS/database"
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
 	"VersatilePOS/generic/rbac"
+	paymentRepository "VersatilePOS/payment/repository"
 	reservationModels "VersatilePOS/reservation/models"
 	"VersatilePOS/reservation/repository"
 	"errors"
@@ -15,33 +17,16 @@ import (
 
 type Service struct {
 	repo        repository.Repository
-	accountRepo accountRepository.Repository
+	paymentRepo paymentRepository.Repository
 }
 
 func NewService() *Service {
 	return &Service{
 		repo:        repository.Repository{},
-		accountRepo: accountRepository.Repository{},
+		paymentRepo: paymentRepository.Repository{},
 	}
 }
 
-// getBusinessIDFromAccount gets the first business ID that the account belongs to
-func (s *Service) getBusinessIDFromAccount(accountID uint) (uint, error) {
-	account, err := s.accountRepo.GetAccountByID(accountID)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return 0, errors.New("account not found")
-		}
-		return 0, errors.New("failed to get account")
-	}
-
-	if len(account.MemberOf) == 0 {
-		return 0, errors.New("account does not belong to any business")
-	}
-
-	// Return the first business ID
-	return account.MemberOf[0].ID, nil
-}
 
 // hasReservationAccess checks if user has access to reservations for a given business
 func (s *Service) hasReservationAccess(businessID uint, userID uint, level constants.AccessLevel) (bool, error) {
@@ -52,14 +37,17 @@ func (s *Service) hasReservationAccess(businessID uint, userID uint, level const
 	return ok, nil
 }
 
+
 func (s *Service) CreateReservation(req reservationModels.CreateReservationRequest, userID uint) (*reservationModels.ReservationDto, error) {
-	// Get business ID from the account (employee)
-	businessID, err := s.getBusinessIDFromAccount(req.AccountID)
+	businessIDs, err := accountService.GetBusinessIDsFromAccount(req.AccountID)
 	if err != nil {
 		return nil, err
 	}
+	if len(businessIDs) == 0 {
+		return nil, errors.New("account does not belong to any business")
+	}
+	businessID := businessIDs[0]
 
-	// Check if user has write access to reservations for this business
 	hasAccess, err := s.hasReservationAccess(businessID, userID, constants.Write)
 	if err != nil {
 		return nil, err
@@ -116,14 +104,14 @@ func (s *Service) GetReservations(userID uint) ([]reservationModels.ReservationD
 	// Filter reservations based on RBAC - only show reservations where user has Read access
 	var filteredDtos []reservationModels.ReservationDto
 	for _, reservation := range reservations {
-		if len(reservation.Account.MemberOf) == 0 {
+		businessIDs, err := accountService.GetBusinessIDsFromAccount(reservation.AccountID)
+		if err != nil || len(businessIDs) == 0 {
 			continue
 		}
 
-		// Check access for each business the account belongs to
 		hasAccess := false
-		for _, business := range reservation.Account.MemberOf {
-			ok, err := s.hasReservationAccess(business.ID, userID, constants.Read)
+		for _, businessID := range businessIDs {
+			ok, err := s.hasReservationAccess(businessID, userID, constants.Read)
 			if err == nil && ok {
 				hasAccess = true
 				break
@@ -147,14 +135,17 @@ func (s *Service) GetReservationByID(id uint, userID uint) (*reservationModels.R
 		return nil, errors.New("reservation not found")
 	}
 
-	// Check if user has read access to reservations for the business
-	if len(reservation.Account.MemberOf) == 0 {
+	businessIDs, err := accountService.GetBusinessIDsFromAccount(reservation.AccountID)
+	if err != nil {
+		return nil, err
+	}
+	if len(businessIDs) == 0 {
 		return nil, errors.New("reservation account does not belong to any business")
 	}
 
 	hasAccess := false
-	for _, business := range reservation.Account.MemberOf {
-		ok, err := s.hasReservationAccess(business.ID, userID, constants.Read)
+	for _, businessID := range businessIDs {
+		ok, err := s.hasReservationAccess(businessID, userID, constants.Read)
 		if err == nil && ok {
 			hasAccess = true
 			break
@@ -178,14 +169,17 @@ func (s *Service) UpdateReservation(id uint, req reservationModels.UpdateReserva
 		return nil, errors.New("reservation not found")
 	}
 
-	// Check if user has write access to reservations for the business
-	if len(reservation.Account.MemberOf) == 0 {
+	businessIDs, err := accountService.GetBusinessIDsFromAccount(reservation.AccountID)
+	if err != nil {
+		return nil, err
+	}
+	if len(businessIDs) == 0 {
 		return nil, errors.New("reservation account does not belong to any business")
 	}
 
 	hasAccess := false
-	for _, business := range reservation.Account.MemberOf {
-		ok, err := s.hasReservationAccess(business.ID, userID, constants.Write)
+	for _, businessID := range businessIDs {
+		ok, err := s.hasReservationAccess(businessID, userID, constants.Write)
 		if err == nil && ok {
 			hasAccess = true
 			break
@@ -198,12 +192,22 @@ func (s *Service) UpdateReservation(id uint, req reservationModels.UpdateReserva
 
 	// If account is being updated, verify access to the new account's business
 	if req.AccountID != nil && *req.AccountID != reservation.AccountID {
-		newBusinessID, err := s.getBusinessIDFromAccount(*req.AccountID)
+		newBusinessIDs, err := accountService.GetBusinessIDsFromAccount(*req.AccountID)
 		if err != nil {
 			return nil, err
 		}
-		ok, err := s.hasReservationAccess(newBusinessID, userID, constants.Write)
-		if err != nil || !ok {
+		if len(newBusinessIDs) == 0 {
+			return nil, errors.New("account does not belong to any business")
+		}
+		hasAccessToNew := false
+		for _, newBusinessID := range newBusinessIDs {
+			ok, err := s.hasReservationAccess(newBusinessID, userID, constants.Write)
+			if err == nil && ok {
+				hasAccessToNew = true
+				break
+			}
+		}
+		if !hasAccessToNew {
 			return nil, errors.New("unauthorized to assign reservation to this account")
 		}
 	}
@@ -296,3 +300,60 @@ func (s *Service) ApplyPriceModifierToReservation(reservationID uint, req reserv
 	return nil
 }
 
+
+func (s *Service) LinkPaymentToReservation(reservationID, paymentID uint, userID uint) error {
+	reservation, err := s.repo.GetReservationByID(reservationID)
+	if err != nil {
+		return err
+	}
+	if reservation == nil {
+		return errors.New("reservation not found")
+	}
+
+	businessIDs, err := accountService.GetBusinessIDsFromAccount(reservation.AccountID)
+	if err != nil {
+		return err
+	}
+	if len(businessIDs) == 0 {
+		return errors.New("reservation account does not belong to any business")
+	}
+
+	hasAccess := false
+	for _, businessID := range businessIDs {
+		ok, err := s.hasReservationAccess(businessID, userID, constants.Write)
+		if err == nil && ok {
+			hasAccess = true
+			break
+		}
+	}
+
+	if !hasAccess {
+		return errors.New("unauthorized to modify this reservation")
+	}
+
+	payment, err := s.paymentRepo.GetPaymentByID(paymentID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return errors.New("payment not found")
+		}
+		return err
+	}
+	if payment == nil {
+		return errors.New("payment not found")
+	}
+
+	var existingLink entities.ReservationPaymentLink
+	if result := database.DB.Where("reservation_id = ? AND payment_id = ?", reservationID, paymentID).First(&existingLink); result.Error == nil {
+		return errors.New("payment is already linked to this reservation")
+	} else if result.Error != nil && result.Error != gorm.ErrRecordNotFound {
+		return result.Error
+	}
+
+	link := &entities.ReservationPaymentLink{
+		ReservationID: reservationID,
+		PaymentID:     paymentID,
+	}
+
+	_, err = s.repo.CreateReservationPaymentLink(link)
+	return err
+}

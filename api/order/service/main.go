@@ -10,6 +10,7 @@ import (
 	"VersatilePOS/generic/constants"
 	"VersatilePOS/generic/rbac"
 	"errors"
+	"log"
 	"gorm.io/gorm"
 	"time"
 )
@@ -348,18 +349,9 @@ func (s *Service) ApplyPriceModifierToOrder(orderID uint, req orderModels.ApplyP
 		return errors.New("cannot modify order: order is in final state")
 	}
 
-	// Verify order item exists
-	orderItem, err := s.repo.GetOrderItemByID(orderID, req.OrderItemID)
-	if err != nil {
-		return err
-	}
-	if orderItem == nil {
-		return errors.New("order item not found")
-	}
-
 	link := &entities.PriceModifierOrderLink{
 		PriceModifierID: req.PriceModifierID,
-		OrderItemID:     req.OrderItemID,
+		OrderID:         orderID,
 	}
 
 	_, err = s.repo.CreatePriceModifierOrderLink(link)
@@ -556,5 +548,17 @@ func (s *Service) LinkPaymentToOrder(orderID, paymentID uint, userID uint) error
 	}
 
 	_, err = s.repo.CreateOrderPaymentLink(link)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Update order status if payment is already completed and order is pending
+	if payment.Status == constants.Completed && order.Status == constants.OrderPending {
+		order.Status = constants.OrderConfirmed
+		if err := s.repo.UpdateOrder(order); err != nil {
+			log.Printf("Warning: Failed to update order %d status after linking completed payment: %v", orderID, err)
+		}
+	}
+
+	return nil
 }

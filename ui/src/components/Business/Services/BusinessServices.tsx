@@ -14,6 +14,7 @@ import { ModelsServiceDto } from '@/api/types.gen';
 import { ServiceFormModal, ServiceFormValues } from './ServiceFormModal';
 import { AssignEmployeeModal } from './AssignEmployeeModal';
 import { formatCurrency, formatDuration } from '@/utils/formatters';
+import { EmptyState } from '@/components/shared';
 
 const { Title } = Typography;
 
@@ -230,7 +231,19 @@ export const BusinessServices = ({ businessId }: BusinessServicesProps) => {
           rowKey="id"
           loading={loading}
           pagination={false}
-          locale={{ emptyText: 'No services yet. Add your first service!' }}
+          locale={{
+            emptyText: (
+              <EmptyState
+                variant="services"
+                title="No Services"
+                description="Add services that your business offers. Set pricing, booking intervals, and assign employees."
+                actionLabel={canWriteServices ? 'Add First Service' : undefined}
+                onAction={() => handleOpenModal()}
+                showAction={canWriteServices}
+                compact
+              />
+            ),
+          }}
         />
       </Card>
 

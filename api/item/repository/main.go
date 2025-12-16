@@ -111,6 +111,9 @@ func (r *Repository) DeleteItem(id uint) error {
 		if err := tx.Where("item_id = ?", id).Delete(&entities.ItemInventory{}).Error; err != nil {
 			return err
 		}
+		if err := tx.Where("item_id = ?", id).Delete(&entities.ItemTagLink{}).Error; err != nil {
+			return err
+		}
 		if err := tx.Delete(&entities.Item{}, id).Error; err != nil {
 			return err
 		}
@@ -140,26 +143,21 @@ func (r *Repository) CreateItemOption(option *entities.ItemOption, inventory *en
 }
 
 func (r *Repository) GetItemOptions(businessID uint) ([]entities.ItemOption, map[uint]*entities.ItemOptionInventory, error) {
-	var options []entities.ItemOption
-	if err := database.DB.Joins("Item").Where("\"Item\".business_id = ?", businessID).Find(&options).Error; err != nil {
+	var items []entities.Item
+	if err := database.DB.Where("business_id = ?", businessID).Preload("ItemOptions.Inventory").Find(&items).Error; err != nil {
 		return nil, nil, err
 	}
 
-	optionIDs := make([]uint, len(options))
-	for i, option := range options {
-		optionIDs[i] = option.ID
-	}
-
-	var inventories []entities.ItemOptionInventory
-	if len(optionIDs) > 0 {
-		if err := database.DB.Where("item_option_id IN ?", optionIDs).Find(&inventories).Error; err != nil {
-			return nil, nil, err
-		}
-	}
-
+	var options []entities.ItemOption
 	inventoryMap := make(map[uint]*entities.ItemOptionInventory)
-	for i := range inventories {
-		inventoryMap[inventories[i].ItemOptionID] = &inventories[i]
+
+	for _, item := range items {
+		for _, option := range item.ItemOptions {
+			options = append(options, option)
+			if option.Inventory != nil && option.Inventory.ID != 0 {
+				inventoryMap[option.ID] = option.Inventory
+			}
+		}
 	}
 
 	return options, inventoryMap, nil
@@ -216,6 +214,9 @@ func (r *Repository) UpdateItemOption(option *entities.ItemOption, inventory *en
 
 func (r *Repository) DeleteItemOption(id uint) error {
 	return database.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("item_option_id = ?", id).Delete(&entities.ItemOptionTagLink{}).Error; err != nil {
+			return err
+		}
 		if err := tx.Where("item_option_id = ?", id).Delete(&entities.ItemOptionInventory{}).Error; err != nil {
 			return err
 		}

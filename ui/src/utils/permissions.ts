@@ -131,3 +131,9 @@ export const canReadOrders = (roles?: ModelsAccountRoleLinkDto[]) =>
 
 export const canWriteOrders = (roles?: ModelsAccountRoleLinkDto[]) =>
   canWrite(roles, 'orders');
+
+export const canReadTags = (roles?: ModelsAccountRoleLinkDto[]) =>
+  canRead(roles, 'tags');
+
+export const canWriteTags = (roles?: ModelsAccountRoleLinkDto[]) =>
+  canWrite(roles, 'tags');

@@ -12,8 +12,10 @@ import {
 import {
   fetchPayments as fetchPaymentsAction,
   addPayment as addPaymentAction,
+  completePaymentAction,
 } from '@/actions/payment';
-import { linkPayment as linkPaymentAction } from '@/actions/order';
+import { linkPayment as linkPaymentToOrderAction } from '@/actions/order';
+import { linkPayment as linkPaymentToReservationAction } from '@/actions/reservation';
 import { ModelsCreatePaymentRequest } from '@/api/types.gen';
 
 export const usePayments = () => {
@@ -31,7 +33,21 @@ export const usePayments = () => {
   };
 
   const linkPaymentToOrder = async (orderId: number, paymentId: number) => {
-    return dispatch(linkPaymentAction({ orderId, paymentId })).unwrap();
+    return dispatch(linkPaymentToOrderAction({ orderId, paymentId })).unwrap();
+  };
+
+  const linkPaymentToReservation = async (
+    reservationId: number,
+    paymentId: number
+  ) => {
+    return dispatch(
+      linkPaymentToReservationAction({ reservationId, paymentId })
+    ).unwrap();
+  };
+
+  const completePayment = async (paymentId: number) => {
+    await dispatch(completePaymentAction(paymentId)).unwrap();
+    return fetchPayments();
   };
 
   const getPaymentById = (paymentId: number) => {
@@ -57,6 +73,8 @@ export const usePayments = () => {
     fetchPayments,
     createPayment,
     linkPaymentToOrder,
+    linkPaymentToReservation,
+    completePayment,
     getPaymentById,
     getPaymentsByStatus,
     getPaymentsByType,

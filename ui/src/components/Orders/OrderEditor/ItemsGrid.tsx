@@ -1,15 +1,34 @@
 import { useState, useMemo } from 'react';
-import { Input, Card, Empty, Spin } from 'antd';
+import { Input, Card, Spin } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { ModelsItemDto } from '@/api/types.gen';
+import { CategorySelector } from '@/components/Items';
+import { EmptyState } from '@/components/shared';
+
+type TagOption = {
+  id?: number;
+  value?: string;
+};
 
 type Props = {
   items: ModelsItemDto[];
   loading?: boolean;
   onItemClick: (item: ModelsItemDto) => void;
+  tags?: TagOption[];
+  selectedTagId?: number | null;
+  onTagChange?: (tagId: number | null) => void;
+  tagsLoading?: boolean;
 };
 
-export const ItemsGrid = ({ items, loading, onItemClick }: Props) => {
+export const ItemsGrid = ({
+  items,
+  loading,
+  onItemClick,
+  tags = [],
+  selectedTagId,
+  onTagChange,
+  tagsLoading,
+}: Props) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredItems = useMemo(() => {
@@ -27,14 +46,30 @@ export const ItemsGrid = ({ items, loading, onItemClick }: Props) => {
         overflow: 'hidden',
       }}
     >
-      <Input
-        placeholder="Search..."
-        prefix={<SearchOutlined style={{ color: '#999' }} />}
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        style={{ marginBottom: 16 }}
-        size="large"
-      />
+      <div
+        style={{
+          display: 'flex',
+          gap: 12,
+          marginBottom: 16,
+        }}
+      >
+        <Input
+          placeholder="Search..."
+          prefix={<SearchOutlined style={{ color: '#999' }} />}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          size="middle"
+        />
+        {onTagChange && (
+          <CategorySelector
+            tags={tags}
+            selectedTagId={selectedTagId}
+            onChange={onTagChange}
+            loading={tagsLoading}
+            disabled={loading}
+          />
+        )}
+      </div>
 
       {loading ? (
         <div
@@ -48,7 +83,12 @@ export const ItemsGrid = ({ items, loading, onItemClick }: Props) => {
           <Spin size="large" />
         </div>
       ) : filteredItems.length === 0 ? (
-        <Empty description="No items found" style={{ marginTop: 48 }} />
+        <EmptyState
+          variant="items"
+          description={searchQuery ? 'No items match your search. Try a different term.' : 'No items available to add to this order.'}
+          showAction={false}
+          compact
+        />
       ) : (
         <div
           style={{

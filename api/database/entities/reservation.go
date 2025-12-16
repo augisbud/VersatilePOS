@@ -28,5 +28,16 @@ type Reservation struct {
 	CustomerPhone string `json:"customerPhone"`
 
 	PriceModifierLinks []PriceModifierReservationLink `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:ReservationID"`
+	ReservationPaymentLinks []ReservationPaymentLink `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:ReservationID"`
+}
+
+type ReservationPaymentLink struct {
+	gorm.Model
+
+	ReservationID uint        `json:"reservationId"`
+	Reservation   Reservation `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:ReservationID"`
+
+	PaymentID uint    `json:"paymentId"`
+	Payment   Payment `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:PaymentID"`
 }
 

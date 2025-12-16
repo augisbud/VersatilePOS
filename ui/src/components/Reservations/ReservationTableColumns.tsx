@@ -1,5 +1,10 @@
-import { Input, Button, Space, Tooltip, Typography } from 'antd';
-import { SearchOutlined, EditOutlined } from '@ant-design/icons';
+import { Input, Button, Space, Typography, Tag } from 'antd';
+import {
+  SearchOutlined,
+  EditOutlined,
+  DollarOutlined,
+  CheckCircleOutlined,
+} from '@ant-design/icons';
 import type { ColumnsType, ColumnType } from 'antd/es/table';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
 import {
@@ -22,6 +27,7 @@ interface GetColumnsOptions {
   employees: ModelsAccountDto[];
   canWrite: boolean;
   onEdit: (reservation: ModelsReservationDto) => void;
+  onPay: (reservation: ModelsReservationDto) => void;
 }
 
 const getColumnSearchProps = (
@@ -80,6 +86,7 @@ export const getReservationColumns = ({
   employees,
   canWrite,
   onEdit,
+  onPay,
 }: GetColumnsOptions): ColumnsType<ModelsReservationDto> => {
   const getServiceName = (serviceId: number | undefined) => {
     if (!serviceId) {
@@ -183,11 +190,24 @@ export const getReservationColumns = ({
       width: 110,
     },
     {
-      title: 'Tip',
-      dataIndex: 'tipAmount',
-      key: 'tipAmount',
-      render: (tip: number) => formatCurrency(tip),
-      width: 80,
+      title: 'Payment',
+      key: 'payment',
+      render: (_, record) => {
+        const hasPayments = record.payments && record.payments.length > 0;
+        const totalPaid =
+          record.payments?.reduce((sum, p) => sum + (p.amount ?? 0), 0) ?? 0;
+
+        if (hasPayments && totalPaid > 0) {
+          return (
+            <Tag icon={<CheckCircleOutlined />} color="success">
+              {formatCurrency(totalPaid)}
+            </Tag>
+          );
+        }
+
+        return <Tag color="default">Unpaid</Tag>;
+      },
+      width: 100,
     },
     {
       title: 'Placed',
@@ -205,18 +225,35 @@ export const getReservationColumns = ({
 
   if (canWrite) {
     columns.push({
-      title: '',
+      title: 'Actions',
       key: 'actions',
-      width: 60,
-      render: (_, record) => (
-        <Tooltip title="Edit reservation">
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => onEdit(record)}
-          />
-        </Tooltip>
-      ),
+      width: 160,
+      render: (_, record) => {
+        const isPaid = record.payments && record.payments.length > 0;
+        const isPayable =
+          record.status === 'Confirmed' || record.status === 'Completed';
+
+        return (
+          <Space size="small">
+            <Button
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => onEdit(record)}
+            >
+              Edit
+            </Button>
+            <Button
+              size="small"
+              type="primary"
+              icon={<DollarOutlined />}
+              onClick={() => onPay(record)}
+              disabled={isPaid || !isPayable}
+            >
+              Pay
+            </Button>
+          </Space>
+        );
+      },
     });
   }
 

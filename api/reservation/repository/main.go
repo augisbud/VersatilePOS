@@ -15,7 +15,7 @@ func (r *Repository) CreateReservation(reservation *entities.Reservation) error 
 
 func (r *Repository) GetReservationByID(id uint) (*entities.Reservation, error) {
 	var reservation entities.Reservation
-	if err := database.DB.Preload("Account.MemberOf").First(&reservation, id).Error; err != nil {
+	if err := database.DB.Preload("Account.MemberOf").Preload("ReservationPaymentLinks.Payment").First(&reservation, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -26,7 +26,7 @@ func (r *Repository) GetReservationByID(id uint) (*entities.Reservation, error) 
 
 func (r *Repository) GetReservations() ([]entities.Reservation, error) {
 	var reservations []entities.Reservation
-	if err := database.DB.Preload("Account.MemberOf").Find(&reservations).Error; err != nil {
+	if err := database.DB.Preload("Account.MemberOf").Preload("ReservationPaymentLinks.Payment").Find(&reservations).Error; err != nil {
 		return nil, err
 	}
 	return reservations, nil
@@ -39,6 +39,13 @@ func (r *Repository) UpdateReservation(reservation *entities.Reservation) error 
 func (r *Repository) CreatePriceModifierReservationLink(link *entities.PriceModifierReservationLink) (*entities.PriceModifierReservationLink, error) {
 	if err := database.DB.Create(link).Error; err != nil {
 		return nil, err
+	}
+	return link, nil
+}
+
+func (r *Repository) CreateReservationPaymentLink(link *entities.ReservationPaymentLink) (*entities.ReservationPaymentLink, error) {
+	if result := database.DB.Create(link); result.Error != nil {
+		return nil, result.Error
 	}
 	return link, nil
 }

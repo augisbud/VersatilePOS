@@ -1,7 +1,8 @@
-import { Empty, Button } from 'antd';
+import { Button } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import type { DayColumn, TimeSlot, SelectedSlot } from '@/types/timeSlot';
 import { DayColumnView } from './DayColumnView';
+import { EmptyState } from '@/components/shared';
 
 interface TimeGridProps {
   hasSelections: boolean;
@@ -24,9 +25,11 @@ export const TimeGrid = ({
 }: TimeGridProps) => {
   if (!hasSelections) {
     return (
-      <Empty
-        description="Select service and specialist to see available times"
-        style={{ padding: '48px 0' }}
+      <EmptyState
+        variant="reservations"
+        description="Select a service and specialist above to see available time slots."
+        showAction={false}
+        compact
       />
     );
   }
@@ -36,9 +39,12 @@ export const TimeGrid = ({
     dayColumns.every((col) => col.slots.length === 0)
   ) {
     return (
-      <Empty
-        description="No available time slots"
-        style={{ padding: '48px 0' }}
+      <EmptyState
+        variant="reservations"
+        title="No Availability"
+        description="There are no available time slots for the selected service and specialist. Try choosing different options."
+        showAction={false}
+        compact
       />
     );
   }

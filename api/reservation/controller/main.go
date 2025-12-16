@@ -5,6 +5,7 @@ import (
 	"VersatilePOS/middleware"
 	reservationModels "VersatilePOS/reservation/models"
 	"VersatilePOS/reservation/service"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -181,6 +182,63 @@ func (ctrl *Controller) UpdateReservation(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, reservation)
 }
 
+// @Summary Link payment to reservation
+// @Description Link a payment to a reservation. Requires authentication and Reservations Write permission.
+// @Tags reservation
+// @Param   reservationId  path  int  true  "Reservation ID"
+// @Param   paymentId  path  int  true  "Payment ID"
+// @Success 201
+// @Failure 400 {object} models.HTTPError
+// @Failure 401 {object} models.HTTPError
+// @Failure 403 {object} models.HTTPError
+// @Failure 404 {object} models.HTTPError
+// @Failure 409 {object} models.HTTPError
+// @Failure 500 {object} models.HTTPError
+// @Security BearerAuth
+// @Router /reservation/{reservationId}/payment/{paymentId} [post]
+// @Id linkPaymentToReservation
+func (ctrl *Controller) LinkPaymentToReservation(c *gin.Context) {
+	userID, err := middleware.GetUserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, models.HTTPError{Error: err.Error()})
+		return
+	}
+
+	reservationID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "invalid reservation id"})
+		return
+	}
+
+	paymentID, err := strconv.ParseUint(c.Param("paymentId"), 10, 32)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "invalid payment id"})
+		return
+	}
+
+	err = ctrl.service.LinkPaymentToReservation(uint(reservationID), uint(paymentID), userID)
+	if err != nil {
+		if err.Error() == "reservation not found" || err.Error() == "payment not found" {
+			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: err.Error()})
+			return
+		}
+		if err.Error() == "payment is already linked to this reservation" {
+			c.IndentedJSON(http.StatusConflict, models.HTTPError{Error: err.Error()})
+			return
+		}
+		if err.Error() == "unauthorized to modify this reservation" {
+			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: err.Error()})
+			return
+		}
+		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
+		log.Println("Failed to link payment to reservation:", err)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+}
+
+
 // @Summary Apply price modifier to reservation
 // @Description Apply a price modifier to a reservation
 // @Tags reservation
@@ -240,6 +298,7 @@ func (ctrl *Controller) RegisterRoutes(r *gin.Engine) {
 		reservationGroup.GET("/:id", ctrl.GetReservationById)
 		reservationGroup.PUT("/:id", ctrl.UpdateReservation)
 		reservationGroup.POST("/:id/price-modifier", ctrl.ApplyPriceModifierToReservation)
+		reservationGroup.POST("/:id/payment/:paymentId", ctrl.LinkPaymentToReservation)
 	}
 }
 

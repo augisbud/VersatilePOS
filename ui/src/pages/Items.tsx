@@ -1,18 +1,22 @@
-import { useEffect, useState } from 'react';
-import { Alert, Form } from 'antd';
+import { useEffect, useState, useCallback } from 'react';
+import { Alert, Card, Form, Space, Typography } from 'antd';
+import { AccessDenied } from '@/components/shared';
 import { useItems } from '@/hooks/useItems';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
 import { useItemOptions } from '@/hooks/useItemOptions';
+import { useTags } from '@/hooks/useTags';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { getUserBusinessId } from '@/selectors/user';
 import { ModelsItemDto } from '@/api/types.gen';
+import { getTagByIdItems } from '@/api';
 import {
   ItemsHeader,
   ItemsGrid,
   ItemModal,
   ItemPreviewModal,
   BusinessSelectorCard,
+  CategorySelector,
 } from '@/components/Items';
 
 type PendingOption = {
@@ -33,8 +37,11 @@ export const Items = () => {
   const [form] = Form.useForm<ItemFormValues>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ModelsItemDto | null>(null);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewItem, setPreviewItem] = useState<ModelsItemDto | null>(null);
+  const [selectedTagId, setSelectedTagId] = useState<number | null>(null);
+  const [itemsByTag, setItemsByTag] = useState<ModelsItemDto[]>([]);
+  const [itemsByTagLoading, setItemsByTagLoading] = useState(false);
+  const [itemsByTagError, setItemsByTagError] = useState<string>();
 
   const {
     items,
@@ -53,10 +60,35 @@ export const Items = () => {
     fetchAllBusinesses,
   } = useBusiness();
   const { canReadItems, canWriteItems } = useUser();
+  const { tags, fetchTags, loading: tagsLoading } = useTags();
   const { createItemOption, fetchItemOptions } = useItemOptions();
   const userBusinessId = useAppSelector(getUserBusinessId);
 
-  const combinedLoading = itemsLoading || businessLoading;
+  const loading =
+    itemsLoading || businessLoading || itemsByTagLoading || tagsLoading;
+  const displayedItems = selectedTagId ? itemsByTag : items;
+
+  const fetchItemsByTag = useCallback(async (tagId: number) => {
+    setItemsByTagLoading(true);
+    setItemsByTagError(undefined);
+    try {
+      const res = await getTagByIdItems({ path: { id: tagId } });
+      if (res.error) throw new Error(res.error.error);
+      const arr = Array.isArray(res.data) ? res.data : [];
+      setItemsByTag(
+        arr.filter(
+          (x): x is ModelsItemDto => x !== null && typeof x === 'object'
+        )
+      );
+    } catch (e) {
+      setItemsByTag([]);
+      setItemsByTagError(
+        e instanceof Error ? e.message : 'Failed to load items by category'
+      );
+    } finally {
+      setItemsByTagLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     void fetchAllBusinesses();
@@ -64,35 +96,44 @@ export const Items = () => {
 
   useEffect(() => {
     if (!businesses.length) return;
-
-    const fallbackBusinessId =
-      selectedBusinessId ?? userBusinessId ?? businesses[0].id;
-
-    if (fallbackBusinessId && fallbackBusinessId !== selectedBusinessId) {
-      selectBusiness(fallbackBusinessId);
+    const fallbackId = selectedBusinessId ?? userBusinessId ?? businesses[0].id;
+    if (fallbackId && fallbackId !== selectedBusinessId) {
+      selectBusiness(fallbackId);
     }
   }, [businesses, selectedBusinessId, userBusinessId]);
 
   useEffect(() => {
     if (selectedBusinessId && canReadItems) {
       void fetchItems(selectedBusinessId);
+      void fetchTags(selectedBusinessId);
     }
   }, [selectedBusinessId, canReadItems]);
 
+  useEffect(() => {
+    if (selectedTagId) {
+      void fetchItemsByTag(selectedTagId);
+    } else {
+      setItemsByTag([]);
+      setItemsByTagError(undefined);
+    }
+  }, [selectedTagId, fetchItemsByTag]);
+
   const handleBusinessChange = (businessId: number) => {
     selectBusiness(businessId);
+    setSelectedTagId(null);
+    setItemsByTag([]);
+    setItemsByTagError(undefined);
   };
 
   const handleOpenModal = (item?: ModelsItemDto) => {
+    setEditingItem(item ?? null);
     if (item) {
-      setEditingItem(item);
       form.setFieldsValue({
         name: item.name,
         price: item.price,
         quantityInStock: item.quantityInStock,
       });
     } else {
-      setEditingItem(null);
       form.resetFields();
     }
     setIsModalOpen(true);
@@ -104,9 +145,18 @@ export const Items = () => {
     form.resetFields();
   };
 
+  const refreshItems = useCallback(() => {
+    if (!selectedBusinessId) return;
+    if (selectedTagId) {
+      void fetchItemsByTag(selectedTagId);
+    } else {
+      void fetchItems(selectedBusinessId);
+    }
+  }, [selectedBusinessId, selectedTagId, fetchItemsByTag, fetchItems]);
+
   const handleSubmit = async () => {
     const values = await form.validateFields();
-    const pendingOptions = values._pendingOptions || [];
+    const pendingOptions = values._pendingOptions ?? [];
 
     if (editingItem?.id) {
       await updateItem(editingItem.id, {
@@ -124,7 +174,6 @@ export const Items = () => {
         trackInventory: values.quantityInStock !== undefined,
       });
 
-      // Create pending options for the new item
       if (newItem?.id && pendingOptions.length > 0) {
         for (const option of pendingOptions) {
           await createItemOption({
@@ -142,42 +191,24 @@ export const Items = () => {
     }
 
     handleCloseModal();
-    if (selectedBusinessId) {
-      void fetchItems(selectedBusinessId);
-    }
+    refreshItems();
   };
 
   const handleDelete = async (itemId: number) => {
     await deleteItem(itemId);
-    if (selectedBusinessId) {
+    if (selectedTagId) {
+      setItemsByTag((prev) => prev.filter((i) => i.id !== itemId));
+    } else if (selectedBusinessId) {
       void fetchItems(selectedBusinessId);
     }
   };
 
-  const handlePreview = (item: ModelsItemDto) => {
-    setPreviewItem(item);
-    setIsPreviewOpen(true);
-  };
-
-  const handleClosePreview = () => {
-    setIsPreviewOpen(false);
-    setPreviewItem(null);
-  };
-
   if (!canReadItems) {
-    return (
-      <div style={{ padding: '24px' }}>
-        <Alert
-          message="You don't have permission to view items."
-          type="error"
-          showIcon
-        />
-      </div>
-    );
+    return <AccessDenied resource="items" />;
   }
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1800px', margin: '0 auto' }}>
+    <div style={{ padding: 24, maxWidth: 1800, margin: '0 auto' }}>
       <ItemsHeader
         onNewItem={() => handleOpenModal()}
         canWriteItems={canWriteItems}
@@ -191,24 +222,50 @@ export const Items = () => {
         loading={businessLoading}
       />
 
+      {tags.length > 0 && (
+        <Card style={{ marginBottom: 16 }}>
+          <Space size="middle" wrap>
+            <Typography.Text strong>Filter by category:</Typography.Text>
+            <CategorySelector
+              tags={tags}
+              selectedTagId={selectedTagId}
+              onChange={setSelectedTagId}
+              loading={tagsLoading}
+              disabled={!selectedBusinessId}
+            />
+          </Space>
+        </Card>
+      )}
+
       {error && (
         <Alert
           message="Error"
           description={error}
           type="error"
           showIcon
-          style={{ marginBottom: '16px' }}
+          style={{ marginBottom: 16 }}
+        />
+      )}
+
+      {itemsByTagError && (
+        <Alert
+          message="Error"
+          description={itemsByTagError}
+          type="error"
+          showIcon
+          style={{ marginBottom: 16 }}
         />
       )}
 
       <ItemsGrid
-        items={items}
-        loading={combinedLoading}
+        items={displayedItems}
+        loading={loading}
         canWriteItems={canWriteItems}
         selectedBusinessId={selectedBusinessId}
         onEdit={handleOpenModal}
         onDelete={(itemId) => void handleDelete(itemId)}
-        onPreview={handlePreview}
+        onPreview={setPreviewItem}
+        onAddItem={() => handleOpenModal()}
       />
 
       <ItemModal
@@ -222,10 +279,10 @@ export const Items = () => {
       />
 
       <ItemPreviewModal
-        open={isPreviewOpen}
+        open={!!previewItem}
         item={previewItem}
         businessId={selectedBusinessId ?? null}
-        onClose={handleClosePreview}
+        onClose={() => setPreviewItem(null)}
       />
     </div>
   );

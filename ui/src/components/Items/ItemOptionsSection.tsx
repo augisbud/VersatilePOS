@@ -8,6 +8,7 @@ import {
   NewOptionFormValues,
 } from './ItemOptionInlineForm';
 import { useUser } from '@/hooks/useUser';
+import { EmptyState } from '@/components/shared';
 
 const { Title } = Typography;
 
@@ -101,10 +102,12 @@ export const ItemOptionsSection = ({
       )}
 
       {showEmptyMessage && (
-        <Typography.Text type="secondary">
-          No options added yet. Create options after saving the item or add them
-          now.
-        </Typography.Text>
+        <EmptyState
+          variant="options"
+          description="No options added yet. Create options after saving the item or add them now."
+          showAction={false}
+          compact
+        />
       )}
     </>
   );

@@ -45,7 +45,15 @@ func (r *Repository) UpdateService(service *entities.Service) error {
 }
 
 func (r *Repository) DeleteService(id uint) error {
-	return database.DB.Delete(&entities.Service{}, id).Error
+	return database.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("service_id = ?", id).Delete(&entities.ServiceTagLink{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Delete(&entities.Service{}, id).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func (r *Repository) AssignServiceToEmployee(service *entities.Service, employee *entities.Account) error {

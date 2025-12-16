@@ -20,3 +20,6 @@ export {
   BusinessPriceModifiers,
   PriceModifierFormModal,
 } from './PriceModifiers';
+
+// Category (Tag) components
+export { BusinessItemCategories } from './Categories';

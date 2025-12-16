@@ -49,7 +49,6 @@ func (s *Service) CreatePayment(req paymentModels.CreatePaymentRequest) (*paymen
 	paymentStatus := constants.Pending
 	if req.Status != "" {
 		status := constants.PaymentStatus(req.Status)
-		// Validate payment status
 		if status != constants.Pending && status != constants.Completed &&
 			status != constants.Failed && status != constants.Refunded {
 			return nil, errors.New("invalid payment status")

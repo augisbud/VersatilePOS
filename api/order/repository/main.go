@@ -40,8 +40,23 @@ func (r *Repository) GetOrderByID(id uint) (*entities.Order, error) {
 }
 
 func (r *Repository) UpdateOrder(order *entities.Order) error {
-	if result := database.DB.Save(order); result.Error != nil {
+	// Use Where().Updates() to explicitly update by ID, avoiding issues with preloaded relationships
+	// GORM's default naming converts struct fields to snake_case (Status -> status, TipAmount -> tip_amount, etc.)
+	result := database.DB.Model(&entities.Order{}).
+		Where("id = ?", order.ID).
+		Updates(map[string]interface{}{
+			"status":         order.Status,
+			"tip_amount":     order.TipAmount,
+			"service_charge": order.ServiceCharge,
+			"customer":       order.Customer,
+			"customer_email": order.CustomerEmail,
+			"customer_phone": order.CustomerPhone,
+		})
+	if result.Error != nil {
 		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
 	}
 	return nil
 }
@@ -131,4 +146,37 @@ func (r *Repository) CreateOrderPaymentLink(link *entities.OrderPaymentLink) (*e
 		return nil, result.Error
 	}
 	return link, nil
+}
+
+// GetOrdersByPaymentID gets all orders linked to a specific payment
+func (r *Repository) GetOrdersByPaymentID(paymentID uint) ([]entities.Order, error) {
+	// First get the payment links for this payment
+	var paymentLinks []entities.OrderPaymentLink
+	if result := database.DB.Where("payment_id = ?", paymentID).Find(&paymentLinks); result.Error != nil {
+		return nil, result.Error
+	}
+
+	if len(paymentLinks) == 0 {
+		return []entities.Order{}, nil
+	}
+
+	// Extract order IDs
+	orderIDs := make([]uint, len(paymentLinks))
+	for i, link := range paymentLinks {
+		orderIDs[i] = link.OrderID
+	}
+
+	// Get orders with preloaded relationships
+	var orders []entities.Order
+	if result := database.DB.
+		Where("id IN ?", orderIDs).
+		Preload("OrderItems.Item").
+		Preload("OrderItems.ItemOptionLinks.ItemOption").
+		Preload("OrderItems.PriceModifierOrderLinks.PriceModifier").
+		Preload("OrderPaymentLinks.Payment").
+		Find(&orders); result.Error != nil {
+		return nil, result.Error
+	}
+	
+	return orders, nil
 }

@@ -166,10 +166,12 @@ func (s *Service) GetAccounts(businessID uint, requestingUserID uint) ([]account
 
 	accountDtos := make([]accountModels.AccountDto, 0)
 	for _, acc := range accounts {
-		roleLinks := make([]accountModels.AccountRoleLinkDto, len(acc.AccountRoleLinks))
-		for i, link := range acc.AccountRoleLinks {
-			roleDto, _ := s.roleRepo.GetRoleDtoByID(link.AccountRole.ID)
-			roleLinks[i] = accountModels.NewAccountRoleLinkDtoFromEntity(link, roleDto)
+		var roleLinks []accountModels.AccountRoleLinkDto
+		for _, link := range acc.AccountRoleLinks {
+			if link.AccountRole.BusinessID == businessID {
+				roleDto, _ := s.roleRepo.GetRoleDtoByID(link.AccountRole.ID)
+				roleLinks = append(roleLinks, accountModels.NewAccountRoleLinkDtoFromEntity(link, roleDto))
+			}
 		}
 		dto := accountModels.NewAccountDtoFromEntity(acc, roleLinks)
 		accountDtos = append(accountDtos, dto)

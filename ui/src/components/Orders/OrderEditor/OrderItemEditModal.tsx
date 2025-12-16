@@ -9,10 +9,14 @@ import {
   Typography,
 } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import { formatPriceChange } from '@/utils/formatters';
 
 type SelectedOption = {
   itemOptionId: number;
   count: number;
+  optionName?: string;
+  priceModifierValue?: number;
+  priceModifierIsPercent?: boolean;
 };
 
 type AvailableOption = {
@@ -24,6 +28,7 @@ type AvailableOption = {
 type Props = {
   open: boolean;
   itemName: string;
+  basePrice: number;
   quantity: number;
   selectedOptions: SelectedOption[];
   availableOptions: AvailableOption[];
@@ -44,6 +49,7 @@ const { Text } = Typography;
 export const OrderItemEditModal = ({
   open,
   itemName,
+  basePrice,
   quantity,
   selectedOptions,
   availableOptions,
@@ -102,8 +108,19 @@ export const OrderItemEditModal = ({
                   onClose={() => onRemoveOption(opt.itemOptionId)}
                   color="blue"
                 >
-                  {getOptionName(opt.itemOptionId)}
-                  {getOptionPriceLabel(opt.itemOptionId)}
+                  {opt.optionName || getOptionName(opt.itemOptionId)}
+                  {opt.optionName
+                    ? (() => {
+                        if (opt.priceModifierValue !== undefined) {
+                          let change = opt.priceModifierValue;
+                          if (opt.priceModifierIsPercent) {
+                            change = (basePrice * opt.priceModifierValue) / 100;
+                          }
+                          return formatPriceChange(change);
+                        }
+                        return '';
+                      })()
+                    : getOptionPriceLabel(opt.itemOptionId)}
                   {opt.count > 1 ? ` x${opt.count}` : ''}
                 </Tag>
               ))}

@@ -5925,8 +5925,24 @@
                 "itemOptionId": {
                     "type": "integer"
                 },
+                "optionName": {
+                    "description": "Snapshot fields for display/calculation",
+                    "type": "string"
+                },
                 "orderItemId": {
                     "type": "integer"
+                },
+                "priceModifierIsPercent": {
+                    "type": "boolean"
+                },
+                "priceModifierName": {
+                    "type": "string"
+                },
+                "priceModifierType": {
+                    "type": "string"
+                },
+                "priceModifierValue": {
+                    "type": "number"
                 }
             }
         },
@@ -6075,6 +6091,12 @@
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "validFrom": {
+                    "type": "string"
+                },
+                "validTo": {
                     "type": "string"
                 },
                 "value": {

@@ -1,11 +1,11 @@
 package service
 
 import (
-	priceModifierModels "VersatilePOS/priceModifier/models"
-	"VersatilePOS/priceModifier/repository"
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
 	"VersatilePOS/generic/rbac"
+	priceModifierModels "VersatilePOS/priceModifier/models"
+	"VersatilePOS/priceModifier/repository"
 	"errors"
 )
 
@@ -136,12 +136,12 @@ func (s *Service) UpdatePriceModifier(id uint, businessID uint, req priceModifie
 		priceModifier.IsPercentage = *req.IsPercentage
 	}
 
-	err = s.repo.UpdatePriceModifier(priceModifier)
+	updatedPriceModifier, err := s.repo.UpdatePriceModifier(priceModifier)
 	if err != nil {
 		return nil, err
 	}
 
-	dto := priceModifierModels.NewPriceModifierDtoFromEntity(*priceModifier)
+	dto := priceModifierModels.NewPriceModifierDtoFromEntity(*updatedPriceModifier)
 	return &dto, nil
 }
 

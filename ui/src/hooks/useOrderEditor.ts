@@ -333,6 +333,11 @@ export const useOrderEditor = () => {
         ? (options as ModelsItemOptionLinkDto[]).map((o) => ({
             itemOptionId: o.itemOptionId!,
             count: o.count || 1,
+            optionName: o.optionName,
+            priceModifierName: o.priceModifierName,
+            priceModifierValue: o.priceModifierValue,
+            priceModifierType: o.priceModifierType,
+            priceModifierIsPercent: o.priceModifierIsPercent,
           }))
         : [...(options as SelectedItemOption[])];
 
@@ -568,12 +573,18 @@ export const useOrderEditor = () => {
     [getOptionPriceChangeLocal, getItemPriceLocal, editingItem?.itemId]
   );
 
+  const editingItemBasePrice = useMemo(() => {
+    if (!editingItem) return 0;
+    return getItemPrice(items, editingItem.itemId);
+  }, [editingItem, items]);
+
   return {
     // State
     isEditMode,
     parsedOrderId,
     selectedItems,
     editingItem,
+    editingItemBasePrice,
     optionToAdd,
     error,
     total,

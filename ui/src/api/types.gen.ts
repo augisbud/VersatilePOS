@@ -203,7 +203,15 @@ export type ModelsItemOptionLinkDto = {
     count?: number;
     id?: number;
     itemOptionId?: number;
+    /**
+     * Snapshot fields for display/calculation
+     */
+    optionName?: string;
     orderItemId?: number;
+    priceModifierIsPercent?: boolean;
+    priceModifierName?: string;
+    priceModifierType?: string;
+    priceModifierValue?: number;
 };
 
 export type ModelsLinkItemOptionRequest = {
@@ -260,6 +268,8 @@ export type ModelsPriceModifierDto = {
     isPercentage?: boolean;
     modifierType?: string;
     name?: string;
+    validFrom?: string;
+    validTo?: string;
     value?: number;
 };
 

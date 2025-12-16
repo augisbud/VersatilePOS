@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Input, Card, Empty, Spin } from 'antd';
+import { Input, Card, Spin } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { ModelsItemDto } from '@/api/types.gen';
 import { CategorySelector } from '@/components/Items';
+import { EmptyState } from '@/components/shared';
 
 type TagOption = {
   id?: number;
@@ -82,7 +83,12 @@ export const ItemsGrid = ({
           <Spin size="large" />
         </div>
       ) : filteredItems.length === 0 ? (
-        <Empty description="No items found" style={{ marginTop: 48 }} />
+        <EmptyState
+          variant="items"
+          description={searchQuery ? 'No items match your search. Try a different term.' : 'No items available to add to this order.'}
+          showAction={false}
+          compact
+        />
       ) : (
         <div
           style={{

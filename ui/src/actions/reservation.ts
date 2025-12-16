@@ -9,6 +9,7 @@ import {
   getReservationById,
   createReservation,
   updateReservation,
+  linkPaymentToReservation,
 } from '@/api';
 
 export const fetchReservations = createAsyncThunk<ModelsReservationDto[], void>(
@@ -86,3 +87,18 @@ export const editReservation = createAsyncThunk<
     return response.data;
   }
 );
+
+export const linkPayment = createAsyncThunk<
+  { reservationId: number; paymentId: number },
+  { reservationId: number; paymentId: number }
+>('reservation/linkPayment', async ({ reservationId, paymentId }) => {
+  const response = await linkPaymentToReservation({
+    path: { reservationId, paymentId },
+  });
+
+  if (response.error) {
+    throw new Error(response.error.error);
+  }
+
+  return { reservationId, paymentId };
+});

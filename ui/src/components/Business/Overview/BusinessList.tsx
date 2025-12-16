@@ -8,6 +8,7 @@ import {
 } from '@/api/types.gen';
 import { BusinessCreationForm } from './BusinessCreationForm';
 import { useUser } from '@/hooks/useUser';
+import { EmptyState } from '@/components/shared';
 
 interface BusinessListProps {
   businesses: ModelsBusinessDto[];
@@ -97,7 +98,20 @@ export const BusinessList = ({
         loading={loading}
         pagination={false}
         locale={{
-          emptyText: 'No businesses found. Create one to get started!',
+          emptyText: (
+            <EmptyState
+              variant="business"
+              title="No Businesses Yet"
+              description="Get started by creating your first business. You'll be able to manage items, orders, and reservations."
+              actionLabel={
+                canWriteBusinesses || !roles?.length
+                  ? 'Create Business'
+                  : undefined
+              }
+              onAction={() => setIsCreateModalOpen(true)}
+              showAction={canWriteBusinesses || !roles?.length}
+            />
+          ),
         }}
       />
 

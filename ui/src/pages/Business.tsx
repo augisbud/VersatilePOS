@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Spin } from 'antd';
+import { AccessDenied } from '@/components/shared';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { getUserBusinessId } from '@/selectors/user';
@@ -56,6 +57,10 @@ export const Business = () => {
 
     void loadBusinesses();
   }, []);
+
+  if (!canReadBusinesses && roles?.length) {
+    return <AccessDenied resource="businesses" />;
+  }
 
   if (loading && businesses.length === 0) {
     return (

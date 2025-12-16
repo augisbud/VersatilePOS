@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, message } from 'antd';
+import { AccessDenied } from '@/components/shared';
 import { useOrders } from '@/hooks/useOrders';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
@@ -81,29 +82,39 @@ export const Orders = () => {
   // Calculate items subtotal for each order (including item options)
   const orderItemsSubtotals = useMemo(() => {
     const subtotals: Record<number, number> = {};
-    for (const [orderIdStr, orderItemsList] of Object.entries(orderItemsByOrderId)) {
+    for (const [orderIdStr, orderItemsList] of Object.entries(
+      orderItemsByOrderId
+    )) {
       const orderId = parseInt(orderIdStr, 10);
       let subtotal = 0;
       for (const orderItem of orderItemsList) {
         if (orderItem.itemId && orderItem.count) {
           const basePrice = getItemPrice(items, orderItem.itemId);
-          
+
           // Get options for this order item and calculate their price
-          const optionLinks = orderItem.id ? allItemOptionLinks[orderItem.id] ?? [] : [];
+          const optionLinks = orderItem.id
+            ? (allItemOptionLinks[orderItem.id] ?? [])
+            : [];
           const optionsPrice = calculateOptionsPrice(
             optionLinks,
             basePrice,
             itemOptions,
             priceModifiers
           );
-          
+
           subtotal += (basePrice + optionsPrice) * orderItem.count;
         }
       }
       subtotals[orderId] = subtotal;
     }
     return subtotals;
-  }, [orderItemsByOrderId, items, allItemOptionLinks, itemOptions, priceModifiers]);
+  }, [
+    orderItemsByOrderId,
+    items,
+    allItemOptionLinks,
+    itemOptions,
+    priceModifiers,
+  ]);
 
   const handleBusinessChange = (businessId: number) => {
     selectBusiness(businessId);
@@ -154,15 +165,7 @@ export const Orders = () => {
   };
 
   if (!canReadOrders) {
-    return (
-      <div style={{ padding: '24px' }}>
-        <Alert
-          message="You don't have permission to view orders."
-          type="error"
-          showIcon
-        />
-      </div>
-    );
+    return <AccessDenied resource="orders" />;
   }
 
   return (
@@ -204,6 +207,7 @@ export const Orders = () => {
         onEdit={handleEditOrder}
         onCancel={handleCancelOrder}
         onRefund={handleRefundOrder}
+        onNewOrder={handleNewOrder}
       />
     </div>
   );

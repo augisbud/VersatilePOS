@@ -1,17 +1,11 @@
 import { useState } from 'react';
-import { Modal, Button, Typography, Divider, message, Space } from 'antd';
-import {
-  DollarOutlined,
-  CreditCardOutlined,
-  GiftOutlined,
-} from '@ant-design/icons';
+import { Modal, message } from 'antd';
 import { ModelsReservationDto, ModelsServiceDto } from '@/api/types.gen';
-import { formatCurrency, formatDuration } from '@/utils/formatters';
 import { StripePaymentModal } from '@/components/Payment';
-
-const { Title, Text } = Typography;
-
-type PaymentMethod = 'Cash' | 'CreditCard' | 'GiftCard';
+import { ReservationSummary } from './ReservationSummary';
+import { TipSelector } from './TipSelector';
+import { PaymentSummary } from './PaymentSummary';
+import { PaymentButtons, PaymentMethod } from './PaymentButtons';
 
 interface ReservationPaymentModalProps {
   open: boolean;
@@ -21,19 +15,10 @@ interface ReservationPaymentModalProps {
   onPayment: (
     reservationId: number,
     amount: number,
-    paymentType: PaymentMethod
+    paymentType: PaymentMethod,
+    tipAmount: number
   ) => Promise<void>;
 }
-
-const buttonStyle = {
-  height: 56,
-  fontSize: 16,
-  fontWeight: 600,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 8,
-} as const;
 
 export const ReservationPaymentModal = ({
   open,
@@ -44,6 +29,11 @@ export const ReservationPaymentModal = ({
 }: ReservationPaymentModalProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showStripeModal, setShowStripeModal] = useState(false);
+  const [tipAmount, setTipAmount] = useState<number>(0);
+  const [selectedTipPreset, setSelectedTipPreset] = useState<number | null>(
+    null
+  );
+  const [isCustomTip, setIsCustomTip] = useState(false);
 
   if (!reservation) {
     return null;
@@ -51,8 +41,7 @@ export const ReservationPaymentModal = ({
 
   const service = services.find((s) => s.id === reservation.serviceId);
 
-  // Calculate the amount based on service price and reservation duration
-  const calculateAmount = (): number => {
+  const calculateBaseAmount = (): number => {
     if (!service) return 0;
 
     const durationHours = (reservation.reservationLength || 60) / 60;
@@ -62,7 +51,37 @@ export const ReservationPaymentModal = ({
     return hourlyAmount + serviceCharge;
   };
 
-  const amount = calculateAmount();
+  const baseAmount = calculateBaseAmount();
+  const totalAmount = baseAmount + tipAmount;
+
+  const handleTipPresetClick = (percentage: number) => {
+    setSelectedTipPreset(percentage);
+    setIsCustomTip(false);
+    setTipAmount(Math.round(baseAmount * percentage * 100) / 100);
+  };
+
+  const handleCustomTipChange = (value: number | null) => {
+    setSelectedTipPreset(null);
+    setIsCustomTip(true);
+    setTipAmount(value || 0);
+  };
+
+  const handleNoTip = () => {
+    setSelectedTipPreset(null);
+    setIsCustomTip(false);
+    setTipAmount(0);
+  };
+
+  const resetTipState = () => {
+    setTipAmount(0);
+    setSelectedTipPreset(null);
+    setIsCustomTip(false);
+  };
+
+  const handleClose = () => {
+    resetTipState();
+    onClose();
+  };
 
   const handlePayment = async (method: PaymentMethod) => {
     if (!reservation.id) return;
@@ -76,9 +95,9 @@ export const ReservationPaymentModal = ({
     try {
       const paymentType: PaymentMethod =
         method === 'Cash' ? 'Cash' : 'GiftCard';
-      await onPayment(reservation.id, amount, paymentType);
+      await onPayment(reservation.id, totalAmount, paymentType, tipAmount);
       message.success('Payment processed successfully');
-      onClose();
+      handleClose();
     } catch (error) {
       message.error('Failed to process payment');
       console.error('Payment error:', error);
@@ -87,10 +106,17 @@ export const ReservationPaymentModal = ({
     }
   };
 
-  const handleStripeSuccess = () => {
-    setShowStripeModal(false);
-    message.success('Card payment processed successfully');
-    onClose();
+  const handleStripeSuccess = async () => {
+    if (!reservation.id) return;
+    try {
+      await onPayment(reservation.id, totalAmount, 'CreditCard', tipAmount);
+      setShowStripeModal(false);
+      message.success('Card payment processed successfully');
+      handleClose();
+    } catch (error) {
+      message.error('Failed to complete payment');
+      console.error('Stripe payment finalization error:', error);
+    }
   };
 
   const handleStripeCancel = () => {
@@ -101,120 +127,45 @@ export const ReservationPaymentModal = ({
     <>
       <Modal
         open={open && !showStripeModal}
-        onCancel={onClose}
+        onCancel={handleClose}
         footer={null}
         title="Process Payment"
-        width={400}
+        width={720}
         centered
         destroyOnHidden
       >
-        <div style={{ padding: '8px 0' }}>
-          {/* Reservation Summary */}
-          <div
-            style={{
-              background: '#fafafa',
-              borderRadius: 8,
-              padding: 16,
-              marginBottom: 24,
-            }}
-          >
-            <Text type="secondary">Service</Text>
-            <div style={{ marginBottom: 8 }}>
-              <Text strong>{service?.name || 'Unknown Service'}</Text>
-            </div>
+        <div style={{ display: 'flex', gap: 24 }}>
+          <div style={{ flex: 1 }}>
+            <ReservationSummary reservation={reservation} service={service} />
 
-            <Text type="secondary">Customer</Text>
-            <div style={{ marginBottom: 8 }}>
-              <Text strong>{reservation.customer || 'Walk-in'}</Text>
-            </div>
+            <TipSelector
+              tipAmount={tipAmount}
+              baseAmount={baseAmount}
+              selectedTipPreset={selectedTipPreset}
+              isCustomTip={isCustomTip}
+              onPresetClick={handleTipPresetClick}
+              onCustomChange={handleCustomTipChange}
+              onNoTip={handleNoTip}
+            />
 
-            <Text type="secondary">Duration</Text>
-            <div>
-              <Text strong>
-                {formatDuration(reservation.reservationLength || 0)}
-              </Text>
-            </div>
+            <PaymentSummary
+              baseAmount={baseAmount}
+              tipAmount={tipAmount}
+              totalAmount={totalAmount}
+            />
           </div>
 
-          {/* Amount */}
-          <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <Text type="secondary">Amount Due</Text>
-            <Title level={2} style={{ margin: '8px 0' }}>
-              {formatCurrency(amount)}
-            </Title>
-          </div>
-
-          <Divider style={{ margin: '16px 0' }} />
-
-          {/* Payment Buttons */}
-          <Space direction="vertical" style={{ width: '100%' }} size="middle">
-            <Button
-              block
-              size="large"
-              onClick={() => void handlePayment('Cash')}
-              disabled={isProcessing}
-              loading={isProcessing}
-              style={{
-                ...buttonStyle,
-                background: '#52c41a',
-                borderColor: '#52c41a',
-                color: '#fff',
-              }}
-              icon={<DollarOutlined />}
-            >
-              Pay with Cash
-            </Button>
-
-            <Button
-              block
-              size="large"
-              onClick={() => void handlePayment('CreditCard')}
-              disabled={isProcessing}
-              style={{
-                ...buttonStyle,
-                background: '#1890ff',
-                borderColor: '#1890ff',
-                color: '#fff',
-              }}
-              icon={<CreditCardOutlined />}
-            >
-              Pay with Card
-            </Button>
-
-            <Button
-              block
-              size="large"
-              onClick={() => void handlePayment('GiftCard')}
-              disabled={isProcessing}
-              loading={isProcessing}
-              style={{
-                ...buttonStyle,
-                background: '#faad14',
-                borderColor: '#faad14',
-                color: '#fff',
-              }}
-              icon={<GiftOutlined />}
-            >
-              Pay with Gift Card
-            </Button>
-          </Space>
-
-          <Button
-            block
-            size="large"
-            onClick={onClose}
-            disabled={isProcessing}
-            style={{ marginTop: 16 }}
-          >
-            Cancel
-          </Button>
+          <PaymentButtons
+            isProcessing={isProcessing}
+            onPayment={(method) => void handlePayment(method)}
+          />
         </div>
       </Modal>
 
       <StripePaymentModal
         open={showStripeModal}
-        amount={amount}
-        onSuccess={handleStripeSuccess}
+        amount={totalAmount}
+        onSuccess={() => void handleStripeSuccess()}
         onCancel={handleStripeCancel}
       />
     </>

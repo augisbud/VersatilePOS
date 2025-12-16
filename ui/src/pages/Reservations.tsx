@@ -91,8 +91,13 @@ export const Reservations = () => {
   const handleProcessPayment = async (
     reservationId: number,
     amount: number,
-    paymentType: PaymentType
+    paymentType: PaymentType,
+    tipAmount: number
   ) => {
+    if (tipAmount > 0) {
+      await updateReservation(reservationId, { tipAmount });
+    }
+
     const payment = await createPayment({
       amount,
       type: paymentType,

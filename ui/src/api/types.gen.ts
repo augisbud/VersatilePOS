@@ -204,11 +204,6 @@ export type ModelsItemOptionLinkDto = {
     id?: number;
     itemOptionId?: number;
     orderItemId?: number;
-    optionName?: string;
-    priceModifierName?: string;
-    priceModifierValue?: number;
-    priceModifierType?: string;
-    priceModifierIsPercent?: boolean;
 };
 
 export type ModelsLinkItemOptionRequest = {

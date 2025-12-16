@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -91,6 +92,7 @@ func Connect() {
 	log.Println("Database migrated.")
 
 	seedFunctions(DB)
+	seedSuperAdmin(DB)
 }
 
 func seedFunctions(db *gorm.DB) {
@@ -105,6 +107,7 @@ func seedFunctions(db *gorm.DB) {
 		{Name: "Manage Item Options", Action: constants.ItemOptions, Description: "Create, update, and delete item options."},
 		{Name: "Manage Orders", Action: constants.Orders, Description: "Create, update, and manage orders."},
 		{Name: "Manage Tags", Action: constants.Tags, Description: "Create, update, and delete tags for categorizing items, item options, and services."},
+		{Name: "Superadmin", Action: constants.Superadmin, Description: "Full access to everything."},
 	}
 
 	for _, function := range functions {
@@ -118,6 +121,84 @@ func seedFunctions(db *gorm.DB) {
 				}
 			} else {
 				log.Printf("failed to check for existing function %s:%s: %v\n", function.Name, function.Action, err)
+			}
+		}
+	}
+}
+
+func seedSuperAdmin(db *gorm.DB) {
+	var admin entities.Account
+	if err := db.Where("username = ?", "admin").First(&admin).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			passwordHash, _ := bcrypt.GenerateFromPassword([]byte("SuperSecretAdmin123"), bcrypt.DefaultCost)
+			admin = entities.Account{
+				Name:         "Super Admin",
+				Username:     "admin",
+				PasswordHash: string(passwordHash),
+			}
+			if err := db.Create(&admin).Error; err != nil {
+				log.Printf("failed to create superadmin: %v\n", err)
+				return
+			}
+			log.Println("Seeded superadmin user")
+		} else {
+			log.Printf("failed to check for superadmin: %v\n", err)
+			return
+		}
+	}
+
+	var superAdminRole entities.AccountRole
+	if err := db.Where("name = ?", "Superadmin").First(&superAdminRole).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			superAdminRole = entities.AccountRole{
+				Name: "Superadmin",
+			}
+			if err := db.Create(&superAdminRole).Error; err != nil {
+				log.Printf("failed to create superadmin role: %v\n", err)
+				return
+			}
+			log.Println("Seeded superadmin role")
+		} else {
+			log.Printf("failed to check for superadmin role: %v\n", err)
+			return
+		}
+	}
+
+	var link entities.AccountRoleLink
+	if err := db.Where("account_id = ? AND account_role_id = ?", admin.ID, superAdminRole.ID).First(&link).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			link = entities.AccountRoleLink{
+				AccountID:     admin.ID,
+				AccountRoleID: superAdminRole.ID,
+				Status:        constants.Active,
+			}
+			if err := db.Create(&link).Error; err != nil {
+				log.Printf("failed to assign superadmin role: %v\n", err)
+			} else {
+				log.Println("Assigned superadmin role to admin")
+			}
+		}
+
+		// Assign Superadmin function to Superadmin role
+		var superAdminFunction entities.Function
+		if err := db.Where("action = ?", constants.Superadmin).First(&superAdminFunction).Error; err != nil {
+			log.Printf("failed to find superadmin function: %v\n", err)
+			return
+		}
+
+		var funcLink entities.AccountRoleFunctionLink
+		if err := db.Where("account_role_id = ? AND function_id = ?", superAdminRole.ID, superAdminFunction.ID).First(&funcLink).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				funcLink = entities.AccountRoleFunctionLink{
+					AccountRoleID: superAdminRole.ID,
+					FunctionID:    superAdminFunction.ID,
+					AccessLevels:  []string{string(constants.Read), string(constants.Write)},
+				}
+				if err := db.Create(&funcLink).Error; err != nil {
+					log.Printf("failed to assign superadmin function to role: %v\n", err)
+				} else {
+					log.Println("Assigned superadmin function to superadmin role")
+				}
 			}
 		}
 	}

@@ -15,13 +15,20 @@ func HasAccess(action constants.Action, level constants.AccessLevel, businessID 
 	}
 
 	for _, rl := range roleLinks {
-		if rl.AccountRole.BusinessID != businessID {
-			continue
-		}
-
 		var funcLinks []entities.AccountRoleFunctionLink
 		if err := database.DB.Preload("Function").Where("account_role_id = ?", rl.AccountRoleID).Find(&funcLinks).Error; err != nil {
 			return false, fmt.Errorf("failed to load role-function links: %v", err)
+		}
+
+		// Check for Superadmin function first
+		for _, fl := range funcLinks {
+			if fl.Function.Action == constants.Superadmin {
+				return true, nil
+			}
+		}
+
+		if rl.AccountRole.BusinessID != businessID {
+			continue
 		}
 
 		for _, fl := range funcLinks {

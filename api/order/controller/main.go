@@ -441,7 +441,7 @@ func (ctrl *Controller) RemoveItemFromOrder(c *gin.Context) {
 }
 
 // @Summary Apply price modifier to order
-// @Description Apply a price modifier to an order item. Requires authentication and Orders Write permission.
+// @Description Apply a price modifier to the full order. Requires authentication and Orders Write permission.
 // @Tags order
 // @Accept  json
 // @Produce  json
@@ -478,7 +478,7 @@ func (ctrl *Controller) ApplyPriceModifierToOrder(c *gin.Context) {
 
 	err = ctrl.service.ApplyPriceModifierToOrder(uint(orderID), req, userID)
 	if err != nil {
-		if err.Error() == "order not found" || err.Error() == "order item not found" {
+		if err.Error() == "order not found" {
 			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: err.Error()})
 			return
 		}

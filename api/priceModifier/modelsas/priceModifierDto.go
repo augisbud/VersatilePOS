@@ -1,4 +1,4 @@
-package models
+package modelsas
 
 import (
 	"VersatilePOS/database/entities"

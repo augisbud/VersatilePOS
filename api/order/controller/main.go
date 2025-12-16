@@ -1,10 +1,10 @@
 package controller
 
 import (
-	orderModels "VersatilePOS/order/models"
-	"VersatilePOS/order/service"
 	"VersatilePOS/generic/models"
 	"VersatilePOS/middleware"
+	orderModels "VersatilePOS/order/models"
+	"VersatilePOS/order/service"
 	"log"
 	"net/http"
 	"strconv"

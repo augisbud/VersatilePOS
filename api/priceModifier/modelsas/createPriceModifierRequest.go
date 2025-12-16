@@ -1,4 +1,4 @@
-package models
+package modelsas
 
 type CreatePriceModifierRequest struct {
 	BusinessID   uint    `json:"businessId" validate:"required"`

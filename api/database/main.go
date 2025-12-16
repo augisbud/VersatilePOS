@@ -107,7 +107,6 @@ func seedFunctions(db *gorm.DB) {
 		{Name: "Manage Item Options", Action: constants.ItemOptions, Description: "Create, update, and delete item options."},
 		{Name: "Manage Orders", Action: constants.Orders, Description: "Create, update, and manage orders."},
 		{Name: "Manage Tags", Action: constants.Tags, Description: "Create, update, and delete tags for categorizing items, item options, and services."},
-		{Name: "Superadmin", Action: constants.Superadmin, Description: "Full access to everything."},
 	}
 
 	for _, function := range functions {

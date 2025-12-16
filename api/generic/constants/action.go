@@ -13,5 +13,4 @@ const (
 	ItemOptions    Action = "itemOptions"
 	Orders         Action = "orders"
 	Tags           Action = "tags"
-	Superadmin     Action = "superadmin"
 )

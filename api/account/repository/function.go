@@ -9,7 +9,7 @@ type FunctionRepository struct{}
 
 func (r *FunctionRepository) GetAllFunctions() ([]entities.Function, error) {
 	var functions []entities.Function
-	if err := database.DB.Where("action != ?", "superadmin").Find(&functions).Error; err != nil {
+	if err := database.DB.Find(&functions).Error; err != nil {
 		return nil, err
 	}
 	return functions, nil

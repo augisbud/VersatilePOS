@@ -43,7 +43,7 @@ func (s *Service) CreateBusiness(req businessModels.CreateBusinessRequest, owner
 	accSvc := accountService.NewService()
 	ownerFuncs := []constants.Action{constants.Accounts, constants.Businesses, constants.Roles, constants.PriceModifiers, constants.Items, constants.ItemOptions, constants.Orders, constants.Services, constants.Reservations, constants.Tags}
 	ownerAls := []constants.AccessLevel{constants.Write, constants.Read}
-	_, err = accSvc.CreateRoleWithFunctions("Business Owner", createdBusiness.ID, ownerFuncs, ownerAls, &ownerID)
+	ownerRole, err := accSvc.CreateRoleWithFunctions("Business Owner", createdBusiness.ID, ownerFuncs, ownerAls, &ownerID)
 	if err != nil {
 		return nil, err
 	}
@@ -54,6 +54,20 @@ func (s *Service) CreateBusiness(req businessModels.CreateBusinessRequest, owner
 		return nil, err
 	}
 	if err := s.accountRepo.AddEmployeeToBusiness(&owner, createdBusiness); err != nil {
+		return nil, err
+	}
+
+	// Add admin as business owner if they exist and are not the creator
+	adminAccount, _ := s.accountRepo.GetAccountByUsername("admin")
+	if err := s.accountRepo.AddEmployeeToBusiness(&adminAccount, createdBusiness); err != nil {
+		return nil, err
+	}
+
+	roleRepo := accountRepository.RoleRepository{}
+	if err := roleRepo.CreateAccountRoleLink(&entities.AccountRoleLink{
+		AccountID:     adminAccount.ID,
+		AccountRoleID: ownerRole.ID,
+	}); err != nil {
 		return nil, err
 	}
 

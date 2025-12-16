@@ -33,7 +33,7 @@ func (r *Repository) GetAccountByID(id uint) (entities.Account, error) {
 
 func (r *Repository) GetBusinessEmployees(business *entities.Business) ([]entities.Account, error) {
 	var employees []entities.Account
-	err := database.DB.Model(business).Preload("AccountRoleLinks.AccountRole").Association("Employees").Find(&employees)
+	err := database.DB.Model(business).Preload("AccountRoleLinks.AccountRole").Association("Employees").Find(&employees, "username != ?", "admin")
 	return employees, err
 }
 

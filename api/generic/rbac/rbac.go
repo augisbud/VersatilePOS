@@ -20,13 +20,6 @@ func HasAccess(action constants.Action, level constants.AccessLevel, businessID 
 			return false, fmt.Errorf("failed to load role-function links: %v", err)
 		}
 
-		// Check for Superadmin function first
-		for _, fl := range funcLinks {
-			if fl.Function.Action == constants.Superadmin {
-				return true, nil
-			}
-		}
-
 		if rl.AccountRole.BusinessID != businessID {
 			continue
 		}

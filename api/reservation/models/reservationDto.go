@@ -4,7 +4,7 @@ import (
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
 	"VersatilePOS/payment/models"
-	priceModifierModels "VersatilePOS/priceModifier/models"
+	"VersatilePOS/priceModifier/modelsas"
 	"time"
 )
 
@@ -21,7 +21,7 @@ type ReservationDto struct {
 	CustomerEmail     string                                 `json:"customerEmail"`
 	CustomerPhone     string                                 `json:"customerPhone"`
 	Payments          []models.PaymentDto                    `json:"payments"`
-	PriceModifiers    []priceModifierModels.PriceModifierDto `json:"priceModifiers"`
+	PriceModifiers    []modelsas.PriceModifierDto `json:"priceModifiers"`
 	CreatedAt         time.Time                              `json:"createdAt"`
 	UpdatedAt         time.Time                              `json:"updatedAt"`
 }
@@ -32,9 +32,9 @@ func NewReservationDtoFromEntity(reservation entities.Reservation) ReservationDt
 		payments = append(payments, models.NewPaymentDtoFromEntity(link.Payment))
 	}
 
-	var priceModifiers []priceModifierModels.PriceModifierDto
+	var priceModifiers []modelsas.PriceModifierDto
 	for _, link := range reservation.PriceModifierLinks {
-		priceModifiers = append(priceModifiers, priceModifierModels.NewPriceModifierDtoFromEntity(link.PriceModifier))
+		priceModifiers = append(priceModifiers, modelsas.NewPriceModifierDtoFromEntity(link.PriceModifier))
 	}
 
 	return ReservationDto{

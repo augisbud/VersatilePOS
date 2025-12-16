@@ -1,4 +1,4 @@
-package models
+package modelsas
 
 type UpdatePriceModifierRequest struct {
 	ModifierType string   `json:"modifierType"`

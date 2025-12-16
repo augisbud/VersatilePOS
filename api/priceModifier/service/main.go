@@ -4,7 +4,7 @@ import (
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
 	"VersatilePOS/generic/rbac"
-	priceModifierModels "VersatilePOS/priceModifier/models"
+	"VersatilePOS/priceModifier/modelsas"
 	"VersatilePOS/priceModifier/repository"
 	"errors"
 )
@@ -19,7 +19,7 @@ func NewService() *Service {
 	}
 }
 
-func (s *Service) CreatePriceModifier(req priceModifierModels.CreatePriceModifierRequest, userID uint) (*priceModifierModels.PriceModifierDto, error) {
+func (s *Service) CreatePriceModifier(req modelsas.CreatePriceModifierRequest, userID uint) (*modelsas.PriceModifierDto, error) {
 	// Check RBAC permissions
 	ok, err := rbac.HasAccess(constants.PriceModifiers, constants.Write, req.BusinessID, userID)
 	if err != nil {
@@ -49,11 +49,11 @@ func (s *Service) CreatePriceModifier(req priceModifierModels.CreatePriceModifie
 		return nil, err
 	}
 
-	dto := priceModifierModels.NewPriceModifierDtoFromEntity(*createdPriceModifier)
+	dto := modelsas.NewPriceModifierDtoFromEntity(*createdPriceModifier)
 	return &dto, nil
 }
 
-func (s *Service) GetPriceModifiers(businessID uint, userID uint) ([]priceModifierModels.PriceModifierDto, error) {
+func (s *Service) GetPriceModifiers(businessID uint, userID uint) ([]modelsas.PriceModifierDto, error) {
 	// Check RBAC permissions
 	ok, err := rbac.HasAccess(constants.PriceModifiers, constants.Read, businessID, userID)
 	if err != nil {
@@ -68,15 +68,15 @@ func (s *Service) GetPriceModifiers(businessID uint, userID uint) ([]priceModifi
 		return nil, err
 	}
 
-	var priceModifierDtos []priceModifierModels.PriceModifierDto
+	var priceModifierDtos []modelsas.PriceModifierDto
 	for _, priceModifier := range priceModifiers {
-		priceModifierDtos = append(priceModifierDtos, priceModifierModels.NewPriceModifierDtoFromEntity(priceModifier))
+		priceModifierDtos = append(priceModifierDtos, modelsas.NewPriceModifierDtoFromEntity(priceModifier))
 	}
 
 	return priceModifierDtos, nil
 }
 
-func (s *Service) GetPriceModifierByID(id uint, businessID uint, userID uint) (*priceModifierModels.PriceModifierDto, error) {
+func (s *Service) GetPriceModifierByID(id uint, businessID uint, userID uint) (*modelsas.PriceModifierDto, error) {
 	// Check RBAC permissions
 	ok, err := rbac.HasAccess(constants.PriceModifiers, constants.Read, businessID, userID)
 	if err != nil {
@@ -94,11 +94,11 @@ func (s *Service) GetPriceModifierByID(id uint, businessID uint, userID uint) (*
 		return nil, errors.New("price modifier not found")
 	}
 
-	dto := priceModifierModels.NewPriceModifierDtoFromEntity(*priceModifier)
+	dto := modelsas.NewPriceModifierDtoFromEntity(*priceModifier)
 	return &dto, nil
 }
 
-func (s *Service) UpdatePriceModifier(id uint, businessID uint, req priceModifierModels.UpdatePriceModifierRequest, userID uint) (*priceModifierModels.PriceModifierDto, error) {
+func (s *Service) UpdatePriceModifier(id uint, businessID uint, req modelsas.UpdatePriceModifierRequest, userID uint) (*modelsas.PriceModifierDto, error) {
 	// Check RBAC permissions
 	ok, err := rbac.HasAccess(constants.PriceModifiers, constants.Write, businessID, userID)
 	if err != nil {
@@ -141,7 +141,7 @@ func (s *Service) UpdatePriceModifier(id uint, businessID uint, req priceModifie
 		return nil, err
 	}
 
-	dto := priceModifierModels.NewPriceModifierDtoFromEntity(*updatedPriceModifier)
+	dto := modelsas.NewPriceModifierDtoFromEntity(*updatedPriceModifier)
 	return &dto, nil
 }
 

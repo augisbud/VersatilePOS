@@ -28,7 +28,7 @@ func NewController() *Controller {
 // @Accept  json
 // @Produce  json
 // @Param   priceModifier  body  models.CreatePriceModifierRequest  true  "Price modifier to create"
-// @Success 201 {object} models.PriceModifierDto
+// @Success 201
 // @Failure 400 {object} models.HTTPError
 // @Failure 401 {object} models.HTTPError
 // @Failure 403 {object} models.HTTPError
@@ -73,7 +73,7 @@ func (ctrl *Controller) CreatePriceModifier(c *gin.Context) {
 // @Description Get all price modifiers
 // @Tags price-modifier
 // @Produce  json
-// @Success 200 {array} models.PriceModifierDto
+// @Success 200
 // @Param   businessId   query     int  true  "Business ID"
 // @Failure 400 {object} models.HTTPError
 // @Failure 401 {object} models.HTTPError
@@ -124,7 +124,7 @@ func (ctrl *Controller) GetPriceModifiers(c *gin.Context) {
 // @Produce  json
 // @Param   id   path      int  true  "Price Modifier ID"
 // @Param   businessId   query     int  true  "Business ID"
-// @Success 200 {object} models.PriceModifierDto
+// @Success 200
 // @Failure 400 {object} models.HTTPError
 // @Failure 401 {object} models.HTTPError
 // @Failure 403 {object} models.HTTPError
@@ -186,7 +186,7 @@ func (ctrl *Controller) GetPriceModifierById(c *gin.Context) {
 // @Param   id   path      int  true  "Price Modifier ID"
 // @Param   businessId   query     int  true  "Business ID"
 // @Param   priceModifier  body  models.UpdatePriceModifierRequest  true  "Price modifier details to update"
-// @Success 200 {object} models.PriceModifierDto
+// @Success 200
 // @Failure 400 {object} models.HTTPError
 // @Failure 401 {object} models.HTTPError
 // @Failure 403 {object} models.HTTPError

@@ -236,11 +236,49 @@ func (ctrl *Controller) GetPaymentByID(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, payment)
 }
 
+// @Summary Complete a payment
+// @Description Complete a payment and update linked order status
+// @Tags payment
+// @Param   id  path  int  true  "Payment ID"
+// @Success 200
+// @Failure 400 {object} models.HTTPError
+// @Failure 404 {object} models.HTTPError
+// @Failure 500 {object} models.HTTPError
+// @Router /payment/{id}/complete [post]
+// @Id completePayment
+func (ctrl *Controller) CompletePayment(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "payment ID is required"})
+		return
+	}
+
+	var paymentID uint
+	if _, err := fmt.Sscanf(id, "%d", &paymentID); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "invalid payment ID"})
+		return
+	}
+
+	err := ctrl.service.CompletePayment(paymentID)
+	if err != nil {
+		if err.Error() == "payment not found" {
+			c.IndentedJSON(http.StatusNotFound, models.HTTPError{Error: err.Error()})
+			return
+		}
+		log.Println("Failed to complete payment:", err)
+		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
 func (ctrl *Controller) RegisterRoutes(r *gin.Engine) {
 	paymentGroup := r.Group("/payment")
 	paymentGroup.POST("", ctrl.CreatePayment)
 	paymentGroup.GET("", ctrl.GetPayments)
 	paymentGroup.GET("/:id", ctrl.GetPaymentByID)
+	paymentGroup.POST("/:id/complete", ctrl.CompletePayment)
 	paymentGroup.POST("/stripe/create-intent", ctrl.CreateStripePaymentIntent)
 	paymentGroup.POST("/stripe/webhook", ctrl.HandleStripeWebhook)
 }

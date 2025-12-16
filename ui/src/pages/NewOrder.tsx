@@ -23,7 +23,7 @@ export const NewOrder = () => {
   const [splitBillLoading, setSplitBillLoading] = useState(false);
   const [stripeModalOpen, setStripeModalOpen] = useState(false);
 
-  const { createPayment, linkPaymentToOrder } = usePayments();
+  const { createPayment, linkPaymentToOrder, completePayment } = usePayments();
 
   const {
     isEditMode,
@@ -154,13 +154,19 @@ export const NewOrder = () => {
           try {
             await linkPaymentToOrder(parsedOrderId, paymentId);
             
-            if (status === 'Completed') {
-              void message.success('Payment completed successfully!');
+            // Complete the payment since webhooks are not configured
+            if (status !== 'Completed') {
+              try {
+                // Add a small delay to ensure linking is processed
+                await new Promise(resolve => setTimeout(resolve, 100));
+                await completePayment(paymentId);
+                void message.success('Payment completed successfully!');
+              } catch (completeError) {
+                console.error('Failed to complete payment:', completeError);
+                void message.success('Payment processed! Please refresh to see updated status.');
+              }
             } else {
-              // Payment is still processing (webhook hasn't fired yet)
-              void message.success(
-                'Payment processed! Status will be updated shortly.'
-              );
+              void message.success('Payment completed successfully!');
             }
           } catch (linkError) {
             console.error('Failed to link payment to order:', linkError);
@@ -179,7 +185,7 @@ export const NewOrder = () => {
         void message.error('An unexpected error occurred');
       }
     },
-    [parsedOrderId, linkPaymentToOrder, navigateBack]
+    [parsedOrderId, linkPaymentToOrder, completePayment, navigateBack]
   );
 
   const handleStripePaymentCancel = useCallback(() => {
@@ -273,6 +279,18 @@ export const NewOrder = () => {
 
       try {
         await linkPaymentToOrder(parsedOrderId, result.paymentId);
+        
+        // Complete the payment since webhooks are not configured
+        if (result.status !== 'Completed') {
+          try {
+            // Add a small delay to ensure linking is processed
+            await new Promise(resolve => setTimeout(resolve, 100));
+            await completePayment(result.paymentId);
+          } catch (completeError) {
+            console.error('Failed to complete payment:', completeError);
+          }
+        }
+        
         void message.success(`Bill ${billId} paid successfully with card!`);
         resolve();
       } catch {
@@ -283,7 +301,7 @@ export const NewOrder = () => {
         setStripeModalOpen(false);
       }
     },
-    [splitBillCardPayment, parsedOrderId, linkPaymentToOrder]
+    [splitBillCardPayment, parsedOrderId, linkPaymentToOrder, completePayment]
   );
 
   // Handler for split bill card payment cancel

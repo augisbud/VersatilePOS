@@ -33,8 +33,9 @@ type Order struct {
 	ValidTo   *time.Time `json:"validTo"`
 
 	// Relationships
-	OrderItems        []OrderItem        `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:OrderID"`
-	OrderPaymentLinks []OrderPaymentLink `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:OrderID"`
+	OrderItems              []OrderItem              `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:OrderID"`
+	OrderPaymentLinks       []OrderPaymentLink       `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:OrderID"`
+	PriceModifierOrderLinks []PriceModifierOrderLink `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:OrderID"`
 }
 
 // OrderItem represents a specific item added to an order
@@ -50,8 +51,7 @@ type OrderItem struct {
 	Count uint32 `json:"count" gorm:"not null;default:1"`
 
 	// Relationships
-	ItemOptionLinks        []ItemOptionLink        `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:OrderItemID"`
-	PriceModifierOrderLinks []PriceModifierOrderLink `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:OrderItemID"`
+	ItemOptionLinks []ItemOptionLink `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:OrderItemID"`
 }
 
 // OrderPaymentLink links payments to orders, enabling multiple payments per order

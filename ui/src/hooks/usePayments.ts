@@ -34,6 +34,24 @@ export const usePayments = () => {
     return dispatch(linkPaymentAction({ orderId, paymentId })).unwrap();
   };
 
+  const completePayment = async (paymentId: number) => {
+    const response = await fetch(`http://localhost:8080/payment/${paymentId}/complete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to complete payment: ${response.status} ${errorText}`);
+    }
+
+    // Refresh payments to get updated status
+    return dispatch(fetchPaymentsAction()).unwrap();
+  };
+
   const getPaymentById = (paymentId: number) => {
     return getPaymentByIdSelector(payments, paymentId);
   };
@@ -57,6 +75,7 @@ export const usePayments = () => {
     fetchPayments,
     createPayment,
     linkPaymentToOrder,
+    completePayment,
     getPaymentById,
     getPaymentsByStatus,
     getPaymentsByType,

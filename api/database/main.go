@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -91,6 +92,7 @@ func Connect() {
 	log.Println("Database migrated.")
 
 	seedFunctions(DB)
+	seedSuperAdmin(DB)
 }
 
 func seedFunctions(db *gorm.DB) {
@@ -119,6 +121,28 @@ func seedFunctions(db *gorm.DB) {
 			} else {
 				log.Printf("failed to check for existing function %s:%s: %v\n", function.Name, function.Action, err)
 			}
+		}
+	}
+}
+
+func seedSuperAdmin(db *gorm.DB) {
+	var admin entities.Account
+	if err := db.Where("username = ?", "admin").First(&admin).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			passwordHash, _ := bcrypt.GenerateFromPassword([]byte("SuperSecretAdmin123"), bcrypt.DefaultCost)
+			admin = entities.Account{
+				Name:         "Super Admin",
+				Username:     "admin",
+				PasswordHash: string(passwordHash),
+			}
+			if err := db.Create(&admin).Error; err != nil {
+				log.Printf("failed to create superadmin: %v\n", err)
+				return
+			}
+			log.Println("Seeded superadmin user")
+		} else {
+			log.Printf("failed to check for superadmin: %v\n", err)
+			return
 		}
 	}
 }

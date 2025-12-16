@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, Typography, Alert, Button } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { EmptyState } from '@/components/shared';
+import { AccessDenied, EmptyState } from '@/components/shared';
 import { useReservations } from '@/hooks/useReservations';
 import { useServices } from '@/hooks/useServices';
 import { useEmployees } from '@/hooks/useEmployees';
@@ -120,16 +120,7 @@ export const Reservations = () => {
   });
 
   if (!canReadReservations) {
-    return (
-      <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
-        <Alert
-          message="Access Denied"
-          description="You don't have permission to view reservations."
-          type="error"
-          showIcon
-        />
-      </div>
-    );
+    return <AccessDenied resource="reservations" />;
   }
 
   return (

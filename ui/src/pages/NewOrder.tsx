@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Alert, Modal, message } from 'antd';
+import { AccessDenied } from '@/components/shared';
 import { useOrderEditor, CustomerDetails } from '@/hooks/useOrderEditor';
 import { usePayments } from '@/hooks/usePayments';
 import {
@@ -315,15 +316,7 @@ export const NewOrder = () => {
   }, [splitBillCardPayment]);
 
   if (!canWriteOrders && !canReadOrders) {
-    return (
-      <div style={{ padding: '24px' }}>
-        <Alert
-          message="You don't have permission to view orders."
-          type="error"
-          showIcon
-        />
-      </div>
-    );
+    return <AccessDenied resource="orders" />;
   }
 
   return (

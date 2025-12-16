@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Alert, Card, Form, Space, Typography } from 'antd';
+import { AccessDenied } from '@/components/shared';
 import { useItems } from '@/hooks/useItems';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
@@ -203,15 +204,7 @@ export const Items = () => {
   };
 
   if (!canReadItems) {
-    return (
-      <div style={{ padding: 24 }}>
-        <Alert
-          message="You don't have permission to view items."
-          type="error"
-          showIcon
-        />
-      </div>
-    );
+    return <AccessDenied resource="items" />;
   }
 
   return (

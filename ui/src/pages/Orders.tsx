@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, message } from 'antd';
+import { AccessDenied } from '@/components/shared';
 import { useOrders } from '@/hooks/useOrders';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
@@ -164,15 +165,7 @@ export const Orders = () => {
   };
 
   if (!canReadOrders) {
-    return (
-      <div style={{ padding: '24px' }}>
-        <Alert
-          message="You don't have permission to view orders."
-          type="error"
-          showIcon
-        />
-      </div>
-    );
+    return <AccessDenied resource="orders" />;
   }
 
   return (

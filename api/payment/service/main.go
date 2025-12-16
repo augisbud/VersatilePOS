@@ -182,7 +182,7 @@ func (s *Service) UpdatePaymentStatus(paymentIntentID string, status constants.P
 	payment.Status = status
 	_, err = s.repo.UpdatePayment(payment)
 	if err != nil {
-		return err
+	return err
 	}
 
 	// Update order status if payment was completed

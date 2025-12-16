@@ -172,7 +172,6 @@ func (r *Repository) GetOrdersByPaymentID(paymentID uint) ([]entities.Order, err
 		Where("id IN ?", orderIDs).
 		Preload("OrderItems.Item").
 		Preload("OrderItems.ItemOptionLinks.ItemOption").
-		Preload("OrderItems.PriceModifierOrderLinks.PriceModifier").
 		Preload("OrderPaymentLinks.Payment").
 		Find(&orders); result.Error != nil {
 		return nil, result.Error

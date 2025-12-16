@@ -17,6 +17,6 @@ type PriceModifier struct {
 	Business   Business `gorm:"foreignKey:BusinessID"`
 
 	// Relationships
-	OrderLinks        []PriceModifierOrderLink        `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:PriceModifierID"`
-	ReservationLinks  []PriceModifierReservationLink   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:PriceModifierID"`
+	OrderLinks       []PriceModifierOrderLink       `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:PriceModifierID"`
+	ReservationLinks []PriceModifierReservationLink `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:PriceModifierID"`
 }

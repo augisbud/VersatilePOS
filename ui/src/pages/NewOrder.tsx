@@ -29,6 +29,7 @@ export const NewOrder = () => {
     isEditMode,
     parsedOrderId,
     editingItem,
+    editingItemBasePrice,
     optionToAdd,
     error,
     total,
@@ -409,6 +410,7 @@ export const NewOrder = () => {
       <OrderItemEditModal
         open={!!editingItem}
         itemName={editingItem ? getItemNameLocal(editingItem.itemId) : ''}
+        basePrice={editingItemBasePrice}
         quantity={editingItem?.count || 1}
         selectedOptions={editingItem?.options || []}
         availableOptions={availableOptionsForEdit}

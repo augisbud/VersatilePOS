@@ -81,29 +81,39 @@ export const Orders = () => {
   // Calculate items subtotal for each order (including item options)
   const orderItemsSubtotals = useMemo(() => {
     const subtotals: Record<number, number> = {};
-    for (const [orderIdStr, orderItemsList] of Object.entries(orderItemsByOrderId)) {
+    for (const [orderIdStr, orderItemsList] of Object.entries(
+      orderItemsByOrderId
+    )) {
       const orderId = parseInt(orderIdStr, 10);
       let subtotal = 0;
       for (const orderItem of orderItemsList) {
         if (orderItem.itemId && orderItem.count) {
           const basePrice = getItemPrice(items, orderItem.itemId);
-          
+
           // Get options for this order item and calculate their price
-          const optionLinks = orderItem.id ? allItemOptionLinks[orderItem.id] ?? [] : [];
+          const optionLinks = orderItem.id
+            ? (allItemOptionLinks[orderItem.id] ?? [])
+            : [];
           const optionsPrice = calculateOptionsPrice(
             optionLinks,
             basePrice,
             itemOptions,
             priceModifiers
           );
-          
+
           subtotal += (basePrice + optionsPrice) * orderItem.count;
         }
       }
       subtotals[orderId] = subtotal;
     }
     return subtotals;
-  }, [orderItemsByOrderId, items, allItemOptionLinks, itemOptions, priceModifiers]);
+  }, [
+    orderItemsByOrderId,
+    items,
+    allItemOptionLinks,
+    itemOptions,
+    priceModifiers,
+  ]);
 
   const handleBusinessChange = (businessId: number) => {
     selectBusiness(businessId);
@@ -204,6 +214,7 @@ export const Orders = () => {
         onEdit={handleEditOrder}
         onCancel={handleCancelOrder}
         onRefund={handleRefundOrder}
+        onNewOrder={handleNewOrder}
       />
     </div>
   );

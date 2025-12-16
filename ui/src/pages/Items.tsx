@@ -272,6 +272,7 @@ export const Items = () => {
         onEdit={handleOpenModal}
         onDelete={(itemId) => void handleDelete(itemId)}
         onPreview={setPreviewItem}
+        onAddItem={() => handleOpenModal()}
       />
 
       <ItemModal

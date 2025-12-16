@@ -1,6 +1,5 @@
 import {
   CalendarOutlined,
-  HomeOutlined,
   ShopOutlined,
   ShoppingCartOutlined,
   ShoppingOutlined,
@@ -8,7 +7,6 @@ import {
 import { ScreenConfig, RouteId } from '@/types/routes';
 import { Unauthorized } from '@/pages/Unauthorized';
 import { Business } from '@/pages/Business';
-import { Overview } from '@/pages/Overview';
 import { Reservations } from '@/pages/Reservations';
 import { NewReservation } from '@/pages/NewReservation';
 import { Orders } from '@/pages/Orders';
@@ -17,11 +15,11 @@ import { Items } from '@/pages/Items';
 
 export const routesConfig: ScreenConfig[] = [
   {
-    id: RouteId.OVERVIEW,
+    id: RouteId.BUSINESS,
     path: '/',
-    title: 'Overview',
-    component: Overview,
-    icon: <HomeOutlined />,
+    title: 'My Businesses',
+    component: Business,
+    icon: <ShopOutlined />,
     showInNav: true,
   },
   {
@@ -37,6 +35,14 @@ export const routesConfig: ScreenConfig[] = [
     title: 'Orders',
     component: Orders,
     icon: <ShoppingCartOutlined />,
+    showInNav: true,
+  },
+  {
+    id: RouteId.ITEMS,
+    path: '/items',
+    title: 'Items',
+    component: Items,
+    icon: <ShoppingOutlined />,
     showInNav: true,
   },
   {
@@ -70,21 +76,5 @@ export const routesConfig: ScreenConfig[] = [
     component: NewReservation,
     showInNav: false,
     parentPage: RouteId.RESERVATIONS,
-  },
-  {
-    id: RouteId.ITEMS,
-    path: '/items',
-    title: 'Items',
-    component: Items,
-    icon: <ShoppingOutlined />,
-    showInNav: true,
-  },
-  {
-    id: RouteId.BUSINESS,
-    path: '/business',
-    title: 'My Businesses',
-    component: Business,
-    icon: <ShopOutlined />,
-    showInNav: true,
   },
 ];

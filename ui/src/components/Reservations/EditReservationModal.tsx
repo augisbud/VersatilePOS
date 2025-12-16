@@ -1,4 +1,4 @@
-import { Modal, Form, Input, Select, InputNumber, DatePicker } from 'antd';
+import { Modal, Form, Input, Select, DatePicker } from 'antd';
 import {
   ModelsReservationDto,
   ModelsUpdateReservationRequest,
@@ -20,8 +20,6 @@ interface FormValues {
   customerPhone?: string;
   status: ConstantsReservationStatus;
   dateOfService: dayjs.Dayjs;
-  reservationLength: number;
-  tipAmount?: number;
 }
 
 const statusOptions = [
@@ -50,8 +48,6 @@ export const EditReservationModal = ({
         dateOfService: reservation.dateOfService
           ? dayjs(reservation.dateOfService)
           : dayjs(),
-        reservationLength: reservation.reservationLength || 30,
-        tipAmount: reservation.tipAmount || 0,
       });
     }
   };
@@ -68,8 +64,8 @@ export const EditReservationModal = ({
         customerPhone: values.customerPhone || undefined,
         status: values.status,
         dateOfService: values.dateOfService.toISOString(),
-        reservationLength: values.reservationLength,
-        tipAmount: values.tipAmount || undefined,
+        reservationLength: reservation.reservationLength,
+        tipAmount: reservation.tipAmount,
       };
 
       onSubmit(reservation.id, updateData);
@@ -126,23 +122,6 @@ export const EditReservationModal = ({
           <DatePicker
             showTime={{ format: 'HH:mm' }}
             format="YYYY-MM-DD HH:mm"
-            style={{ width: '100%' }}
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="reservationLength"
-          label="Duration (minutes)"
-          rules={[{ required: true, message: 'Please enter duration' }]}
-        >
-          <InputNumber min={15} step={15} style={{ width: '100%' }} />
-        </Form.Item>
-
-        <Form.Item name="tipAmount" label="Tip Amount ($)">
-          <InputNumber
-            min={0}
-            step={0.5}
-            precision={2}
             style={{ width: '100%' }}
           />
         </Form.Item>

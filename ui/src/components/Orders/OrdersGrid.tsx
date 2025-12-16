@@ -1,16 +1,8 @@
-import {
-  Card,
-  Col,
-  Empty,
-  Row,
-  Skeleton,
-  Select,
-  Space,
-  Typography,
-} from 'antd';
+import { Card, Col, Row, Skeleton, Select, Space, Typography } from 'antd';
 import { useState } from 'react';
 import { ModelsOrderDto } from '@/api/types.gen';
 import { OrderCard } from './OrderCard';
+import { EmptyState } from '@/components/shared';
 
 type Props = {
   orders: ModelsOrderDto[];
@@ -21,6 +13,7 @@ type Props = {
   onEdit: (order: ModelsOrderDto) => void;
   onCancel: (orderId: number) => void;
   onRefund: (orderId: number) => void;
+  onNewOrder?: () => void;
 };
 
 type StatusFilter =
@@ -42,6 +35,7 @@ export const OrdersGrid = ({
   onEdit,
   onCancel,
   onRefund,
+  onNewOrder,
 }: Props) => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
@@ -61,19 +55,12 @@ export const OrdersGrid = ({
 
   if (!selectedBusinessId) {
     return (
-      <Card
-        style={{
-          borderRadius: 16,
-          background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)',
-        }}
-      >
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description={
-            <Text type="secondary">Select a business to view orders</Text>
-          }
-        />
-      </Card>
+      <EmptyState
+        variant="orders"
+        title="No Business Selected"
+        description="Select a business from the dropdown above to view and manage orders."
+        showAction={false}
+      />
     );
   }
 
@@ -98,19 +85,14 @@ export const OrdersGrid = ({
 
   if (orders.length === 0) {
     return (
-      <Card
-        style={{
-          borderRadius: 16,
-          background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)',
-        }}
-      >
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description={
-            <Text type="secondary">No orders found for this business</Text>
-          }
-        />
-      </Card>
+      <EmptyState
+        variant="orders"
+        title="No Orders Yet"
+        description="No orders have been placed yet. Create your first order to get started."
+        actionLabel={canWriteOrders ? 'Create First Order' : undefined}
+        onAction={onNewOrder}
+        showAction={canWriteOrders && !!onNewOrder}
+      />
     );
   }
 
@@ -164,21 +146,11 @@ export const OrdersGrid = ({
 
       {/* Orders Grid */}
       {filteredOrders.length === 0 ? (
-        <Card
-          style={{
-            borderRadius: 16,
-            background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)',
-          }}
-        >
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={
-              <Text type="secondary">
-                No {statusFilter.toLowerCase()} orders found
-              </Text>
-            }
-          />
-        </Card>
+        <EmptyState
+          variant="orders"
+          description={`No ${statusFilter.toLowerCase()} orders found. Try selecting a different status filter.`}
+          showAction={false}
+        />
       ) : (
         <Row gutter={[16, 16]}>
           {filteredOrders.map((order) => (
@@ -186,7 +158,9 @@ export const OrdersGrid = ({
               <OrderCard
                 order={order}
                 canWriteOrders={canWriteOrders}
-                itemsSubtotal={order.id ? orderItemsSubtotals[order.id] : undefined}
+                itemsSubtotal={
+                  order.id ? orderItemsSubtotals[order.id] : undefined
+                }
                 onEdit={onEdit}
                 onCancel={onCancel}
                 onRefund={onRefund}

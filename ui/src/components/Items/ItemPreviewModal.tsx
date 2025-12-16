@@ -8,6 +8,7 @@ import { useUser } from '@/hooks/useUser';
 import type { ColumnsType } from 'antd/es/table';
 import { getPriceModifierDisplay } from '@/utils/formatters';
 import { renderStockTag } from '@/utils/renderUtils';
+import { EmptyState } from '@/components/shared';
 
 const { Title } = Typography;
 
@@ -128,7 +129,16 @@ export const ItemPreviewModal = ({
             loading={optionsLoading}
             pagination={false}
             size="small"
-            locale={{ emptyText: 'No options for this item' }}
+            locale={{
+              emptyText: (
+                <EmptyState
+                  variant="options"
+                  description="This item has no options configured."
+                  showAction={false}
+                  compact
+                />
+              ),
+            }}
           />
         </>
       )}

@@ -9,6 +9,7 @@ import {
   PriceModifierFormModal,
   PriceModifierFormValues,
 } from './PriceModifierFormModal';
+import { EmptyState } from '@/components/shared';
 
 const { Title } = Typography;
 
@@ -177,7 +178,19 @@ export const BusinessPriceModifiers = ({
           loading={loading}
           pagination={false}
           locale={{
-            emptyText: 'No price modifiers yet. Add your first modifier!',
+            emptyText: (
+              <EmptyState
+                variant="priceModifiers"
+                title="No Price Modifiers"
+                description="Create price modifiers to apply discounts, surcharges, taxes, or tips to your items and orders."
+                actionLabel={
+                  canWritePriceModifiers ? 'Add First Modifier' : undefined
+                }
+                onAction={() => handleOpenModal()}
+                showAction={canWritePriceModifiers}
+                compact
+              />
+            ),
           }}
         />
       </Card>

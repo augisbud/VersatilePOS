@@ -2,7 +2,7 @@ package models
 
 import (
 	"VersatilePOS/database/entities"
-	priceModifierModels "VersatilePOS/priceModifier/models"
+	"VersatilePOS/priceModifier/models"
 	"time"
 )
 
@@ -19,15 +19,15 @@ type OrderDto struct {
 	CustomerPhone      string                              `json:"customerPhone"`
 	ValidFrom          *time.Time                          `json:"validFrom,omitempty"`
 	ValidTo            *time.Time                          `json:"validTo,omitempty"`
-	PriceModifiers     []priceModifierModels.PriceModifierDto `json:"priceModifiers"`
+	PriceModifiers     []models.PriceModifierDto `json:"priceModifiers"`
 }
 
 
 // NewOrderDtoFromEntity constructs an OrderDto from the DB entity.
 func NewOrderDtoFromEntity(o entities.Order) OrderDto {
-	var priceModifiers []priceModifierModels.PriceModifierDto
+	var priceModifiers []models.PriceModifierDto
 	for _, link := range o.PriceModifierOrderLinks {
-		priceModifiers = append(priceModifiers, priceModifierModels.NewPriceModifierDtoFromEntity(link.PriceModifier))
+		priceModifiers = append(priceModifiers, models.NewPriceModifierDtoFromEntity(link.PriceModifier))
 	}
 
 	return OrderDto{

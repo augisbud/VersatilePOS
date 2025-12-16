@@ -165,7 +165,8 @@ func (r *Repository) GetItemOptions(businessID uint) ([]entities.ItemOption, map
 
 func (r *Repository) GetItemOptionByID(id uint) (*entities.ItemOption, *entities.ItemOptionInventory, error) {
 	var option entities.ItemOption
-	if err := database.DB.Preload("Item").First(&option, id).Error; err != nil {
+	// Use Unscoped to allow retrieving soft-deleted (historical) options
+	if err := database.DB.Unscoped().Preload("Item").First(&option, id).Error; err != nil {
 		return nil, nil, err
 	}
 

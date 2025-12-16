@@ -18,7 +18,7 @@ func (r *Repository) CreateOrder(order *entities.Order) (*entities.Order, error)
 
 func (r *Repository) GetOrders(businessID uint) ([]entities.Order, error) {
 	var orders []entities.Order
-	query := database.DB.Preload("OrderItems.Item").Preload("OrderItems.ItemOptionLinks.ItemOption").Preload("OrderPaymentLinks.Payment")
+	query := database.DB.Preload("OrderItems.Item").Preload("OrderItems.ItemOptionLinks.ItemOption").Preload("OrderPaymentLinks.Payment").Preload("PriceModifierOrderLinks.PriceModifier")
 	if businessID != 0 {
 		query = query.Where("business_id = ?", businessID)
 	}
@@ -30,7 +30,7 @@ func (r *Repository) GetOrders(businessID uint) ([]entities.Order, error) {
 
 func (r *Repository) GetOrderByID(id uint) (*entities.Order, error) {
 	var order entities.Order
-	if result := database.DB.Preload("OrderItems.Item").Preload("OrderItems.ItemOptionLinks.ItemOption").Preload("OrderPaymentLinks.Payment").First(&order, id); result.Error != nil {
+	if result := database.DB.Preload("OrderItems.Item").Preload("OrderItems.ItemOptionLinks.ItemOption").Preload("OrderPaymentLinks.Payment").Preload("PriceModifierOrderLinks.PriceModifier").First(&order, id); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return nil, nil
 		}

@@ -15,7 +15,7 @@ func (r *Repository) CreateReservation(reservation *entities.Reservation) error 
 
 func (r *Repository) GetReservationByID(id uint) (*entities.Reservation, error) {
 	var reservation entities.Reservation
-	if err := database.DB.Preload("Account.MemberOf").Preload("ReservationPaymentLinks.Payment").First(&reservation, id).Error; err != nil {
+	if err := database.DB.Preload("Account.MemberOf").Preload("ReservationPaymentLinks.Payment").Preload("PriceModifierLinks.PriceModifier").First(&reservation, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -26,7 +26,7 @@ func (r *Repository) GetReservationByID(id uint) (*entities.Reservation, error) 
 
 func (r *Repository) GetReservations() ([]entities.Reservation, error) {
 	var reservations []entities.Reservation
-	if err := database.DB.Preload("Account.MemberOf").Preload("ReservationPaymentLinks.Payment").Find(&reservations).Error; err != nil {
+	if err := database.DB.Preload("Account.MemberOf").Preload("ReservationPaymentLinks.Payment").Preload("PriceModifierLinks.PriceModifier").Find(&reservations).Error; err != nil {
 		return nil, err
 	}
 	return reservations, nil

@@ -1,22 +1,24 @@
 package service
 
 import (
-	"fmt"
-	paymentModels "VersatilePOS/payment/models"
-	"VersatilePOS/payment/repository"
-	orderRepository "VersatilePOS/order/repository"
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
+	orderRepository "VersatilePOS/order/repository"
+	paymentModels "VersatilePOS/payment/models"
+	"VersatilePOS/payment/repository"
+	reservationRepository "VersatilePOS/reservation/repository"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/stripe/stripe-go/v78"
 )
 
 type Service struct {
-	repo          repository.Repository
-	orderRepo     orderRepository.Repository
-	stripeService *StripeService
+	repo              repository.Repository
+	orderRepo         orderRepository.Repository
+	reservationRepo   reservationRepository.Repository
+	stripeService     *StripeService
 }
 
 func NewService() *Service {
@@ -27,9 +29,10 @@ func NewService() *Service {
 	}
 
 	return &Service{
-		repo:          repository.Repository{},
-		orderRepo:     orderRepository.Repository{},
-		stripeService: stripeService,
+		repo:            repository.Repository{},
+		orderRepo:       orderRepository.Repository{},
+		reservationRepo: reservationRepository.Repository{},
+		stripeService:   stripeService,
 	}
 }
 
@@ -65,10 +68,12 @@ func (s *Service) CreatePayment(req paymentModels.CreatePaymentRequest) (*paymen
 		return nil, err
 	}
 
-	// If payment is created with Completed status, update linked orders
 	if createdPayment.Status == constants.Completed {
 		if err := s.updateOrderStatusAfterPayment(createdPayment.ID); err != nil {
 			log.Printf("Warning: Failed to update order status after creating completed payment: %v", err)
+		}
+		if err := s.updateReservationStatusAfterPayment(createdPayment.ID); err != nil {
+			log.Printf("Warning: Failed to update reservation status after creating completed payment: %v", err)
 		}
 	}
 
@@ -168,6 +173,25 @@ func (s *Service) updateOrderStatusAfterPayment(paymentID uint) error {
 	return nil
 }
 
+func (s *Service) updateReservationStatusAfterPayment(paymentID uint) error {
+	reservations, err := s.reservationRepo.GetReservationsByPaymentID(paymentID)
+	if err != nil {
+		return err
+	}
+
+	for _, reservation := range reservations {
+		if reservation.Status == constants.ReservationConfirmed {
+			reservation.Status = constants.ReservationCompleted
+			if err := s.reservationRepo.UpdateReservation(&reservation); err != nil {
+				log.Printf("Failed to update reservation %d status after payment: %v", reservation.ID, err)
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 // UpdatePaymentStatus updates the payment status (typically called from webhook)
 func (s *Service) UpdatePaymentStatus(paymentIntentID string, status constants.PaymentStatus) error {
 	payment, err := s.repo.GetPaymentByStripePaymentIntentID(paymentIntentID)
@@ -185,11 +209,12 @@ func (s *Service) UpdatePaymentStatus(paymentIntentID string, status constants.P
 	return err
 	}
 
-	// Update order status if payment was completed
 	if status == constants.Completed && oldStatus != constants.Completed {
 		if err := s.updateOrderStatusAfterPayment(payment.ID); err != nil {
-			// Log error but don't fail the payment update
 			log.Printf("Warning: Failed to update order status after payment completion: %v", err)
+		}
+		if err := s.updateReservationStatusAfterPayment(payment.ID); err != nil {
+			log.Printf("Warning: Failed to update reservation status after payment completion: %v", err)
 		}
 	}
 
@@ -219,10 +244,12 @@ func (s *Service) UpdatePaymentStatusByID(paymentID uint, status constants.Payme
 		return err
 	}
 
-	// Update order status if payment was completed
 	if status == constants.Completed && oldStatus != constants.Completed {
 		if err := s.updateOrderStatusAfterPayment(payment.ID); err != nil {
 			log.Printf("Warning: Failed to update order status after payment completion: %v", err)
+		}
+		if err := s.updateReservationStatusAfterPayment(payment.ID); err != nil {
+			log.Printf("Warning: Failed to update reservation status after payment completion: %v", err)
 		}
 	}
 

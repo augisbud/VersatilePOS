@@ -50,3 +50,31 @@ func (r *Repository) CreateReservationPaymentLink(link *entities.ReservationPaym
 	return link, nil
 }
 
+func (r *Repository) GetReservationsByPaymentID(paymentID uint) ([]entities.Reservation, error) {
+	var paymentLinks []entities.ReservationPaymentLink
+	if result := database.DB.Where("payment_id = ?", paymentID).Find(&paymentLinks); result.Error != nil {
+		return nil, result.Error
+	}
+
+	if len(paymentLinks) == 0 {
+		return []entities.Reservation{}, nil
+	}
+
+	reservationIDs := make([]uint, len(paymentLinks))
+	for i, link := range paymentLinks {
+		reservationIDs[i] = link.ReservationID
+	}
+
+	var reservations []entities.Reservation
+	if result := database.DB.
+		Where("id IN ?", reservationIDs).
+		Preload("Account.MemberOf").
+		Preload("ReservationPaymentLinks.Payment").
+		Preload("PriceModifierLinks.PriceModifier").
+		Find(&reservations); result.Error != nil {
+		return nil, result.Error
+	}
+
+	return reservations, nil
+}
+

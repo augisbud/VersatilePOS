@@ -6,3 +6,4 @@ export { OrderItemEditModal } from './OrderItemEditModal';
 export { CustomerDetailsModal } from './CustomerDetailsModal';
 export { OrderBillModal } from './OrderBillModal';
 export { SplitBillModal } from './SplitBillModal';
+export { OrderDiscountModal } from './OrderDiscountModal';

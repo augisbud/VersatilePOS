@@ -12,6 +12,7 @@ type Props = {
   loading?: boolean;
   canWriteOrders: boolean;
   itemsSubtotal?: number;
+  discountTotal?: number;
   onEdit: (order: ModelsOrderDto) => void;
   onCancel: (orderId: number) => void;
   onRefund: (orderId: number) => void;
@@ -22,6 +23,7 @@ export const OrderCard = ({
   loading,
   canWriteOrders,
   itemsSubtotal,
+  discountTotal,
   onEdit,
   onCancel,
   onRefund,
@@ -63,6 +65,7 @@ export const OrderCard = ({
         <OrderCardCustomer customer={order.customer} />
         <OrderCardCharges
           itemsSubtotal={itemsSubtotal}
+          discountTotal={discountTotal}
           serviceCharge={order.serviceCharge}
           tipAmount={order.tipAmount}
         />

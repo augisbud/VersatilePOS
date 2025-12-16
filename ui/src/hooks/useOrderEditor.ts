@@ -21,7 +21,11 @@ import {
   mapItemsToOrderInfo,
   getAvailableOptionsForEdit,
 } from '@/utils/orderCalculations';
-import { ModelsItemDto, ModelsItemOptionLinkDto } from '@/api/types.gen';
+import {
+  ModelsItemDto,
+  ModelsItemOptionLinkDto,
+  ModelsPriceModifierDto,
+} from '@/api/types.gen';
 
 export type CustomerDetails = {
   customer?: string;
@@ -32,6 +36,7 @@ import {
   EditingItem,
   OrderInfoItem,
   AvailableOption,
+  AppliedOrderDiscount,
 } from '@/types/orderEditor';
 
 export const useOrderEditor = () => {
@@ -50,6 +55,9 @@ export const useOrderEditor = () => {
   const [itemsByTagError, setItemsByTagError] = useState<string | undefined>(
     undefined
   );
+  const [orderPriceModifiers, setOrderPriceModifiers] = useState<
+    ModelsPriceModifierDto[]
+  >([]);
 
   const {
     createOrder,
@@ -57,6 +65,7 @@ export const useOrderEditor = () => {
     selectBusiness,
     loading: ordersLoading,
     error,
+    selectedOrder,
     addItemToOrder,
     fetchOrderById,
     fetchItemsForOrder,
@@ -68,6 +77,7 @@ export const useOrderEditor = () => {
     fetchOptionsForOrderItem,
     addOptionToOrderItem,
     removeOptionFromOrderItem,
+    applyPriceModifierToOrder,
   } = useOrders();
 
   const {
@@ -95,6 +105,7 @@ export const useOrderEditor = () => {
             await fetchItemOptions(order.businessId);
             await fetchPriceModifiers(order.businessId);
             await fetchTags(order.businessId);
+            setOrderPriceModifiers(order.priceModifiers ?? []);
           }
           const loadedItems = await fetchItemsForOrder(parsedOrderId);
           for (const item of loadedItems) {
@@ -195,6 +206,11 @@ export const useOrderEditor = () => {
     return selectedTagId ? itemsByTag : items;
   }, [selectedTagId, itemsByTag, items]);
 
+  // Keep local copy of order-level price modifiers in sync
+  useEffect(() => {
+    setOrderPriceModifiers(selectedOrder?.priceModifiers ?? []);
+  }, [selectedOrder]);
+
   // Helper functions
   const getItemNameLocal = useCallback(
     (itemId: number) => getItemName(items, itemId),
@@ -237,7 +253,7 @@ export const useOrderEditor = () => {
   );
 
   // Computed values
-  const total = useMemo(() => {
+  const orderSubtotal = useMemo(() => {
     return calculateOrderTotal(
       selectedItems,
       items,
@@ -246,6 +262,29 @@ export const useOrderEditor = () => {
       getOptionsForItem
     );
   }, [selectedItems, items, itemOptions, priceModifiers, getOptionsForItem]);
+
+  const appliedDiscounts: AppliedOrderDiscount[] = useMemo(() => {
+    if (!orderPriceModifiers.length) return [];
+
+    return orderPriceModifiers
+      .filter((pm) => pm.modifierType === 'Discount')
+      .map((pm) => {
+        const amount = pm.isPercentage
+          ? ((orderSubtotal || 0) * (pm.value || 0)) / 100
+          : pm.value || 0;
+        return { ...pm, amount };
+      });
+  }, [orderPriceModifiers, orderSubtotal]);
+
+  const discountTotal = useMemo(
+    () => appliedDiscounts.reduce((sum, disc) => sum + (disc.amount || 0), 0),
+    [appliedDiscounts]
+  );
+
+  const total = useMemo(() => {
+    const adjusted = orderSubtotal - discountTotal;
+    return adjusted < 0 ? 0 : adjusted;
+  }, [orderSubtotal, discountTotal]);
 
   const orderInfoItems: OrderInfoItem[] = useMemo(() => {
     return mapItemsToOrderInfo(
@@ -488,10 +527,6 @@ export const useOrderEditor = () => {
     [editingItem]
   );
 
-  const handleAddDiscount = useCallback(() => {
-    // Feature not yet available
-  }, []);
-
   const handleSaveOrder = useCallback(
     async (customerDetails?: CustomerDetails) => {
       if (!selectedBusinessId || !selectedItems.length) {
@@ -523,6 +558,14 @@ export const useOrderEditor = () => {
               });
             }
           }
+        }
+
+        // Apply any order-level price modifiers (e.g., discounts) selected before save
+        for (const pm of orderPriceModifiers) {
+          if (!pm.id) continue;
+          await applyPriceModifierToOrder(created.id, {
+            priceModifierId: pm.id,
+          });
         }
 
         void navigate('/orders');
@@ -562,6 +605,25 @@ export const useOrderEditor = () => {
     void navigate('/orders');
   }, [navigate]);
 
+  const refreshOrderDetails = useCallback(async () => {
+    if (!parsedOrderId) return undefined;
+    const order = await fetchOrderById(parsedOrderId);
+    setOrderPriceModifiers(order?.priceModifiers ?? []);
+    return order;
+  }, [parsedOrderId, fetchOrderById]);
+
+  const addLocalPriceModifier = useCallback(
+    (priceModifierId: number) => {
+      const pm = priceModifiers.find((p) => p.id === priceModifierId);
+      if (!pm) return;
+      setOrderPriceModifiers((prev) => {
+        if (prev.some((p) => p.id === priceModifierId)) return prev;
+        return [...prev, pm];
+      });
+    },
+    [priceModifiers]
+  );
+
   const getOptionPriceLabel = useCallback(
     (optionId: number) =>
       formatPriceChange(
@@ -588,6 +650,8 @@ export const useOrderEditor = () => {
     optionToAdd,
     error,
     total,
+    orderSubtotal,
+    appliedDiscounts,
     orderInfoItems,
     availableOptionsForEdit,
 
@@ -624,11 +688,14 @@ export const useOrderEditor = () => {
     handleRemoveItem,
     handleAddOption,
     handleRemoveOption,
-    handleAddDiscount,
     handleSaveOrder,
     confirmCancelOrder,
     handleQuantityChange,
     setOptionToAdd,
     navigateBack,
+    applyPriceModifierToOrder,
+    priceModifiers,
+    refreshOrderDetails,
+    addLocalPriceModifier,
   };
 };

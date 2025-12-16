@@ -2929,7 +2929,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.PriceModifierDto"
+                                "$ref": "#/definitions/modelsas.PriceModifierDto"
                             }
                         }
                     },
@@ -2984,7 +2984,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreatePriceModifierRequest"
+                            "$ref": "#/definitions/modelsas.CreatePriceModifierRequest"
                         }
                     }
                 ],
@@ -2992,7 +2992,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.PriceModifierDto"
+                            "$ref": "#/definitions/modelsas.PriceModifierDto"
                         }
                     },
                     "400": {
@@ -3058,7 +3058,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.PriceModifierDto"
+                            "$ref": "#/definitions/modelsas.PriceModifierDto"
                         }
                     },
                     "400": {
@@ -3132,7 +3132,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdatePriceModifierRequest"
+                            "$ref": "#/definitions/modelsas.UpdatePriceModifierRequest"
                         }
                     }
                 ],
@@ -3140,7 +3140,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.PriceModifierDto"
+                            "$ref": "#/definitions/modelsas.PriceModifierDto"
                         }
                     },
                     "400": {
@@ -3458,6 +3458,80 @@
                         "schema": {
                             "$ref": "#/definitions/models.ReservationDto"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/reservation/{id}/price-modifier": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Apply a price modifier to a reservation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reservation"
+                ],
+                "summary": "Apply price modifier to reservation",
+                "operationId": "applyPriceModifierToReservation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Reservation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Price modifier to apply",
+                        "name": "modifier",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ApplyPriceModifierToReservationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -5449,6 +5523,17 @@
                 }
             }
         },
+        "models.ApplyPriceModifierToReservationRequest": {
+            "type": "object",
+            "required": [
+                "priceModifierId"
+            ],
+            "properties": {
+                "priceModifierId": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.AssignFunctionRequest": {
             "type": "object",
             "required": [
@@ -5696,32 +5781,6 @@
                 },
                 "type": {
                     "type": "string"
-                }
-            }
-        },
-        "models.CreatePriceModifierRequest": {
-            "type": "object",
-            "required": [
-                "businessId",
-                "modifierType",
-                "name",
-                "value"
-            ],
-            "properties": {
-                "businessId": {
-                    "type": "integer"
-                },
-                "isPercentage": {
-                    "type": "boolean"
-                },
-                "modifierType": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "number"
                 }
             }
         },
@@ -6015,6 +6074,12 @@
                 "id": {
                     "type": "integer"
                 },
+                "priceModifiers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/modelsas.PriceModifierDto"
+                    }
+                },
                 "serviceCharge": {
                     "type": "number"
                 },
@@ -6075,35 +6140,6 @@
                 }
             }
         },
-        "models.PriceModifierDto": {
-            "type": "object",
-            "properties": {
-                "businessId": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "isPercentage": {
-                    "type": "boolean"
-                },
-                "modifierType": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "validFrom": {
-                    "type": "string"
-                },
-                "validTo": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "number"
-                }
-            }
-        },
         "models.ReservationDto": {
             "type": "object",
             "properties": {
@@ -6135,6 +6171,12 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.PaymentDto"
+                    }
+                },
+                "priceModifiers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/modelsas.PriceModifierDto"
                     }
                 },
                 "reservationLength": {
@@ -6322,23 +6364,6 @@
                 }
             }
         },
-        "models.UpdatePriceModifierRequest": {
-            "type": "object",
-            "properties": {
-                "isPercentage": {
-                    "type": "boolean"
-                },
-                "modifierType": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "number"
-                }
-            }
-        },
         "models.UpdateReservationRequest": {
             "type": "object",
             "properties": {
@@ -6408,6 +6433,78 @@
             "properties": {
                 "value": {
                     "type": "string"
+                }
+            }
+        },
+        "modelsas.CreatePriceModifierRequest": {
+            "type": "object",
+            "required": [
+                "businessId",
+                "modifierType",
+                "name",
+                "value"
+            ],
+            "properties": {
+                "businessId": {
+                    "type": "integer"
+                },
+                "isPercentage": {
+                    "type": "boolean"
+                },
+                "modifierType": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        },
+        "modelsas.PriceModifierDto": {
+            "type": "object",
+            "properties": {
+                "businessId": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isPercentage": {
+                    "type": "boolean"
+                },
+                "modifierType": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "validFrom": {
+                    "type": "string"
+                },
+                "validTo": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        },
+        "modelsas.UpdatePriceModifierRequest": {
+            "type": "object",
+            "properties": {
+                "isPercentage": {
+                    "type": "boolean"
+                },
+                "modifierType": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
                 }
             }
         }

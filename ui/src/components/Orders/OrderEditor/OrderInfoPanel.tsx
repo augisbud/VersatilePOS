@@ -1,5 +1,6 @@
 import { Button, Card, Divider, Typography } from 'antd';
 import { OrderItemRow } from './OrderItemRow';
+import { AppliedOrderDiscount } from '@/types/orderEditor';
 
 type ItemOption = {
   optionId: number;
@@ -20,6 +21,8 @@ type OrderItem = {
 type Props = {
   items: OrderItem[];
   total: number;
+  subtotal: number;
+  discounts: AppliedOrderDiscount[];
   loading?: boolean;
   canWriteOrders: boolean;
   isEditMode?: boolean;
@@ -38,6 +41,8 @@ const { Title } = Typography;
 export const OrderInfoPanel = ({
   items,
   total,
+  subtotal,
+  discounts,
   loading,
   canWriteOrders,
   isEditMode,
@@ -50,6 +55,10 @@ export const OrderInfoPanel = ({
   onGenerateSplitBill,
   onCancelOrder,
 }: Props) => {
+  const discountTotal = discounts.reduce(
+    (sum, disc) => sum + (disc.amount || 0),
+    0
+  );
   // Bills can only be generated for saved orders
   const canGenerateBill = items.length > 0 && hasOrderId;
 
@@ -129,9 +138,60 @@ export const OrderInfoPanel = ({
           display: 'grid',
           gridTemplateColumns: '1fr 70px',
           gap: 8,
-          padding: '16px 0',
+          padding: '16px 0 8px',
           borderTop: '2px solid #e8e8e8',
           fontWeight: 600,
+        }}
+      >
+        <div>Subtotal:</div>
+        <div style={{ textAlign: 'right' }}>{subtotal.toFixed(2)}</div>
+      </div>
+
+      {discounts.length > 0 && (
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ fontWeight: 600, marginBottom: 4 }}>Discounts</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {discounts.map((disc) => (
+              <div
+                key={disc.id || disc.name}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 70px',
+                  gap: 8,
+                  fontSize: 13,
+                }}
+              >
+                <div style={{ color: '#555' }}>{disc.name}</div>
+                <div style={{ textAlign: 'right', color: '#52c41a' }}>
+                  -{disc.amount.toFixed(2)}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 70px',
+              gap: 8,
+              marginTop: 4,
+              fontWeight: 600,
+            }}
+          >
+            <div>Total discount:</div>
+            <div style={{ textAlign: 'right', color: '#52c41a' }}>
+              -{discountTotal.toFixed(2)}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 70px',
+          gap: 8,
+          padding: '8px 0 12px',
+          fontWeight: 700,
         }}
       >
         <div>Total:</div>

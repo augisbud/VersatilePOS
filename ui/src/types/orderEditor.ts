@@ -1,3 +1,4 @@
+import { ModelsPriceModifierDto } from '@/api/types.gen';
 import { SelectedItemOption } from '@/utils/orderCalculations';
 
 export type EditingItem = {
@@ -26,5 +27,9 @@ export type AvailableOption = {
   id: number;
   name: string;
   priceLabel: string;
+};
+
+export type AppliedOrderDiscount = ModelsPriceModifierDto & {
+  amount: number;
 };
 

@@ -43,6 +43,10 @@ export type ModelsApplyPriceModifierRequest = {
     priceModifierId: number;
 };
 
+export type ModelsApplyPriceModifierToReservationRequest = {
+    priceModifierId: number;
+};
+
 export type ModelsAssignFunctionRequest = {
     accessLevels: Array<ConstantsAccessLevel>;
     functionId: number;
@@ -123,14 +127,6 @@ export type ModelsCreatePaymentRequest = {
     amount: number;
     status?: string;
     type: string;
-};
-
-export type ModelsCreatePriceModifierRequest = {
-    businessId: number;
-    isPercentage?: boolean;
-    modifierType: string;
-    name: string;
-    value: number;
 };
 
 export type ModelsCreateReservationRequest = {
@@ -238,6 +234,7 @@ export type ModelsOrderDto = {
     customerPhone?: string;
     datePlaced?: string;
     id?: number;
+    priceModifiers?: Array<ModelsasPriceModifierDto>;
     serviceCharge?: number;
     servicingAccountId?: number;
     status?: string;
@@ -262,17 +259,6 @@ export type ModelsPaymentDto = {
     type?: string;
 };
 
-export type ModelsPriceModifierDto = {
-    businessId?: number;
-    id?: number;
-    isPercentage?: boolean;
-    modifierType?: string;
-    name?: string;
-    validFrom?: string;
-    validTo?: string;
-    value?: number;
-};
-
 export type ModelsReservationDto = {
     accountId?: number;
     createdAt?: string;
@@ -283,6 +269,7 @@ export type ModelsReservationDto = {
     datePlaced?: string;
     id?: number;
     payments?: Array<ModelsPaymentDto>;
+    priceModifiers?: Array<ModelsasPriceModifierDto>;
     reservationLength?: number;
     serviceId?: number;
     status?: ConstantsReservationStatus;
@@ -351,13 +338,6 @@ export type ModelsUpdateOrderRequest = {
     tipAmount?: number;
 };
 
-export type ModelsUpdatePriceModifierRequest = {
-    isPercentage?: boolean;
-    modifierType?: string;
-    name?: string;
-    value?: number;
-};
-
 export type ModelsUpdateReservationRequest = {
     accountId?: number;
     customer?: string;
@@ -383,6 +363,32 @@ export type ModelsUpdateServiceRequest = {
 
 export type ModelsUpdateTagRequest = {
     value: string;
+};
+
+export type ModelsasCreatePriceModifierRequest = {
+    businessId: number;
+    isPercentage?: boolean;
+    modifierType: string;
+    name: string;
+    value: number;
+};
+
+export type ModelsasPriceModifierDto = {
+    businessId?: number;
+    id?: number;
+    isPercentage?: boolean;
+    modifierType?: string;
+    name?: string;
+    validFrom?: string;
+    validTo?: string;
+    value?: number;
+};
+
+export type ModelsasUpdatePriceModifierRequest = {
+    isPercentage?: boolean;
+    modifierType?: string;
+    name?: string;
+    value?: number;
 };
 
 export type CreateAccountData = {
@@ -2396,7 +2402,7 @@ export type GetPriceModifiersResponses = {
     /**
      * OK
      */
-    200: Array<ModelsPriceModifierDto>;
+    200: Array<ModelsasPriceModifierDto>;
 };
 
 export type GetPriceModifiersResponse = GetPriceModifiersResponses[keyof GetPriceModifiersResponses];
@@ -2405,7 +2411,7 @@ export type CreatePriceModifierData = {
     /**
      * Price modifier to create
      */
-    body: ModelsCreatePriceModifierRequest;
+    body: ModelsasCreatePriceModifierRequest;
     path?: never;
     query?: never;
     url: '/price-modifier';
@@ -2436,7 +2442,7 @@ export type CreatePriceModifierResponses = {
     /**
      * Created
      */
-    201: ModelsPriceModifierDto;
+    201: ModelsasPriceModifierDto;
 };
 
 export type CreatePriceModifierResponse = CreatePriceModifierResponses[keyof CreatePriceModifierResponses];
@@ -2540,7 +2546,7 @@ export type GetPriceModifierByIdResponses = {
     /**
      * OK
      */
-    200: ModelsPriceModifierDto;
+    200: ModelsasPriceModifierDto;
 };
 
 export type GetPriceModifierByIdResponse = GetPriceModifierByIdResponses[keyof GetPriceModifierByIdResponses];
@@ -2549,7 +2555,7 @@ export type UpdatePriceModifierData = {
     /**
      * Price modifier details to update
      */
-    body: ModelsUpdatePriceModifierRequest;
+    body: ModelsasUpdatePriceModifierRequest;
     path: {
         /**
          * Price Modifier ID
@@ -2594,7 +2600,7 @@ export type UpdatePriceModifierResponses = {
     /**
      * OK
      */
-    200: ModelsPriceModifierDto;
+    200: ModelsasPriceModifierDto;
 };
 
 export type UpdatePriceModifierResponse = UpdatePriceModifierResponses[keyof UpdatePriceModifierResponses];
@@ -2762,6 +2768,53 @@ export type UpdateReservationResponses = {
 };
 
 export type UpdateReservationResponse = UpdateReservationResponses[keyof UpdateReservationResponses];
+
+export type ApplyPriceModifierToReservationData = {
+    /**
+     * Price modifier to apply
+     */
+    body: ModelsApplyPriceModifierToReservationRequest;
+    path: {
+        /**
+         * Reservation ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/reservation/{id}/price-modifier';
+};
+
+export type ApplyPriceModifierToReservationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type ApplyPriceModifierToReservationError = ApplyPriceModifierToReservationErrors[keyof ApplyPriceModifierToReservationErrors];
+
+export type ApplyPriceModifierToReservationResponses = {
+    /**
+     * Created
+     */
+    201: unknown;
+};
 
 export type LinkPaymentToReservationData = {
     body?: never;

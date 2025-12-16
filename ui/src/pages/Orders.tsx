@@ -116,6 +116,24 @@ export const Orders = () => {
     priceModifiers,
   ]);
 
+  const orderDiscountTotals = useMemo(() => {
+    const totals: Record<number, number> = {};
+    for (const order of orders) {
+      if (!order.id) continue;
+      const subtotal = orderItemsSubtotals[order.id] ?? 0;
+      const discounts = (order.priceModifiers ?? []).filter(
+        (pm) => pm.modifierType === 'Discount'
+      );
+      const discountAmount = discounts.reduce((sum, pm) => {
+        const value = pm.value ?? 0;
+        const amt = pm.isPercentage ? (subtotal * value) / 100 : value;
+        return sum + amt;
+      }, 0);
+      totals[order.id] = discountAmount;
+    }
+    return totals;
+  }, [orders, orderItemsSubtotals]);
+
   const handleBusinessChange = (businessId: number) => {
     selectBusiness(businessId);
   };
@@ -204,6 +222,7 @@ export const Orders = () => {
         canWriteOrders={canWriteOrders}
         selectedBusinessId={selectedBusinessId}
         orderItemsSubtotals={orderItemsSubtotals}
+        orderDiscountTotals={orderDiscountTotals}
         onEdit={handleEditOrder}
         onCancel={handleCancelOrder}
         onRefund={handleRefundOrder}

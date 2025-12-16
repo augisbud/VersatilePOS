@@ -77,7 +77,8 @@ export const priceModifierReducer = createReducer(initialState, (builder) => {
       state.error = undefined;
     })
     .addCase(editPriceModifier.fulfilled, (state, { payload }) => {
-      state.priceModifiers = state.priceModifiers.map((priceModifier) =>
+      state.priceModifiers = state.priceModifiers.map(
+        (priceModifier: ModelsPriceModifierDto) =>
         priceModifier.id === payload.id ? payload : priceModifier
       );
       state.selectedPriceModifier =
@@ -97,7 +98,8 @@ export const priceModifierReducer = createReducer(initialState, (builder) => {
     })
     .addCase(removePriceModifier.fulfilled, (state, { payload }) => {
       state.priceModifiers = state.priceModifiers.filter(
-        (priceModifier) => priceModifier.id !== payload
+        (priceModifier: ModelsPriceModifierDto) =>
+          priceModifier.id !== payload
       );
       if (state.selectedPriceModifier?.id === payload) {
         state.selectedPriceModifier = undefined;

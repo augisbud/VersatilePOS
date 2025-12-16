@@ -40,16 +40,14 @@ export const OrderDiscountModal = ({
     () =>
       availableDiscounts.map((pm) => ({
         value: pm.id!,
-        label: `${pm.name} (${formatPriceModifierValue(pm)})`,
+        label: `${pm.name} (${formatPriceModifierValue(pm)}) -${
+          pm.isPercentage
+            ? ((subtotal * (pm.value ?? 0)) / 100).toFixed(2)
+            : (pm.value ?? 0).toFixed(2)
+        }`,
       })),
-    [availableDiscounts]
+    [availableDiscounts, subtotal]
   );
-
-  const getImpactLabel = (pm: ModelsPriceModifierDto) => {
-    const value = pm.value ?? 0;
-    const amount = pm.isPercentage ? (subtotal * value) / 100 : value;
-    return `-${amount.toFixed(2)}`;
-  };
 
   useEffect(() => {
     if (!open) {

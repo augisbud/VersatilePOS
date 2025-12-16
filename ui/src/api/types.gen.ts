@@ -391,6 +391,11 @@ export type ModelsasUpdatePriceModifierRequest = {
     value?: number;
 };
 
+// Aliases for price modifier types (API currently prefixes these with `as`)
+export type ModelsCreatePriceModifierRequest = ModelsasCreatePriceModifierRequest;
+export type ModelsPriceModifierDto = ModelsasPriceModifierDto;
+export type ModelsUpdatePriceModifierRequest = ModelsasUpdatePriceModifierRequest;
+
 export type CreateAccountData = {
     /**
      * Account to create

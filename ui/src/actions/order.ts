@@ -26,7 +26,9 @@ import {
   updateOrderItem,
 } from '@/api';
 
-export const setOrdersBusinessId = createAction<number>('order/setOrdersBusinessId');
+export const setOrdersBusinessId = createAction<number>(
+  'order/setOrdersBusinessId'
+);
 
 export const fetchOrders = createAsyncThunk<ModelsOrderDto[], number>(
   'order/fetchOrders',
@@ -58,22 +60,22 @@ export const fetchOrderById = createAsyncThunk<ModelsOrderDto, number>(
   }
 );
 
-export const addOrder = createAsyncThunk<ModelsOrderDto, ModelsCreateOrderRequest>(
-  'order/addOrder',
-  async (orderData: ModelsCreateOrderRequest) => {
-    const response = await createOrder({ body: orderData });
+export const addOrder = createAsyncThunk<
+  ModelsOrderDto,
+  ModelsCreateOrderRequest
+>('order/addOrder', async (orderData: ModelsCreateOrderRequest) => {
+  const response = await createOrder({ body: orderData });
 
-    if (response.error) {
-      throw new Error(response.error.error);
-    }
-
-    if (!response.data) {
-      throw new Error('No data returned from createOrder');
-    }
-
-    return response.data;
+  if (response.error) {
+    throw new Error(response.error.error);
   }
-);
+
+  if (!response.data) {
+    throw new Error('No data returned from createOrder');
+  }
+
+  return response.data;
+});
 
 export const editOrder = createAsyncThunk<
   ModelsOrderDto,
@@ -280,7 +282,7 @@ export const linkPayment = createAsyncThunk<
 });
 
 export const applyPriceModifier = createAsyncThunk<
-  { orderId: number; orderItemId: number; priceModifierId: number },
+  { orderId: number; priceModifierId: number },
   { orderId: number; data: ModelsApplyPriceModifierRequest }
 >('order/applyPriceModifier', async ({ orderId, data }) => {
   const response = await applyPriceModifierToOrder({
@@ -294,7 +296,6 @@ export const applyPriceModifier = createAsyncThunk<
 
   return {
     orderId,
-    orderItemId: data.orderItemId,
     priceModifierId: data.priceModifierId,
   };
 });

@@ -5,6 +5,7 @@ import { BusinessRoles } from '../Roles';
 import { BusinessEmployees } from '../Employees';
 import { BusinessServices } from '../Services';
 import { BusinessPriceModifiers } from '../PriceModifiers';
+import { BusinessItemCategories } from '../Categories';
 import { useUser } from '@/hooks/useUser';
 
 interface BusinessDetailsProps {
@@ -18,6 +19,8 @@ export const BusinessDetails = ({ business, onBack }: BusinessDetailsProps) => {
     canReadAccounts,
     canReadServices,
     canReadPriceModifiers,
+    canReadTags,
+    canReadItems,
   } = useUser();
 
   return (
@@ -34,6 +37,9 @@ export const BusinessDetails = ({ business, onBack }: BusinessDetailsProps) => {
         {canReadServices && <BusinessServices businessId={business.id!} />}
         {canReadPriceModifiers && (
           <BusinessPriceModifiers businessId={business.id!} />
+        )}
+        {canReadTags && canReadItems && (
+          <BusinessItemCategories businessId={business.id!} />
         )}
       </Space>
     </div>

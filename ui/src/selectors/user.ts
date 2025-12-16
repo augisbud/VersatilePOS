@@ -18,6 +18,8 @@ import {
   canWriteItemOptions,
   canReadOrders,
   canWriteOrders,
+  canReadTags,
+  canWriteTags,
 } from '@/utils/permissions';
 
 export const getUserToken = (state: State) => state.user.token;
@@ -84,3 +86,9 @@ export const getCanReadOrders = (state: State) =>
 
 export const getCanWriteOrders = (state: State) =>
   canWriteOrders(getUserRoles(state));
+
+export const getCanReadTags = (state: State) =>
+  canReadTags(getUserRoles(state));
+
+export const getCanWriteTags = (state: State) =>
+  canWriteTags(getUserRoles(state));

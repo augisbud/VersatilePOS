@@ -36,10 +36,16 @@ export const NewOrder = () => {
     loading,
     itemsLoading,
     businessLoading,
+    tagsLoading,
+    itemsByTagLoading,
     initialLoadComplete,
     canWriteOrders,
     canReadOrders,
-    items,
+    displayedItems,
+    tags,
+    selectedTagId,
+    setSelectedTagId,
+    itemsByTagError,
     getItemNameLocal,
     getOptionNameLocal,
     getOptionPriceLabel,
@@ -146,17 +152,19 @@ export const NewOrder = () => {
         if (parsedOrderId) {
           try {
             await linkPaymentToOrder(parsedOrderId, paymentId);
-            
+
             // Complete the payment since webhooks are not configured
             if (status !== 'Completed') {
               try {
                 // Add a small delay to ensure linking is processed
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 100));
                 await completePayment(paymentId);
                 void message.success('Payment completed successfully!');
               } catch (completeError) {
                 console.error('Failed to complete payment:', completeError);
-                void message.success('Payment processed! Please refresh to see updated status.');
+                void message.success(
+                  'Payment processed! Please refresh to see updated status.'
+                );
               }
             } else {
               void message.success('Payment completed successfully!');
@@ -272,18 +280,18 @@ export const NewOrder = () => {
 
       try {
         await linkPaymentToOrder(parsedOrderId, result.paymentId);
-        
+
         // Complete the payment since webhooks are not configured
         if (result.status !== 'Completed') {
           try {
             // Add a small delay to ensure linking is processed
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 100));
             await completePayment(result.paymentId);
           } catch (completeError) {
             console.error('Failed to complete payment:', completeError);
           }
         }
-        
+
         void message.success(`Bill ${billId} paid successfully with card!`);
         resolve();
       } catch {
@@ -361,10 +369,30 @@ export const NewOrder = () => {
             flexDirection: 'column',
           }}
         >
+          {itemsByTagError && (
+            <Alert
+              message="Error"
+              description={itemsByTagError}
+              type="error"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
+
           <ItemsGrid
-            items={items}
-            loading={itemsLoading || businessLoading || !initialLoadComplete}
+            items={displayedItems}
+            loading={
+              itemsLoading ||
+              businessLoading ||
+              tagsLoading ||
+              itemsByTagLoading ||
+              !initialLoadComplete
+            }
             onItemClick={(item) => void handleItemClick(item)}
+            tags={tags}
+            selectedTagId={selectedTagId}
+            onTagChange={setSelectedTagId}
+            tagsLoading={tagsLoading}
           />
         </div>
 

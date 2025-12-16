@@ -5,11 +5,13 @@ import { useBusiness } from '@/hooks/useBusiness';
 import { useUser } from '@/hooks/useUser';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useItems } from '@/hooks/useItems';
+import { useTags } from '@/hooks/useTags';
 import { useItemOptions } from '@/hooks/useItemOptions';
 import { usePriceModifiers } from '@/hooks/usePriceModifiers';
 import { getUserBusinessId } from '@/selectors/user';
 import { getItemName, getItemPrice } from '@/selectors/item';
 import { getItemOptionName } from '@/selectors/itemOption';
+import { getTagByIdItems } from '@/api';
 import { formatPriceChange } from '@/utils/formatters';
 import {
   SelectedItem,
@@ -42,6 +44,12 @@ export const useOrderEditor = () => {
   const [editingItem, setEditingItem] = useState<EditingItem | null>(null);
   const [initialLoadComplete, setInitialLoadComplete] = useState(!isEditMode);
   const [optionToAdd, setOptionToAdd] = useState<number | undefined>();
+  const [selectedTagId, setSelectedTagId] = useState<number | null>(null);
+  const [itemsByTag, setItemsByTag] = useState<ModelsItemDto[]>([]);
+  const [itemsByTagLoading, setItemsByTagLoading] = useState(false);
+  const [itemsByTagError, setItemsByTagError] = useState<string | undefined>(
+    undefined
+  );
 
   const {
     createOrder,
@@ -70,6 +78,7 @@ export const useOrderEditor = () => {
 
   const { canWriteOrders, canReadOrders } = useUser();
   const { items, fetchItems, loading: itemsLoading } = useItems();
+  const { tags, fetchTags, loading: tagsLoading } = useTags();
   const { itemOptions, fetchItemOptions } = useItemOptions();
   const { priceModifiers, fetchPriceModifiers } = usePriceModifiers();
   const userBusinessId = useAppSelector(getUserBusinessId);
@@ -85,6 +94,7 @@ export const useOrderEditor = () => {
             await fetchItems(order.businessId);
             await fetchItemOptions(order.businessId);
             await fetchPriceModifiers(order.businessId);
+            await fetchTags(order.businessId);
           }
           const loadedItems = await fetchItemsForOrder(parsedOrderId);
           for (const item of loadedItems) {
@@ -135,8 +145,55 @@ export const useOrderEditor = () => {
       void fetchItems(selectedBusinessId);
       void fetchItemOptions(selectedBusinessId);
       void fetchPriceModifiers(selectedBusinessId);
+      void fetchTags(selectedBusinessId);
     }
   }, [selectedBusinessId, isEditMode]);
+
+  useEffect(() => {
+    // When business changes (or initial business is selected), reset category filter.
+    setSelectedTagId(null);
+    setItemsByTag([]);
+    setItemsByTagError(undefined);
+  }, [selectedBusinessId]);
+
+  useEffect(() => {
+    const loadByTag = async () => {
+      if (!selectedTagId) {
+        setItemsByTag([]);
+        setItemsByTagError(undefined);
+        setItemsByTagLoading(false);
+        return;
+      }
+
+      setItemsByTagLoading(true);
+      setItemsByTagError(undefined);
+      try {
+        const res = await getTagByIdItems({ path: { id: selectedTagId } });
+        if (res.error) {
+          throw new Error(res.error.error);
+        }
+        const arr = Array.isArray(res.data) ? res.data : [];
+        // Swagger/openapi currently types these as `object[]` / `unknown[]`.
+        // Backend returns item-like objects; filter to objects and cast.
+        setItemsByTag(
+          arr.filter((x) => x && typeof x === 'object') as ModelsItemDto[]
+        );
+      } catch (e) {
+        setItemsByTag([]);
+        setItemsByTagError(
+          e instanceof Error ? e.message : 'Failed to load items by category'
+        );
+      } finally {
+        setItemsByTagLoading(false);
+      }
+    };
+
+    void loadByTag();
+  }, [selectedTagId]);
+
+  const displayedItems = useMemo(() => {
+    return selectedTagId ? itemsByTag : items;
+  }, [selectedTagId, itemsByTag, items]);
 
   // Helper functions
   const getItemNameLocal = useCallback(
@@ -528,6 +585,8 @@ export const useOrderEditor = () => {
     itemsLoading,
     businessLoading,
     initialLoadComplete,
+    tagsLoading,
+    itemsByTagLoading,
 
     // Permissions
     canWriteOrders,
@@ -535,6 +594,11 @@ export const useOrderEditor = () => {
 
     // Data
     items,
+    displayedItems,
+    tags,
+    selectedTagId,
+    setSelectedTagId,
+    itemsByTagError,
 
     // Helpers
     getItemNameLocal,

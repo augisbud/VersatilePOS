@@ -22,6 +22,8 @@ import {
   getCanWriteItemOptions,
   getCanReadOrders,
   getCanWriteOrders,
+  getCanReadTags,
+  getCanWriteTags,
 } from '@/selectors/user';
 import {
   login as loginAction,
@@ -59,6 +61,8 @@ export const useUser = () => {
   const canWriteItemOptions = useAppSelector(getCanWriteItemOptions);
   const canReadOrders = useAppSelector(getCanReadOrders);
   const canWriteOrders = useAppSelector(getCanWriteOrders);
+  const canReadTags = useAppSelector(getCanReadTags);
+  const canWriteTags = useAppSelector(getCanWriteTags);
 
   const hasRoles = (roles: ModelsAccountRoleLinkDto[]) => !!roles.length;
 
@@ -93,6 +97,8 @@ export const useUser = () => {
     canWriteItemOptions,
     canReadOrders,
     canWriteOrders,
+    canReadTags,
+    canWriteTags,
     roles,
     hasRoles,
     login,

@@ -8,10 +8,18 @@ export interface PriceModifierFormValues {
   isPercentage?: boolean;
 }
 
+export interface PriceModifierDefaultValues {
+  name?: string;
+  modifierType?: string;
+  value?: number;
+  isPercentage?: boolean;
+}
+
 interface PriceModifierFormModalProps {
   open: boolean;
   editingModifier: ModelsasPriceModifierDto | null;
   isSubmitting: boolean;
+  defaultValues?: PriceModifierDefaultValues;
   onClose: () => void;
   onSubmit: (values: PriceModifierFormValues) => void;
 }
@@ -19,28 +27,37 @@ interface PriceModifierFormModalProps {
 const MODIFIER_TYPES = [
   { value: 'Discount', label: 'Discount' },
   { value: 'Surcharge', label: 'Surcharge' },
+];
+
+const MODIFIER_TYPES_WITH_TAX = [
+  ...MODIFIER_TYPES,
   { value: 'Tax', label: 'Tax' },
-  { value: 'Tip', label: 'Tip' },
 ];
 
 export const PriceModifierFormModal = ({
   open,
   editingModifier,
   isSubmitting,
+  defaultValues,
   onClose,
   onSubmit,
 }: PriceModifierFormModalProps) => {
   const [form] = Form.useForm<PriceModifierFormValues>();
   const isPercentage = Form.useWatch('isPercentage', form);
+  const modifierType = Form.useWatch('modifierType', form);
 
   const handleAfterOpenChange = (visible: boolean) => {
-    if (visible && editingModifier) {
-      form.setFieldsValue({
-        name: editingModifier.name,
-        modifierType: editingModifier.modifierType,
-        value: editingModifier.value,
-        isPercentage: editingModifier.isPercentage,
-      });
+    if (visible) {
+      if (editingModifier) {
+        form.setFieldsValue({
+          name: editingModifier.name,
+          modifierType: editingModifier.modifierType,
+          value: editingModifier.value,
+          isPercentage: editingModifier.isPercentage,
+        });
+      } else if (defaultValues) {
+        form.setFieldsValue(defaultValues);
+      }
     }
   };
 
@@ -76,7 +93,13 @@ export const PriceModifierFormModal = ({
           label="Type"
           rules={[{ required: true, message: 'Please select modifier type' }]}
         >
-          <Select placeholder="Select modifier type" options={MODIFIER_TYPES} />
+          <Select
+            placeholder="Select modifier type"
+            options={
+              modifierType === 'Tax' ? MODIFIER_TYPES_WITH_TAX : MODIFIER_TYPES
+            }
+            disabled={modifierType === 'Tax'}
+          />
         </Form.Item>
 
         <Form.Item label="Value" required>

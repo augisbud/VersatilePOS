@@ -23,6 +23,7 @@ type Props = {
   total: number;
   subtotal: number;
   discounts: AppliedOrderDiscount[];
+  serviceCharges?: AppliedOrderDiscount[];
   loading?: boolean;
   canWriteOrders: boolean;
   isEditMode?: boolean;
@@ -43,6 +44,7 @@ export const OrderInfoPanel = ({
   total,
   subtotal,
   discounts,
+  serviceCharges = [],
   loading,
   canWriteOrders,
   isEditMode,
@@ -59,195 +61,236 @@ export const OrderInfoPanel = ({
     (sum, disc) => sum + (disc.amount || 0),
     0
   );
+  const serviceChargeTotal = serviceCharges.reduce(
+    (sum, sc) => sum + (sc.amount || 0),
+    0
+  );
   // Bills can only be generated for saved orders
   const canGenerateBill = items.length > 0 && hasOrderId;
 
   return (
-  <Card
-    loading={loading}
-    style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-    }}
-    styles={{
-      body: {
+    <Card
+      loading={loading}
+      style={{
+        height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        height: '100%',
-        padding: 16,
         overflow: 'hidden',
-      },
-    }}
-  >
-    {/* Fixed top section */}
-    <Title level={5} style={{ textAlign: 'center', marginBottom: 16 }}>
-      Order information
-    </Title>
-
-    {/* Header */}
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 50px 70px',
-        gap: 8,
-        padding: '8px 0',
-        borderBottom: '1px solid #f0f0f0',
-        fontWeight: 600,
-        fontSize: 13,
+      }}
+      styles={{
+        body: {
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          padding: 16,
+          overflow: 'hidden',
+        },
       }}
     >
-      <div>Name</div>
-      <div style={{ textAlign: 'center' }}>Qty.</div>
-      <div style={{ textAlign: 'right' }}>Price</div>
-    </div>
+      {/* Fixed top section */}
+      <Title level={5} style={{ textAlign: 'center', marginBottom: 16 }}>
+        Order information
+      </Title>
 
-    {/* Scrollable items list */}
-    <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-      {items.length === 0 ? (
-        <div
-          style={{
-            padding: '32px 0',
-            textAlign: 'center',
-            color: '#999',
-          }}
-        >
-          No items in order
-        </div>
-      ) : (
-        items.map((item) => (
-          <OrderItemRow
-            key={item.id || item.itemId}
-            itemName={item.itemName}
-            quantity={item.quantity}
-            lineTotal={item.lineTotal}
-            options={item.options}
-            canEdit={canWriteOrders}
-            onEdit={() => onEditItem(item.itemId, item.id)}
-          />
-        ))
-      )}
-    </div>
-
-    {/* Fixed bottom section */}
-    <div style={{ flexShrink: 0 }}>
-      {/* Total */}
+      {/* Header */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 70px',
+          gridTemplateColumns: '1fr 50px 70px',
           gap: 8,
-          padding: '16px 0 8px',
-          borderTop: '2px solid #e8e8e8',
+          padding: '8px 0',
+          borderBottom: '1px solid #f0f0f0',
           fontWeight: 600,
+          fontSize: 13,
         }}
       >
-        <div>Subtotal:</div>
-        <div style={{ textAlign: 'right' }}>{subtotal.toFixed(2)}</div>
+        <div>Name</div>
+        <div style={{ textAlign: 'center' }}>Qty.</div>
+        <div style={{ textAlign: 'right' }}>Price</div>
       </div>
 
-      {discounts.length > 0 && (
-        <div style={{ marginBottom: 8 }}>
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>Discounts</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {discounts.map((disc) => (
-              <div
-                key={disc.id || disc.name}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 70px',
-                  gap: 8,
-                  fontSize: 13,
-                }}
-              >
-                <div style={{ color: '#555' }}>{disc.name}</div>
-                <div style={{ textAlign: 'right', color: '#52c41a' }}>
-                  -{disc.amount.toFixed(2)}
-                </div>
-              </div>
-            ))}
+      {/* Scrollable items list */}
+      <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+        {items.length === 0 ? (
+          <div
+            style={{
+              padding: '32px 0',
+              textAlign: 'center',
+              color: '#999',
+            }}
+          >
+            No items in order
           </div>
+        ) : (
+          items.map((item) => (
+            <OrderItemRow
+              key={item.id || item.itemId}
+              itemName={item.itemName}
+              quantity={item.quantity}
+              lineTotal={item.lineTotal}
+              options={item.options}
+              canEdit={canWriteOrders}
+              onEdit={() => onEditItem(item.itemId, item.id)}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Fixed bottom section */}
+      <div style={{ flexShrink: 0 }}>
+        {/* Total */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 70px',
+            gap: 8,
+            padding: '16px 0 8px',
+            borderTop: '2px solid #e8e8e8',
+            fontWeight: 600,
+          }}
+        >
+          <div>Subtotal:</div>
+          <div style={{ textAlign: 'right' }}>{subtotal.toFixed(2)}</div>
+        </div>
+
+        {serviceCharges.length > 0 && (
           <div
             style={{
               display: 'grid',
               gridTemplateColumns: '1fr 70px',
               gap: 8,
-              marginTop: 4,
+              paddingBottom: 8,
               fontWeight: 600,
             }}
           >
-            <div>Total discount:</div>
-            <div style={{ textAlign: 'right', color: '#52c41a' }}>
-              -{discountTotal.toFixed(2)}
+            <div>
+              Service Charge
+              {serviceCharges[0].isPercentage && (
+                <span style={{ color: '#888', fontWeight: 400, marginLeft: 4 }}>
+                  ({serviceCharges[0].value}%)
+                </span>
+              )}
+            </div>
+            <div style={{ textAlign: 'right', color: '#fa8c16' }}>
+              +{serviceChargeTotal.toFixed(2)}
             </div>
           </div>
+        )}
+
+        {discounts.length > 0 && (
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>Discounts</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {discounts.map((disc) => (
+                <div
+                  key={disc.id || disc.name}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 70px',
+                    gap: 8,
+                    fontSize: 13,
+                  }}
+                >
+                  <div style={{ color: '#555' }}>{disc.name}</div>
+                  <div style={{ textAlign: 'right', color: '#52c41a' }}>
+                    -{disc.amount.toFixed(2)}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 70px',
+                gap: 8,
+                marginTop: 4,
+                fontWeight: 600,
+              }}
+            >
+              <div>Total discount:</div>
+              <div style={{ textAlign: 'right', color: '#52c41a' }}>
+                -{discountTotal.toFixed(2)}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 70px',
+            gap: 8,
+            padding: '8px 0 12px',
+            fontWeight: 700,
+          }}
+        >
+          <div>Total:</div>
+          <div style={{ textAlign: 'right' }}>{total.toFixed(2)}</div>
         </div>
-      )}
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 70px',
-          gap: 8,
-          padding: '8px 0 12px',
-          fontWeight: 700,
-        }}
-      >
-        <div>Total:</div>
-        <div style={{ textAlign: 'right' }}>{total.toFixed(2)}</div>
-      </div>
+        {/* Add Discount */}
+        <Button
+          block
+          onClick={onAddDiscount}
+          disabled={items.length === 0 || !canWriteOrders}
+          style={{ fontWeight: 500 }}
+        >
+          Add Discount
+        </Button>
 
-      {/* Add Discount */}
-      <Button
-        block
-        onClick={onAddDiscount}
-        disabled={items.length === 0 || !canWriteOrders}
-        style={{ fontWeight: 500 }}
-      >
-        Add Discount
-      </Button>
+        <Divider style={{ margin: '16px 0' }} />
 
-      <Divider style={{ margin: '16px 0' }} />
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {isEditMode ? (
-          <Button block type="primary" onClick={onDoneEditing}>
-            Done Editing
-          </Button>
-        ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {isEditMode ? (
+            <Button block type="primary" onClick={onDoneEditing}>
+              Done Editing
+            </Button>
+          ) : (
+            <Button
+              block
+              type="primary"
+              onClick={onSaveOrder}
+              disabled={items.length === 0 || !canWriteOrders}
+            >
+              Save Order
+            </Button>
+          )}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button
+              style={{ flex: 1 }}
+              onClick={onGenerateBill}
+              disabled={!canGenerateBill}
+              title={
+                !hasOrderId
+                  ? 'Save the order first to generate a bill'
+                  : undefined
+              }
+            >
+              Generate bill
+            </Button>
+            <Button
+              style={{ flex: 1 }}
+              onClick={onGenerateSplitBill}
+              disabled={!canGenerateBill}
+              title={
+                !hasOrderId
+                  ? 'Save the order first to split the bill'
+                  : undefined
+              }
+            >
+              Split bill
+            </Button>
+          </div>
           <Button
             block
-            type="primary"
-            onClick={onSaveOrder}
-            disabled={items.length === 0 || !canWriteOrders}
+            danger
+            onClick={onCancelOrder}
+            disabled={!canWriteOrders}
           >
-            Save Order
-          </Button>
-        )}
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Button
-            style={{ flex: 1 }}
-            onClick={onGenerateBill}
-            disabled={!canGenerateBill}
-            title={!hasOrderId ? 'Save the order first to generate a bill' : undefined}
-          >
-            Generate bill
-          </Button>
-          <Button
-            style={{ flex: 1 }}
-            onClick={onGenerateSplitBill}
-            disabled={!canGenerateBill}
-            title={!hasOrderId ? 'Save the order first to split the bill' : undefined}
-          >
-            Split bill
+            {isEditMode ? 'Cancel order' : 'Discard'}
           </Button>
         </div>
-        <Button block danger onClick={onCancelOrder} disabled={!canWriteOrders}>
-          {isEditMode ? 'Cancel order' : 'Discard'}
-        </Button>
       </div>
-    </div>
-  </Card>
+    </Card>
   );
 };

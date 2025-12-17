@@ -1,6 +1,11 @@
 import { Card, Table, Typography, Button, Popconfirm, Tag, Space } from 'antd';
-import { DeleteOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
-import { useState, useEffect } from 'react';
+import {
+  DeleteOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DollarOutlined,
+} from '@ant-design/icons';
+import { useState, useEffect, useMemo } from 'react';
 import { usePriceModifiers } from '@/hooks/usePriceModifiers';
 import { useUser } from '@/hooks/useUser';
 import type { ColumnsType } from 'antd/es/table';
@@ -8,6 +13,7 @@ import { ModelsasPriceModifierDto } from '@/api/types.gen';
 import {
   PriceModifierFormModal,
   PriceModifierFormValues,
+  PriceModifierDefaultValues,
 } from './PriceModifierFormModal';
 import { EmptyState } from '@/components/shared';
 
@@ -21,8 +27,10 @@ const MODIFIER_TYPE_COLORS: Record<string, string> = {
   Discount: 'green',
   Surcharge: 'orange',
   Tax: 'blue',
-  Tip: 'purple',
 };
+
+const SERVICE_CHARGE_NAME = 'Service Charge';
+const SERVICE_CHARGE_TYPE = 'Tax';
 
 export const BusinessPriceModifiers = ({
   businessId,
@@ -41,10 +49,22 @@ export const BusinessPriceModifiers = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingModifier, setEditingModifier] =
     useState<ModelsasPriceModifierDto | null>(null);
+  const [modalDefaultValues, setModalDefaultValues] = useState<
+    PriceModifierDefaultValues | undefined
+  >(undefined);
 
   useEffect(() => {
     void fetchPriceModifiers(businessId);
   }, [businessId]);
+
+  // Check if service charge already exists
+  const hasServiceCharge = useMemo(() => {
+    return priceModifiers.some(
+      (pm) =>
+        pm.modifierType === SERVICE_CHARGE_TYPE &&
+        pm.name === SERVICE_CHARGE_NAME
+    );
+  }, [priceModifiers]);
 
   const handleDelete = async (modifierId: number) => {
     try {
@@ -54,15 +74,29 @@ export const BusinessPriceModifiers = ({
     }
   };
 
-  const handleOpenModal = (modifier?: ModelsasPriceModifierDto) => {
+  const handleOpenModal = (
+    modifier?: ModelsasPriceModifierDto,
+    defaults?: PriceModifierDefaultValues
+  ) => {
     setEditingModifier(modifier || null);
+    setModalDefaultValues(defaults);
     setIsModalOpen(true);
+  };
+
+  const handleOpenServiceChargeModal = () => {
+    handleOpenModal(undefined, {
+      name: SERVICE_CHARGE_NAME,
+      modifierType: SERVICE_CHARGE_TYPE,
+      value: 10,
+      isPercentage: true,
+    });
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setIsSubmitting(false);
     setEditingModifier(null);
+    setModalDefaultValues(undefined);
   };
 
   const handleSubmit = async (values: PriceModifierFormValues) => {
@@ -110,11 +144,6 @@ export const BusinessPriceModifiers = ({
       render: (_, record) => (
         <Space size={4}>
           <span style={{ fontWeight: 500 }}>{formatValue(record)}</span>
-          {record.isPercentage && (
-            <Tag color="cyan" style={{ marginLeft: 4 }}>
-              %
-            </Tag>
-          )}
         </Space>
       ),
     },
@@ -161,13 +190,23 @@ export const BusinessPriceModifiers = ({
         }
         extra={
           canWritePriceModifiers && (
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => handleOpenModal()}
-            >
-              Add Price Modifier
-            </Button>
+            <Space>
+              {!hasServiceCharge && (
+                <Button
+                  icon={<DollarOutlined />}
+                  onClick={handleOpenServiceChargeModal}
+                >
+                  Add Service Charge
+                </Button>
+              )}
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => handleOpenModal()}
+              >
+                Add Price Modifier
+              </Button>
+            </Space>
           )
         }
       >
@@ -199,6 +238,7 @@ export const BusinessPriceModifiers = ({
         open={isModalOpen}
         editingModifier={editingModifier}
         isSubmitting={isSubmitting}
+        defaultValues={modalDefaultValues}
         onClose={handleCloseModal}
         onSubmit={(values) => void handleSubmit(values)}
       />

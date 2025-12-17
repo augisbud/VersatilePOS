@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { Modal, message } from 'antd';
 import { ModelsReservationDto, ModelsServiceDto } from '@/api/types.gen';
 import { StripePaymentModal } from '@/components/Payment';
+import { TipSelector, PaymentSummary } from '@/components/shared';
 import { ReservationSummary } from './ReservationSummary';
-import { TipSelector } from './TipSelector';
-import { PaymentSummary } from './PaymentSummary';
 import { PaymentButtons, PaymentMethod } from './PaymentButtons';
 
 interface ReservationPaymentModalProps {
@@ -140,7 +139,6 @@ export const ReservationPaymentModal = ({
 
             <TipSelector
               tipAmount={tipAmount}
-              baseAmount={baseAmount}
               selectedTipPreset={selectedTipPreset}
               isCustomTip={isCustomTip}
               onPresetClick={handleTipPresetClick}

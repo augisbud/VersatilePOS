@@ -206,6 +206,24 @@ export const useOrderEditor = () => {
     return selectedTagId ? itemsByTag : items;
   }, [selectedTagId, itemsByTag, items]);
 
+  // Find service charge modifier (Tax type with name "Service Charge")
+  const serviceChargeModifier = useMemo(() => {
+    return priceModifiers.find(
+      (pm) => pm.modifierType === 'Tax' && pm.name === 'Service Charge'
+    );
+  }, [priceModifiers]);
+
+  // Auto-apply service charge when price modifiers are loaded (for new orders)
+  useEffect(() => {
+    if (!isEditMode && serviceChargeModifier && priceModifiers.length > 0) {
+      setOrderPriceModifiers((prev) => {
+        // Only add if not already present
+        if (prev.some((p) => p.id === serviceChargeModifier.id)) return prev;
+        return [...prev, serviceChargeModifier];
+      });
+    }
+  }, [isEditMode, serviceChargeModifier, priceModifiers]);
+
   // Keep local copy of order-level price modifiers in sync
   useEffect(() => {
     setOrderPriceModifiers(selectedOrder?.priceModifiers ?? []);
@@ -276,15 +294,35 @@ export const useOrderEditor = () => {
       });
   }, [orderPriceModifiers, orderSubtotal]);
 
+  const appliedServiceCharges: AppliedOrderDiscount[] = useMemo(() => {
+    if (!orderPriceModifiers.length) return [];
+
+    return orderPriceModifiers
+      .filter(
+        (pm) => pm.modifierType === 'Tax' || pm.modifierType === 'Surcharge'
+      )
+      .map((pm) => {
+        const amount = pm.isPercentage
+          ? ((orderSubtotal || 0) * (pm.value || 0)) / 100
+          : pm.value || 0;
+        return { ...pm, amount };
+      });
+  }, [orderPriceModifiers, orderSubtotal]);
+
   const discountTotal = useMemo(
     () => appliedDiscounts.reduce((sum, disc) => sum + (disc.amount || 0), 0),
     [appliedDiscounts]
   );
 
+  const serviceChargeTotal = useMemo(
+    () => appliedServiceCharges.reduce((sum, sc) => sum + (sc.amount || 0), 0),
+    [appliedServiceCharges]
+  );
+
   const total = useMemo(() => {
-    const adjusted = orderSubtotal - discountTotal;
+    const adjusted = orderSubtotal - discountTotal + serviceChargeTotal;
     return adjusted < 0 ? 0 : adjusted;
-  }, [orderSubtotal, discountTotal]);
+  }, [orderSubtotal, discountTotal, serviceChargeTotal]);
 
   const orderInfoItems: OrderInfoItem[] = useMemo(() => {
     return mapItemsToOrderInfo(
@@ -539,6 +577,8 @@ export const useOrderEditor = () => {
           customer: customerDetails?.customer,
           customerEmail: customerDetails?.customerEmail,
           customerPhone: customerDetails?.customerPhone,
+          serviceCharge:
+            serviceChargeTotal > 0 ? serviceChargeTotal : undefined,
         });
         if (!created?.id) {
           return;
@@ -576,6 +616,7 @@ export const useOrderEditor = () => {
     [
       selectedBusinessId,
       selectedItems,
+      serviceChargeTotal,
       createOrder,
       addItemToOrder,
       addOptionToOrderItem,
@@ -652,6 +693,8 @@ export const useOrderEditor = () => {
     total,
     orderSubtotal,
     appliedDiscounts,
+    appliedServiceCharges,
+    serviceChargeTotal,
     orderInfoItems,
     availableOptionsForEdit,
 
@@ -697,5 +740,6 @@ export const useOrderEditor = () => {
     priceModifiers,
     refreshOrderDetails,
     addLocalPriceModifier,
+    updateOrder,
   };
 };

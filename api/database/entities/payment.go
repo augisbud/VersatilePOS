@@ -13,4 +13,5 @@ type Payment struct {
 	Status            constants.PaymentStatus `json:"status" gorm:"type:varchar(50);not null;default:'Pending'"`
 	StripePaymentIntentID *string    `json:"stripePaymentIntentId,omitempty" gorm:"type:varchar(255)"`
 	StripeCustomerID      *string    `json:"stripeCustomerId,omitempty" gorm:"type:varchar(255)"`
+	GiftCardCode          *string    `json:"giftCardCode,omitempty" gorm:"type:varchar(50)"`
 }

@@ -65,6 +65,7 @@ func Connect() {
 		&entities.AccountRoleFunctionLink{},
 		&entities.Function{},
 		&entities.Payment{},
+		&entities.GiftCard{},
 		&entities.PriceModifier{},
 		&entities.PriceModifierOrderLink{},
 		&entities.PriceModifierReservationLink{},

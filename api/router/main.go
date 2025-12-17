@@ -3,9 +3,10 @@ package router
 import (
 	"VersatilePOS/account"
 	"VersatilePOS/business"
-	"VersatilePOS/order"
 	_ "VersatilePOS/docs"
+	"VersatilePOS/giftCard"
 	"VersatilePOS/item"
+	"VersatilePOS/order"
 	"VersatilePOS/payment"
 	"VersatilePOS/priceModifier"
 	"VersatilePOS/reservation"
@@ -27,6 +28,7 @@ func RegisterRoutes(r *gin.Engine) {
 	priceModifier.RegisterHandlers(r)
 	service.RegisterHandlers(r)
 	tag.RegisterHandlers(r)
+	giftCard.RegisterHandlers(r)
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

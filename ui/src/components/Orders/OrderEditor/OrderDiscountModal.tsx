@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Divider, List, Modal, Select, Typography } from 'antd';
-import { ModelsPriceModifierDto } from '@/api/types.gen';
+import { ModelsasPriceModifierDto } from '@/api/types.gen';
 import { AppliedOrderDiscount } from '@/types/orderEditor';
 import { formatPriceModifierValue } from '@/utils/formatters';
 
 type Props = {
   open: boolean;
   subtotal: number;
-  discounts: ModelsPriceModifierDto[];
+  discounts: ModelsasPriceModifierDto[];
   appliedDiscounts: AppliedOrderDiscount[];
   loading?: boolean;
   onApply: (priceModifierId: number) => Promise<void> | void;

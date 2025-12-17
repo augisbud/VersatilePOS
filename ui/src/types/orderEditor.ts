@@ -1,4 +1,4 @@
-import { ModelsPriceModifierDto } from '@/api/types.gen';
+import { ModelsasPriceModifierDto } from '@/api/types.gen';
 import { SelectedItemOption } from '@/utils/orderCalculations';
 
 export type EditingItem = {
@@ -29,7 +29,7 @@ export type AvailableOption = {
   priceLabel: string;
 };
 
-export type AppliedOrderDiscount = ModelsPriceModifierDto & {
+export type AppliedOrderDiscount = ModelsasPriceModifierDto & {
   amount: number;
 };
 

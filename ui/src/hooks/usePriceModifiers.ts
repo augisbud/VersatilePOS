@@ -18,8 +18,8 @@ import {
   setPriceModifiersBusinessId,
 } from '@/actions/priceModifier';
 import {
-  ModelsCreatePriceModifierRequest,
-  ModelsUpdatePriceModifierRequest,
+  ModelsasCreatePriceModifierRequest,
+  ModelsasUpdatePriceModifierRequest,
 } from '@/api/types.gen';
 
 export const usePriceModifiers = () => {
@@ -40,7 +40,7 @@ export const usePriceModifiers = () => {
   };
 
   const createPriceModifier = async (
-    priceModifierData: ModelsCreatePriceModifierRequest
+    priceModifierData: ModelsasCreatePriceModifierRequest
   ) => {
     return dispatch(addPriceModifierAction(priceModifierData)).unwrap();
   };
@@ -48,7 +48,7 @@ export const usePriceModifiers = () => {
   const updatePriceModifier = async (
     id: number,
     businessId: number,
-    data: ModelsUpdatePriceModifierRequest
+    data: ModelsasUpdatePriceModifierRequest
   ) => {
     return dispatch(editPriceModifierAction({ id, businessId, data })).unwrap();
   };

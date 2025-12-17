@@ -24,7 +24,7 @@ import {
 import {
   ModelsItemDto,
   ModelsItemOptionLinkDto,
-  ModelsPriceModifierDto,
+  ModelsasPriceModifierDto,
 } from '@/api/types.gen';
 
 export type CustomerDetails = {
@@ -56,7 +56,7 @@ export const useOrderEditor = () => {
     undefined
   );
   const [orderPriceModifiers, setOrderPriceModifiers] = useState<
-    ModelsPriceModifierDto[]
+    ModelsasPriceModifierDto[]
   >([]);
 
   const {

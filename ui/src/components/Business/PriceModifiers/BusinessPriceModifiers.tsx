@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePriceModifiers } from '@/hooks/usePriceModifiers';
 import { useUser } from '@/hooks/useUser';
 import type { ColumnsType } from 'antd/es/table';
-import { ModelsPriceModifierDto } from '@/api/types.gen';
+import { ModelsasPriceModifierDto } from '@/api/types.gen';
 import {
   PriceModifierFormModal,
   PriceModifierFormValues,
@@ -40,7 +40,7 @@ export const BusinessPriceModifiers = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingModifier, setEditingModifier] =
-    useState<ModelsPriceModifierDto | null>(null);
+    useState<ModelsasPriceModifierDto | null>(null);
 
   useEffect(() => {
     void fetchPriceModifiers(businessId);
@@ -54,7 +54,7 @@ export const BusinessPriceModifiers = ({
     }
   };
 
-  const handleOpenModal = (modifier?: ModelsPriceModifierDto) => {
+  const handleOpenModal = (modifier?: ModelsasPriceModifierDto) => {
     setEditingModifier(modifier || null);
     setIsModalOpen(true);
   };
@@ -82,14 +82,14 @@ export const BusinessPriceModifiers = ({
     }
   };
 
-  const formatValue = (modifier: ModelsPriceModifierDto) => {
+  const formatValue = (modifier: ModelsasPriceModifierDto) => {
     if (modifier.isPercentage) {
       return `${modifier.value}%`;
     }
     return `$${modifier.value?.toFixed(2)}`;
   };
 
-  const columns: ColumnsType<ModelsPriceModifierDto> = [
+  const columns: ColumnsType<ModelsasPriceModifierDto> = [
     {
       title: 'Name',
       dataIndex: 'name',

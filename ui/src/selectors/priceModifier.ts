@@ -1,7 +1,7 @@
 import { State } from '@/types/redux';
-import { ModelsPriceModifierDto } from '@/api/types.gen';
+import { ModelsasPriceModifierDto } from '@/api/types.gen';
 
-export const getPriceModifiers = (state: State): ModelsPriceModifierDto[] =>
+export const getPriceModifiers = (state: State): ModelsasPriceModifierDto[] =>
   state.priceModifier.priceModifiers;
 
 export const getSelectedPriceModifier = (state: State) =>
@@ -17,12 +17,12 @@ export const getPriceModifiersBusinessId = (state: State) =>
   state.priceModifier.selectedBusinessId;
 
 export const getPriceModifierById = (
-  priceModifiers: ModelsPriceModifierDto[],
+  priceModifiers: ModelsasPriceModifierDto[],
   id: number
 ) => priceModifiers.find((priceModifier) => priceModifier.id === id);
 
 export const getPriceModifiersByType = (
-  priceModifiers: ModelsPriceModifierDto[],
+  priceModifiers: ModelsasPriceModifierDto[],
   modifierType: string
 ) =>
   priceModifiers.filter(

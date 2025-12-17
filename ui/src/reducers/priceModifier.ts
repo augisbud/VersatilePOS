@@ -7,11 +7,11 @@ import {
   removePriceModifier,
   setPriceModifiersBusinessId,
 } from '@/actions/priceModifier';
-import { ModelsPriceModifierDto } from '@/api/types.gen';
+import { ModelsasPriceModifierDto } from '@/api/types.gen';
 
 export interface PriceModifierState {
-  priceModifiers: ModelsPriceModifierDto[];
-  selectedPriceModifier?: ModelsPriceModifierDto;
+  priceModifiers: ModelsasPriceModifierDto[];
+  selectedPriceModifier?: ModelsasPriceModifierDto;
   selectedBusinessId?: number;
   loading: boolean;
   error?: string;
@@ -78,7 +78,7 @@ export const priceModifierReducer = createReducer(initialState, (builder) => {
     })
     .addCase(editPriceModifier.fulfilled, (state, { payload }) => {
       state.priceModifiers = state.priceModifiers.map(
-        (priceModifier: ModelsPriceModifierDto) =>
+        (priceModifier: ModelsasPriceModifierDto) =>
         priceModifier.id === payload.id ? payload : priceModifier
       );
       state.selectedPriceModifier =
@@ -98,7 +98,7 @@ export const priceModifierReducer = createReducer(initialState, (builder) => {
     })
     .addCase(removePriceModifier.fulfilled, (state, { payload }) => {
       state.priceModifiers = state.priceModifiers.filter(
-        (priceModifier: ModelsPriceModifierDto) =>
+        (priceModifier: ModelsasPriceModifierDto) =>
           priceModifier.id !== payload
       );
       if (state.selectedPriceModifier?.id === payload) {

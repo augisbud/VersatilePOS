@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Divider, Button, Space, Typography } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { ModelsItemOptionDto, ModelsPriceModifierDto } from '@/api/types.gen';
+import { ModelsItemOptionDto, ModelsasPriceModifierDto } from '@/api/types.gen';
 import { ItemOptionsTable } from './ItemOptionsTable';
 import {
   ItemOptionInlineForm,
@@ -15,7 +15,7 @@ const { Title } = Typography;
 type Props = {
   itemOptions: ModelsItemOptionDto[];
   pendingOptions: NewOptionFormValues[];
-  priceModifiers: ModelsPriceModifierDto[];
+  priceModifiers: ModelsasPriceModifierDto[];
   loading: boolean;
   isEditing: boolean;
   onCreateOption: (values: NewOptionFormValues) => void;

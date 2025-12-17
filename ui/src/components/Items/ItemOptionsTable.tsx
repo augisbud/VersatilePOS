@@ -1,7 +1,7 @@
 import { Table, Tag, Button, Popconfirm, Typography } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { ModelsItemOptionDto, ModelsPriceModifierDto } from '@/api/types.gen';
+import { ModelsItemOptionDto, ModelsasPriceModifierDto } from '@/api/types.gen';
 import { NewOptionFormValues } from './ItemOptionInlineForm';
 import { getPriceModifierDisplay } from '@/utils/formatters';
 import { renderStockTag } from '@/utils/renderUtils';
@@ -10,7 +10,7 @@ import { useUser } from '@/hooks/useUser';
 type Props = {
   options: ModelsItemOptionDto[];
   pendingOptions: NewOptionFormValues[];
-  priceModifiers: ModelsPriceModifierDto[];
+  priceModifiers: ModelsasPriceModifierDto[];
   loading: boolean;
   isEditing: boolean;
   onDeleteOption: (optionId: number) => void;

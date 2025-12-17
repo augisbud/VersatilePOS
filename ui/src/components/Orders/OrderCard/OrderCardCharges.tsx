@@ -4,6 +4,7 @@ import { formatCurrency } from '@/utils/formatters';
 
 type Props = {
   itemsSubtotal?: number;
+  discountTotal?: number;
   serviceCharge?: number;
   tipAmount?: number;
 };
@@ -12,13 +13,18 @@ const { Text } = Typography;
 
 export const OrderCardCharges = ({
   itemsSubtotal,
+  discountTotal,
   serviceCharge,
   tipAmount,
 }: Props) => {
   const itemsTotal = itemsSubtotal ?? 0;
+  const discounts = discountTotal ?? 0;
   const serviceChargeAmount = serviceCharge ?? 0;
   const tipAmountValue = tipAmount ?? 0;
-  const grandTotal = itemsTotal + serviceChargeAmount + tipAmountValue;
+  const grandTotal = Math.max(
+    0,
+    itemsTotal - discounts + serviceChargeAmount + tipAmountValue
+  );
 
   return (
     <Space
@@ -53,6 +59,20 @@ export const OrderCardCharges = ({
           Service Charge
         </Text>
         <Text style={{ fontSize: 12 }}>{formatCurrency(serviceCharge)}</Text>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Text type="secondary" style={{ fontSize: 12 }}>
+          Discounts
+        </Text>
+        <Text style={{ fontSize: 12, color: '#52c41a' }}>
+          {discountTotal !== undefined ? `-${formatCurrency(discounts)}` : '—'}
+        </Text>
       </div>
       <div
         style={{

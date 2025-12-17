@@ -10,6 +10,7 @@ type Props = {
   canWriteOrders: boolean;
   selectedBusinessId?: number | null;
   orderItemsSubtotals?: Record<number, number>;
+  orderDiscountTotals?: Record<number, number>;
   onEdit: (order: ModelsOrderDto) => void;
   onCancel: (orderId: number) => void;
   onRefund: (orderId: number) => void;
@@ -32,6 +33,7 @@ export const OrdersGrid = ({
   canWriteOrders,
   selectedBusinessId,
   orderItemsSubtotals = {},
+  orderDiscountTotals = {},
   onEdit,
   onCancel,
   onRefund,
@@ -160,6 +162,9 @@ export const OrdersGrid = ({
                 canWriteOrders={canWriteOrders}
                 itemsSubtotal={
                   order.id ? orderItemsSubtotals[order.id] : undefined
+                }
+                discountTotal={
+                  order.id ? orderDiscountTotals[order.id] : undefined
                 }
                 onEdit={onEdit}
                 onCancel={onCancel}

@@ -1,7 +1,7 @@
 import {
-  ModelsCreatePriceModifierRequest,
-  ModelsPriceModifierDto,
-  ModelsUpdatePriceModifierRequest,
+  ModelsasCreatePriceModifierRequest,
+  ModelsasPriceModifierDto,
+  ModelsasUpdatePriceModifierRequest,
 } from '@/api/types.gen';
 import { createAction, createAsyncThunk } from '@reduxjs/toolkit';
 import {
@@ -17,7 +17,7 @@ export const setPriceModifiersBusinessId = createAction<number>(
 );
 
 export const fetchPriceModifiers = createAsyncThunk<
-  ModelsPriceModifierDto[],
+  ModelsasPriceModifierDto[],
   number
 >('priceModifier/fetchPriceModifiers', async (businessId: number) => {
   const response = await getPriceModifiers({ query: { businessId } });
@@ -30,7 +30,7 @@ export const fetchPriceModifiers = createAsyncThunk<
 });
 
 export const fetchPriceModifierById = createAsyncThunk<
-  ModelsPriceModifierDto,
+  ModelsasPriceModifierDto,
   { id: number; businessId: number }
 >('priceModifier/fetchPriceModifierById', async ({ id, businessId }) => {
   const response = await getPriceModifierById({
@@ -50,11 +50,11 @@ export const fetchPriceModifierById = createAsyncThunk<
 });
 
 export const addPriceModifier = createAsyncThunk<
-  ModelsPriceModifierDto,
-  ModelsCreatePriceModifierRequest
+  ModelsasPriceModifierDto,
+  ModelsasCreatePriceModifierRequest
 >(
   'priceModifier/addPriceModifier',
-  async (priceModifierData: ModelsCreatePriceModifierRequest) => {
+  async (priceModifierData: ModelsasCreatePriceModifierRequest) => {
     const response = await createPriceModifier({ body: priceModifierData });
 
     if (response.error) {
@@ -70,8 +70,8 @@ export const addPriceModifier = createAsyncThunk<
 );
 
 export const editPriceModifier = createAsyncThunk<
-  ModelsPriceModifierDto,
-  { id: number; businessId: number; data: ModelsUpdatePriceModifierRequest }
+  ModelsasPriceModifierDto,
+  { id: number; businessId: number; data: ModelsasUpdatePriceModifierRequest }
 >('priceModifier/editPriceModifier', async ({ id, businessId, data }) => {
   const response = await updatePriceModifier({
     path: { id },

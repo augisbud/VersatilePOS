@@ -1,5 +1,5 @@
 import { Modal, Form, Input, InputNumber, Select, Switch, Space } from 'antd';
-import { ModelsPriceModifierDto } from '@/api/types.gen';
+import { ModelsasPriceModifierDto } from '@/api/types.gen';
 
 export interface PriceModifierFormValues {
   name: string;
@@ -10,7 +10,7 @@ export interface PriceModifierFormValues {
 
 interface PriceModifierFormModalProps {
   open: boolean;
-  editingModifier: ModelsPriceModifierDto | null;
+  editingModifier: ModelsasPriceModifierDto | null;
   isSubmitting: boolean;
   onClose: () => void;
   onSubmit: (values: PriceModifierFormValues) => void;

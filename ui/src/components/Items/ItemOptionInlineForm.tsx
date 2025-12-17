@@ -7,7 +7,7 @@ import {
   Button,
   Checkbox,
 } from 'antd';
-import { ModelsPriceModifierDto } from '@/api/types.gen';
+import { ModelsasPriceModifierDto } from '@/api/types.gen';
 import { getPriceModifierSelectOptions } from '@/utils/formatters';
 
 export type NewOptionFormValues = {
@@ -18,7 +18,7 @@ export type NewOptionFormValues = {
 };
 
 type Props = {
-  priceModifiers: ModelsPriceModifierDto[];
+  priceModifiers: ModelsasPriceModifierDto[];
   isEditing: boolean;
   onSubmit: (values: NewOptionFormValues) => void;
   onCancel: () => void;

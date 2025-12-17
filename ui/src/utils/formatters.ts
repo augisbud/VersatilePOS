@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { ModelsPriceModifierDto } from '@/api/types.gen';
+import { ModelsasPriceModifierDto } from '@/api/types.gen';
 
 export const formatDateTime = (date: string | undefined): string => {
   if (!date) {
@@ -34,13 +34,13 @@ export const formatDuration = (minutes: number | undefined): string => {
 };
 
 export const formatPriceModifierValue = (
-  pm: ModelsPriceModifierDto
+  pm: ModelsasPriceModifierDto
 ): string => {
   return pm.isPercentage ? `${pm.value}%` : `$${pm.value?.toFixed(2)}`;
 };
 
 export const getPriceModifierDisplay = (
-  priceModifiers: ModelsPriceModifierDto[],
+  priceModifiers: ModelsasPriceModifierDto[],
   priceModifierId?: number
 ): string => {
   if (!priceModifierId) return '-';
@@ -50,7 +50,7 @@ export const getPriceModifierDisplay = (
 };
 
 export const getPriceModifierSelectOptions = (
-  priceModifiers: ModelsPriceModifierDto[]
+  priceModifiers: ModelsasPriceModifierDto[]
 ) => {
   return priceModifiers.map((pm) => ({
     value: pm.id,

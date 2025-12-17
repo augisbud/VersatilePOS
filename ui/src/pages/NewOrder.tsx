@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Alert, Modal, message } from 'antd';
 import { AccessDenied } from '@/components/shared';
 import { useOrderEditor, CustomerDetails } from '@/hooks/useOrderEditor';
@@ -11,6 +11,7 @@ import {
   CustomerDetailsModal,
   OrderBillModal,
   SplitBillModal,
+  OrderDiscountModal,
 } from '@/components/Orders/OrderEditor';
 import { StripePaymentModal, StripePaymentResult } from '@/components/Payment';
 
@@ -22,6 +23,8 @@ export const NewOrder = () => {
   const [splitBillModalOpen, setSplitBillModalOpen] = useState(false);
   const [splitBillLoading, setSplitBillLoading] = useState(false);
   const [stripeModalOpen, setStripeModalOpen] = useState(false);
+  const [discountModalOpen, setDiscountModalOpen] = useState(false);
+  const [discountSubmitting, setDiscountSubmitting] = useState(false);
 
   const { createPayment, linkPaymentToOrder, completePayment } = usePayments();
 
@@ -33,6 +36,8 @@ export const NewOrder = () => {
     optionToAdd,
     error,
     total,
+    orderSubtotal,
+    appliedDiscounts,
     orderInfoItems,
     availableOptionsForEdit,
     loading,
@@ -58,12 +63,15 @@ export const NewOrder = () => {
     handleRemoveItem,
     handleAddOption,
     handleRemoveOption,
-    handleAddDiscount,
     handleSaveOrder,
     confirmCancelOrder,
     handleQuantityChange,
     setOptionToAdd,
     navigateBack,
+    applyPriceModifierToOrder,
+    priceModifiers,
+    refreshOrderDetails,
+    addLocalPriceModifier,
   } = useOrderEditor();
 
   const handleCancelOrderClick = useCallback(() => {
@@ -97,6 +105,10 @@ export const NewOrder = () => {
 
   const handleGenerateBillClick = useCallback(() => {
     setBillModalOpen(true);
+  }, []);
+
+  const handleAddDiscountClick = useCallback(() => {
+    setDiscountModalOpen(true);
   }, []);
 
   const handleBillModalClose = useCallback(() => {
@@ -207,6 +219,37 @@ export const NewOrder = () => {
   const handleSplitBillClose = useCallback(() => {
     setSplitBillModalOpen(false);
   }, []);
+
+  const availableDiscounts = useMemo(
+    () => priceModifiers.filter((pm) => pm.modifierType === 'Discount'),
+    [priceModifiers]
+  );
+
+  const handleApplyDiscount = useCallback(
+    async (priceModifierId: number) => {
+      setDiscountSubmitting(true);
+      try {
+        if (parsedOrderId) {
+          await applyPriceModifierToOrder(parsedOrderId, { priceModifierId });
+          await refreshOrderDetails();
+        } else {
+          addLocalPriceModifier(priceModifierId);
+        }
+        void message.success('Discount applied to order');
+        setDiscountModalOpen(false);
+      } catch {
+        void message.error('Failed to apply discount');
+      } finally {
+        setDiscountSubmitting(false);
+      }
+    },
+    [
+      parsedOrderId,
+      applyPriceModifierToOrder,
+      refreshOrderDetails,
+      addLocalPriceModifier,
+    ]
+  );
 
   // State for split bill card payment
   const [splitBillCardPayment, setSplitBillCardPayment] = useState<{
@@ -393,12 +436,14 @@ export const NewOrder = () => {
         <OrderInfoPanel
           items={orderInfoItems}
           total={total}
+        subtotal={orderSubtotal}
+        discounts={appliedDiscounts}
           loading={loading || !initialLoadComplete}
           canWriteOrders={canWriteOrders}
           isEditMode={isEditMode}
           hasOrderId={!!parsedOrderId}
           onEditItem={handleEditItem}
-          onAddDiscount={handleAddDiscount}
+        onAddDiscount={handleAddDiscountClick}
           onSaveOrder={handleSaveOrderClick}
           onDoneEditing={navigateBack}
           onGenerateBill={handleGenerateBillClick}
@@ -482,6 +527,16 @@ export const NewOrder = () => {
             ? handleSplitBillStripeCancel
             : handleStripePaymentCancel
         }
+      />
+
+      <OrderDiscountModal
+        open={discountModalOpen}
+        subtotal={orderSubtotal}
+        discounts={availableDiscounts}
+        appliedDiscounts={appliedDiscounts}
+        loading={discountSubmitting}
+        onApply={(id) => handleApplyDiscount(id)}
+        onClose={() => setDiscountModalOpen(false)}
       />
     </div>
   );

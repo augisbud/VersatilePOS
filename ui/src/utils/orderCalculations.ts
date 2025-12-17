@@ -2,7 +2,7 @@ import {
   ModelsItemDto,
   ModelsItemOptionDto,
   ModelsItemOptionLinkDto,
-  ModelsPriceModifierDto,
+  ModelsasPriceModifierDto,
 } from '@/api/types.gen';
 import { getItemOptionById } from '@/selectors/itemOption';
 import { getItemPrice } from '@/selectors/item';
@@ -33,7 +33,7 @@ export const calculateOptionPriceChange = (
   optionId: number,
   basePrice: number,
   itemOptions: ModelsItemOptionDto[],
-  priceModifiers: ModelsPriceModifierDto[]
+  priceModifiers: ModelsasPriceModifierDto[]
 ): number => {
   const option = getItemOptionById(itemOptions, optionId);
   if (!option?.priceModifierId) return 0;
@@ -55,7 +55,7 @@ export const calculateOptionsPrice = (
   options: ModelsItemOptionLinkDto[] | SelectedItemOption[],
   basePrice: number,
   itemOptions: ModelsItemOptionDto[],
-  priceModifiers: ModelsPriceModifierDto[]
+  priceModifiers: ModelsasPriceModifierDto[]
 ): number => {
   let total = 0;
 
@@ -96,7 +96,7 @@ export const calculateOrderTotal = (
   selectedItems: SelectedItem[],
   items: ModelsItemDto[],
   itemOptions: ModelsItemOptionDto[],
-  priceModifiers: ModelsPriceModifierDto[],
+  priceModifiers: ModelsasPriceModifierDto[],
   getOptionsForItem: (
     itemId: number,
     orderItemId?: number
@@ -124,7 +124,7 @@ export const mapOptionsToDisplay = (
   options: ModelsItemOptionLinkDto[] | SelectedItemOption[],
   basePrice: number,
   itemOptions: ModelsItemOptionDto[],
-  priceModifiers: ModelsPriceModifierDto[],
+  priceModifiers: ModelsasPriceModifierDto[],
   formatPriceChange: (change: number) => string,
   getOptionName: (optionId: number) => string
 ): { optionId: number; name: string; priceChange: string; count: number }[] => {
@@ -180,7 +180,7 @@ export const mapItemsToOrderInfo = (
   selectedItems: SelectedItem[],
   items: ModelsItemDto[],
   itemOptions: ModelsItemOptionDto[],
-  priceModifiers: ModelsPriceModifierDto[],
+  priceModifiers: ModelsasPriceModifierDto[],
   getOptionsForItem: (
     itemId: number,
     orderItemId?: number
@@ -227,7 +227,7 @@ export const getAvailableOptionsForEdit = (
   itemId: number,
   selectedOptionIds: number[],
   itemOptions: ModelsItemOptionDto[],
-  priceModifiers: ModelsPriceModifierDto[],
+  priceModifiers: ModelsasPriceModifierDto[],
   items: ModelsItemDto[],
   formatPriceChange: (change: number) => string
 ): { id: number; name: string; priceLabel: string }[] => {

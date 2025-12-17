@@ -23,6 +23,7 @@ export const NewOrder = () => {
   const [splitBillModalOpen, setSplitBillModalOpen] = useState(false);
   const [splitBillLoading, setSplitBillLoading] = useState(false);
   const [stripeModalOpen, setStripeModalOpen] = useState(false);
+  const [stripeAmount, setStripeAmount] = useState<number>(0);
   const [discountModalOpen, setDiscountModalOpen] = useState(false);
   const [discountSubmitting, setDiscountSubmitting] = useState(false);
 
@@ -38,6 +39,7 @@ export const NewOrder = () => {
     total,
     orderSubtotal,
     appliedDiscounts,
+    appliedServiceCharges,
     orderInfoItems,
     availableOptionsForEdit,
     loading,
@@ -72,6 +74,7 @@ export const NewOrder = () => {
     priceModifiers,
     refreshOrderDetails,
     addLocalPriceModifier,
+    updateOrder,
   } = useOrderEditor();
 
   const handleCancelOrderClick = useCallback(() => {
@@ -116,7 +119,10 @@ export const NewOrder = () => {
   }, []);
 
   const handlePayment = useCallback(
-    async (paymentType: 'Cash' | 'CreditCard' | 'GiftCard') => {
+    async (
+      paymentType: 'Cash' | 'CreditCard' | 'GiftCard',
+      tipAmount: number
+    ) => {
       if (!parsedOrderId) {
         void message.warning(
           'Please save the order first before processing payment.'
@@ -124,9 +130,21 @@ export const NewOrder = () => {
         return;
       }
 
+      const paymentAmount = total + tipAmount;
+
+      if (tipAmount > 0) {
+        try {
+          await updateOrder(parsedOrderId, { tipAmount });
+        } catch {
+          void message.error('Failed to save tip amount');
+          return;
+        }
+      }
+
       // For CreditCard, open Stripe payment modal
       if (paymentType === 'CreditCard') {
         setBillModalOpen(false);
+        setStripeAmount(paymentAmount);
         setStripeModalOpen(true);
         return;
       }
@@ -135,7 +153,7 @@ export const NewOrder = () => {
       setBillLoading(true);
       try {
         const payment = await createPayment({
-          amount: total,
+          amount: paymentAmount,
           type: paymentType,
           status: 'Completed',
         });
@@ -152,7 +170,14 @@ export const NewOrder = () => {
         setBillLoading(false);
       }
     },
-    [parsedOrderId, total, createPayment, linkPaymentToOrder, navigateBack]
+    [
+      parsedOrderId,
+      total,
+      updateOrder,
+      createPayment,
+      linkPaymentToOrder,
+      navigateBack,
+    ]
   );
 
   const handleStripePaymentSuccess = useCallback(
@@ -206,10 +231,6 @@ export const NewOrder = () => {
   const handleStripePaymentCancel = useCallback(() => {
     setStripeModalOpen(false);
     setBillModalOpen(true);
-  }, []);
-
-  const handleAddTip = useCallback(() => {
-    void message.info('Tip feature coming soon');
   }, []);
 
   const handleSplitBillClick = useCallback(() => {
@@ -436,14 +457,15 @@ export const NewOrder = () => {
         <OrderInfoPanel
           items={orderInfoItems}
           total={total}
-        subtotal={orderSubtotal}
-        discounts={appliedDiscounts}
+          subtotal={orderSubtotal}
+          discounts={appliedDiscounts}
+          serviceCharges={appliedServiceCharges}
           loading={loading || !initialLoadComplete}
           canWriteOrders={canWriteOrders}
           isEditMode={isEditMode}
           hasOrderId={!!parsedOrderId}
           onEditItem={handleEditItem}
-        onAddDiscount={handleAddDiscountClick}
+          onAddDiscount={handleAddDiscountClick}
           onSaveOrder={handleSaveOrderClick}
           onDoneEditing={navigateBack}
           onGenerateBill={handleGenerateBillClick}
@@ -497,8 +519,7 @@ export const NewOrder = () => {
         items={orderInfoItems}
         total={total}
         loading={billLoading}
-        onPayment={(type) => void handlePayment(type)}
-        onAddTip={handleAddTip}
+        onPayment={(type, tipAmount) => void handlePayment(type, tipAmount)}
         onClose={handleBillModalClose}
       />
 
@@ -513,7 +534,7 @@ export const NewOrder = () => {
 
       <StripePaymentModal
         open={stripeModalOpen}
-        amount={splitBillCardPayment?.amount ?? total}
+        amount={splitBillCardPayment?.amount ?? stripeAmount}
         orderId={parsedOrderId || undefined}
         onSuccess={(result) => {
           if (splitBillCardPayment) {

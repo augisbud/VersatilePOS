@@ -1,12 +1,8 @@
+import { useState } from 'react';
 import { Modal, Divider, Typography, Spin } from 'antd';
 import dayjs from 'dayjs';
-import {
-  BillItemsTable,
-  BillTotal,
-  PaymentButtons,
-  BillItem,
-  PaymentType,
-} from './Bill';
+import { TipSelector, PaymentSummary } from '@/components/shared';
+import { BillItemsTable, PaymentButtons, BillItem, PaymentType } from './Bill';
 
 type Props = {
   open: boolean;
@@ -14,8 +10,7 @@ type Props = {
   total: number;
   orderCreatedAt?: string;
   loading?: boolean;
-  onPayment: (paymentType: PaymentType) => void;
-  onAddTip: () => void;
+  onPayment: (paymentType: PaymentType, tipAmount: number) => void;
   onClose: () => void;
 };
 
@@ -28,21 +23,62 @@ export const OrderBillModal = ({
   orderCreatedAt,
   loading,
   onPayment,
-  onAddTip,
   onClose,
 }: Props) => {
+  const [tipAmount, setTipAmount] = useState<number>(0);
+  const [selectedTipPreset, setSelectedTipPreset] = useState<number | null>(
+    null
+  );
+  const [isCustomTip, setIsCustomTip] = useState(false);
+
   const billCreatedAt = dayjs().format('YYYY-MM-DD HH:mm');
   const formattedOrderDate = orderCreatedAt
     ? dayjs(orderCreatedAt).format('YYYY-MM-DD HH:mm')
     : dayjs().format('YYYY-MM-DD HH:mm');
 
+  const baseAmount = total;
+  const totalAmount = baseAmount + tipAmount;
+
+  const handleTipPresetClick = (percentage: number) => {
+    setSelectedTipPreset(percentage);
+    setIsCustomTip(false);
+    setTipAmount(Math.round(baseAmount * percentage * 100) / 100);
+  };
+
+  const handleCustomTipChange = (value: number | null) => {
+    setSelectedTipPreset(null);
+    setIsCustomTip(true);
+    setTipAmount(value || 0);
+  };
+
+  const handleNoTip = () => {
+    setSelectedTipPreset(null);
+    setIsCustomTip(false);
+    setTipAmount(0);
+  };
+
+  const resetTipState = () => {
+    setTipAmount(0);
+    setSelectedTipPreset(null);
+    setIsCustomTip(false);
+  };
+
+  const handleClose = () => {
+    resetTipState();
+    onClose();
+  };
+
+  const handlePayment = (paymentType: PaymentType) => {
+    onPayment(paymentType, tipAmount);
+  };
+
   return (
     <Modal
       title="Order Bill"
       open={open}
-      onCancel={onClose}
+      onCancel={handleClose}
       footer={null}
-      width={520}
+      width={600}
       centered
       destroyOnClose
     >
@@ -60,7 +96,20 @@ export const OrderBillModal = ({
 
             <Divider style={{ margin: '12px 0' }} />
 
-            <BillTotal total={total} />
+            <TipSelector
+              tipAmount={tipAmount}
+              selectedTipPreset={selectedTipPreset}
+              isCustomTip={isCustomTip}
+              onPresetClick={handleTipPresetClick}
+              onCustomChange={handleCustomTipChange}
+              onNoTip={handleNoTip}
+            />
+
+            <PaymentSummary
+              baseAmount={baseAmount}
+              tipAmount={tipAmount}
+              totalAmount={totalAmount}
+            />
 
             <Divider style={{ margin: '12px 0' }} />
 
@@ -70,7 +119,7 @@ export const OrderBillModal = ({
           </div>
 
           {/* Right side - Payment buttons */}
-          <PaymentButtons onPayment={onPayment} onAddTip={onAddTip} />
+          <PaymentButtons onPayment={handlePayment} disabled={loading} />
         </div>
       </Spin>
     </Modal>

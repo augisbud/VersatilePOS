@@ -2,14 +2,12 @@ import { Button } from 'antd';
 import {
   DollarOutlined,
   CreditCardOutlined,
-  WalletOutlined,
   GiftOutlined,
 } from '@ant-design/icons';
 import { PaymentType } from './types';
 
 type Props = {
   onPayment: (paymentType: PaymentType) => void;
-  onAddTip: () => void;
   disabled?: boolean;
 };
 
@@ -23,7 +21,7 @@ const buttonStyle = {
   gap: 8,
 } as const;
 
-export const PaymentButtons = ({ onPayment, onAddTip, disabled }: Props) => (
+export const PaymentButtons = ({ onPayment, disabled }: Props) => (
   <div
     style={{
       display: 'flex',
@@ -33,16 +31,6 @@ export const PaymentButtons = ({ onPayment, onAddTip, disabled }: Props) => (
       flexShrink: 0,
     }}
   >
-    <Button
-      block
-      size="large"
-      onClick={onAddTip}
-      disabled={disabled}
-      style={buttonStyle}
-      icon={<WalletOutlined />}
-    >
-      TIP
-    </Button>
     <Button
       block
       type="primary"

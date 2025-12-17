@@ -23,6 +23,7 @@ export const useOrderCardActions = ({
   onRefund,
 }: Props): ReactNode[] => {
   const isCancelled = order.status === 'Cancelled';
+  const isConfirmed = order.status === 'Confirmed';
   const isCompleted = order.status === 'Completed';
   const isRefunded = order.status === 'Refunded';
 
@@ -50,7 +51,7 @@ export const useOrderCardActions = ({
     );
   }
 
-  if (canWriteOrders && isCompleted) {
+  if (canWriteOrders && (isConfirmed || isCompleted)) {
     actions.push(
       <Popconfirm
         key="refund"

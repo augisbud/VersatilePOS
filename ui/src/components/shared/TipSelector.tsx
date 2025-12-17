@@ -11,7 +11,6 @@ const TIP_PRESETS = [
 
 interface TipSelectorProps {
   tipAmount: number;
-  baseAmount: number;
   selectedTipPreset: number | null;
   isCustomTip: boolean;
   onPresetClick: (percentage: number) => void;

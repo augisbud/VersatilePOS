@@ -32,6 +32,10 @@ import {
   setOrdersBusinessId,
 } from '@/actions/order';
 import {
+  applyDiscountToOrderItem as applyDiscountToOrderItemAction,
+  removeDiscountFromOrderItem as removeDiscountFromOrderItemAction,
+} from '@/actions/orderItemDiscount';
+import {
   ModelsApplyPriceModifierRequest,
   ModelsCreateItemOptionLinkRequest,
   ModelsCreateOrderItemRequest,
@@ -120,6 +124,26 @@ export const useOrders = () => {
     ).unwrap();
   };
 
+  const applyDiscountToOrderItem = async (
+    orderId: number,
+    orderItemId: number,
+    data: ModelsCreateItemOptionLinkRequest
+  ) => {
+    return dispatch(
+      applyDiscountToOrderItemAction({ orderId, orderItemId, data })
+    ).unwrap();
+  };
+
+  const removeDiscountFromOrderItem = async (
+    orderId: number,
+    orderItemId: number,
+    optionLinkId: number
+  ) => {
+    return dispatch(
+      removeDiscountFromOrderItemAction({ orderId, orderItemId, optionLinkId })
+    ).unwrap();
+  };
+
   const linkPaymentToOrder = async (orderId: number, paymentId: number) => {
     return dispatch(linkPaymentAction({ orderId, paymentId })).unwrap();
   };
@@ -169,6 +193,8 @@ export const useOrders = () => {
     fetchOptionsForOrderItem,
     addOptionToOrderItem,
     removeOptionFromOrderItem,
+    applyDiscountToOrderItem,
+    removeDiscountFromOrderItem,
     linkPaymentToOrder,
     applyPriceModifierToOrder,
     selectBusiness,

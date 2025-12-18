@@ -20,6 +20,8 @@ export type NewOptionFormValues = {
 type Props = {
   priceModifiers: ModelsasPriceModifierDto[];
   isEditing: boolean;
+  allowedModifierTypes?: string[];
+  excludedModifierTypes?: string[];
   onSubmit: (values: NewOptionFormValues) => void;
   onCancel: () => void;
 };
@@ -27,13 +29,25 @@ type Props = {
 export const ItemOptionInlineForm = ({
   priceModifiers,
   isEditing,
+  allowedModifierTypes,
+  excludedModifierTypes,
   onSubmit,
   onCancel,
 }: Props) => {
   const [form] = Form.useForm<NewOptionFormValues>();
   const trackInventory = Form.useWatch('trackInventory', form);
 
-  const priceModifierOptions = getPriceModifierSelectOptions(priceModifiers);
+  const filteredPriceModifiers = priceModifiers.filter((pm) => {
+    if (allowedModifierTypes?.length && !allowedModifierTypes.includes(pm.modifierType ?? '')) {
+      return false;
+    }
+    if (excludedModifierTypes?.length && excludedModifierTypes.includes(pm.modifierType ?? '')) {
+      return false;
+    }
+    return true;
+  });
+
+  const priceModifierOptions = getPriceModifierSelectOptions(filteredPriceModifiers);
 
   const handleSubmit = () => {
     void form.validateFields().then((values) => {

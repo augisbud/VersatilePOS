@@ -20,6 +20,8 @@ import {
   calculateOrderTotal,
   mapItemsToOrderInfo,
   getAvailableOptionsForEdit,
+  getAvailableDiscountOptionsForEdit,
+  isDiscountItemOption,
 } from '@/utils/orderCalculations';
 import {
   ModelsItemDto,
@@ -49,6 +51,7 @@ export const useOrderEditor = () => {
   const [editingItem, setEditingItem] = useState<EditingItem | null>(null);
   const [initialLoadComplete, setInitialLoadComplete] = useState(!isEditMode);
   const [optionToAdd, setOptionToAdd] = useState<number | undefined>();
+  const [discountToAdd, setDiscountToAdd] = useState<number | undefined>();
   const [selectedTagId, setSelectedTagId] = useState<number | null>(null);
   const [itemsByTag, setItemsByTag] = useState<ModelsItemDto[]>([]);
   const [itemsByTagLoading, setItemsByTagLoading] = useState(false);
@@ -77,6 +80,8 @@ export const useOrderEditor = () => {
     fetchOptionsForOrderItem,
     addOptionToOrderItem,
     removeOptionFromOrderItem,
+    applyDiscountToOrderItem,
+    removeDiscountFromOrderItem,
     applyPriceModifierToOrder,
   } = useOrders();
 
@@ -86,10 +91,11 @@ export const useOrderEditor = () => {
     fetchAllBusinesses,
   } = useBusiness();
 
-  const { canWriteOrders, canReadOrders } = useUser();
+  const { canWriteOrders, canReadOrders, canWriteItemOptions, canReadPriceModifiers } =
+    useUser();
   const { items, fetchItems, loading: itemsLoading } = useItems();
   const { tags, fetchTags, loading: tagsLoading } = useTags();
-  const { itemOptions, fetchItemOptions } = useItemOptions();
+  const { itemOptions, fetchItemOptions, createItemOption } = useItemOptions();
   const { priceModifiers, fetchPriceModifiers } = usePriceModifiers();
   const userBusinessId = useAppSelector(getUserBusinessId);
 
@@ -245,6 +251,24 @@ export const useOrderEditor = () => {
     [itemOptions]
   );
 
+  const getOptionSnapshotLocal = useCallback(
+    (optionId: number): Partial<SelectedItemOption> => {
+      const option = itemOptions.find((o) => o.id === optionId);
+      if (!option?.priceModifierId) {
+        return { optionName: getOptionNameLocal(optionId) };
+      }
+      const pm = priceModifiers.find((p) => p.id === option.priceModifierId);
+      return {
+        optionName: option.name || getOptionNameLocal(optionId),
+        priceModifierName: pm?.name,
+        priceModifierValue: pm?.value,
+        priceModifierIsPercent: pm?.isPercentage,
+        priceModifierType: pm?.modifierType,
+      };
+    },
+    [itemOptions, priceModifiers, getOptionNameLocal]
+  );
+
   const getOptionPriceChangeLocal = useCallback(
     (optionId: number, basePrice: number) =>
       calculateOptionPriceChange(
@@ -359,6 +383,39 @@ export const useOrderEditor = () => {
     );
   }, [editingItem, itemOptions, priceModifiers, items]);
 
+  const availableDiscountOptionsForEdit: AvailableOption[] = useMemo(() => {
+    if (!editingItem) return [];
+
+    const selectedOptionIds = editingItem.options.map((o) => o.itemOptionId);
+    return getAvailableDiscountOptionsForEdit(
+      editingItem.itemId,
+      selectedOptionIds,
+      itemOptions,
+      priceModifiers,
+      items,
+      formatPriceChange
+    );
+  }, [editingItem, itemOptions, priceModifiers, items]);
+
+  const discountPriceModifiers = useMemo(() => {
+    return priceModifiers.filter(
+      (pm) => pm.modifierType === 'Discount' && pm.id !== undefined
+    );
+  }, [priceModifiers]);
+
+  const canCreateDiscountOption =
+    !!selectedBusinessId && canWriteItemOptions && canReadPriceModifiers;
+
+  const isDiscountSelectedOption = useCallback(
+    (opt: SelectedItemOption) => {
+      // Prefer snapshot (edit mode) if present
+      if (opt.priceModifierType) return opt.priceModifierType === 'Discount';
+      // Fallback to live lookups (new order / local mode)
+      return isDiscountItemOption(opt.itemOptionId, itemOptions, priceModifiers);
+    },
+    [itemOptions, priceModifiers]
+  );
+
   // Event handlers
   const handleItemClick = useCallback(
     async (item: ModelsItemDto) => {
@@ -416,7 +473,10 @@ export const useOrderEditor = () => {
             priceModifierType: o.priceModifierType,
             priceModifierIsPercent: o.priceModifierIsPercent,
           }))
-        : [...(options as SelectedItemOption[])];
+        : (options as SelectedItemOption[]).map((o) => ({
+            ...o,
+            ...getOptionSnapshotLocal(o.itemOptionId),
+          }));
 
       setEditingItem({
         itemId,
@@ -426,8 +486,9 @@ export const useOrderEditor = () => {
         originalOptions: [...mappedOptions],
       });
       setOptionToAdd(undefined);
+      setDiscountToAdd(undefined);
     },
-    [selectedItems, getOptionsForItem, isEditMode]
+    [selectedItems, getOptionsForItem, isEditMode, getOptionSnapshotLocal]
   );
 
   const handleEditSave = useCallback(async () => {
@@ -455,10 +516,16 @@ export const useOrderEditor = () => {
       );
 
       for (const opt of optionsToAdd) {
-        await addOptionToOrderItem(parsedOrderId, editingItem.orderItemId, {
-          itemOptionId: opt.itemOptionId,
-          count: opt.count,
-        });
+        const data = { itemOptionId: opt.itemOptionId, count: opt.count };
+        if (isDiscountSelectedOption(opt)) {
+          await applyDiscountToOrderItem(
+            parsedOrderId,
+            editingItem.orderItemId,
+            data
+          );
+        } else {
+          await addOptionToOrderItem(parsedOrderId, editingItem.orderItemId, data);
+        }
       }
 
       const currentOptionsFromServer =
@@ -468,11 +535,19 @@ export const useOrderEditor = () => {
           (o: ModelsItemOptionLinkDto) => o.itemOptionId === opt.itemOptionId
         );
         if (optionLink?.id) {
-          await removeOptionFromOrderItem(
-            parsedOrderId,
-            editingItem.orderItemId,
-            optionLink.id
-          );
+          if (isDiscountSelectedOption(opt)) {
+            await removeDiscountFromOrderItem(
+              parsedOrderId,
+              editingItem.orderItemId,
+              optionLink.id
+            );
+          } else {
+            await removeOptionFromOrderItem(
+              parsedOrderId,
+              editingItem.orderItemId,
+              optionLink.id
+            );
+          }
         }
       }
 
@@ -491,6 +566,7 @@ export const useOrderEditor = () => {
     }
     setEditingItem(null);
     setOptionToAdd(undefined);
+    setDiscountToAdd(undefined);
   }, [
     editingItem,
     isEditMode,
@@ -498,14 +574,18 @@ export const useOrderEditor = () => {
     updateOrderItem,
     addOptionToOrderItem,
     removeOptionFromOrderItem,
+    applyDiscountToOrderItem,
+    removeDiscountFromOrderItem,
     fetchItemsForOrder,
     fetchOptionsForOrderItem,
     itemOptionsMap,
+    isDiscountSelectedOption,
   ]);
 
   const handleEditCancel = useCallback(() => {
     setEditingItem(null);
     setOptionToAdd(undefined);
+    setDiscountToAdd(undefined);
   }, []);
 
   const handleRemoveItem = useCallback(async () => {
@@ -520,6 +600,7 @@ export const useOrderEditor = () => {
       );
     }
     setEditingItem(null);
+    setDiscountToAdd(undefined);
   }, [
     editingItem,
     isEditMode,
@@ -544,11 +625,73 @@ export const useOrderEditor = () => {
       }
       return {
         ...prev,
-        options: [...prev.options, { itemOptionId: optionToAdd, count: 1 }],
+        options: [
+          ...prev.options,
+          { itemOptionId: optionToAdd, count: 1, ...getOptionSnapshotLocal(optionToAdd) },
+        ],
       };
     });
     setOptionToAdd(undefined);
-  }, [editingItem, optionToAdd]);
+  }, [editingItem, optionToAdd, getOptionSnapshotLocal]);
+
+  const handleAddDiscount = useCallback(() => {
+    if (!editingItem || !discountToAdd) return;
+
+    setEditingItem((prev) => {
+      if (!prev) return null;
+      const existing = prev.options.find((o) => o.itemOptionId === discountToAdd);
+      if (existing) {
+        return {
+          ...prev,
+          options: prev.options.map((o) =>
+            o.itemOptionId === discountToAdd ? { ...o, count: o.count + 1 } : o
+          ),
+        };
+      }
+      return {
+        ...prev,
+        options: [
+          ...prev.options,
+          { itemOptionId: discountToAdd, count: 1, ...getOptionSnapshotLocal(discountToAdd) },
+        ],
+      };
+    });
+
+    setDiscountToAdd(undefined);
+  }, [editingItem, discountToAdd, getOptionSnapshotLocal]);
+
+  const handleAddDiscountById = useCallback(
+    (discountOptionId: number) => {
+      if (!editingItem || !discountOptionId) return;
+
+      setEditingItem((prev) => {
+        if (!prev) return null;
+        const existing = prev.options.find((o) => o.itemOptionId === discountOptionId);
+        if (existing) {
+          return {
+            ...prev,
+            options: prev.options.map((o) =>
+              o.itemOptionId === discountOptionId
+                ? { ...o, count: o.count + 1 }
+                : o
+            ),
+          };
+        }
+        return {
+          ...prev,
+          options: [
+            ...prev.options,
+            {
+              itemOptionId: discountOptionId,
+              count: 1,
+              ...getOptionSnapshotLocal(discountOptionId),
+            },
+          ],
+        };
+      });
+    },
+    [editingItem, getOptionSnapshotLocal]
+  );
 
   const handleRemoveOption = useCallback(
     (optionId: number) => {
@@ -563,6 +706,38 @@ export const useOrderEditor = () => {
       });
     },
     [editingItem]
+  );
+
+  const handleRemoveDiscount = useCallback(
+    (optionId: number) => {
+      if (!editingItem) return;
+
+      setEditingItem((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          options: prev.options.filter((o) => o.itemOptionId !== optionId),
+        };
+      });
+    },
+    [editingItem]
+  );
+
+  const createDiscountOptionForItem = useCallback(
+    async (itemId: number, priceModifierId: number, name: string) => {
+      if (!selectedBusinessId) {
+        throw new Error('No business selected');
+      }
+      const created = await createItemOption({
+        itemId,
+        name,
+        priceModifierId,
+        trackInventory: false,
+      });
+      await fetchItemOptions(selectedBusinessId);
+      return created;
+    },
+    [selectedBusinessId, createItemOption, fetchItemOptions]
   );
 
   const handleSaveOrder = useCallback(
@@ -690,6 +865,7 @@ export const useOrderEditor = () => {
     editingItem,
     editingItemBasePrice,
     optionToAdd,
+    discountToAdd,
     error,
     total,
     orderSubtotal,
@@ -698,6 +874,9 @@ export const useOrderEditor = () => {
     serviceChargeTotal,
     orderInfoItems,
     availableOptionsForEdit,
+    availableDiscountOptionsForEdit,
+    discountPriceModifiers,
+    canCreateDiscountOption,
 
     // Loading states
     loading: ordersLoading,
@@ -731,11 +910,16 @@ export const useOrderEditor = () => {
     handleEditCancel,
     handleRemoveItem,
     handleAddOption,
+    handleAddDiscount,
+    handleAddDiscountById,
     handleRemoveOption,
+    handleRemoveDiscount,
+    createDiscountOptionForItem,
     handleSaveOrder,
     confirmCancelOrder,
     handleQuantityChange,
     setOptionToAdd,
+    setDiscountToAdd,
     navigateBack,
     applyPriceModifierToOrder,
     priceModifiers,

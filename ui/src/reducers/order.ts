@@ -17,6 +17,10 @@ import {
   setOrdersBusinessId,
 } from '@/actions/order';
 import {
+  applyDiscountToOrderItem,
+  removeDiscountFromOrderItem,
+} from '@/actions/orderItemDiscount';
+import {
   ModelsItemOptionLinkDto,
   ModelsOrderDto,
   ModelsOrderItemDto,
@@ -220,6 +224,38 @@ export const orderReducer = createReducer(initialState, (builder) => {
       state.loading = false;
     })
     .addCase(removeOrderItemOption.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.error.message;
+    })
+    // Apply item discount (implemented as order item option link)
+    .addCase(applyDiscountToOrderItem.pending, (state) => {
+      state.loading = true;
+      state.error = undefined;
+    })
+    .addCase(applyDiscountToOrderItem.fulfilled, (state, { payload }) => {
+      const existing = state.itemOptionsByOrderItem[payload.orderItemId] ?? [];
+      state.itemOptionsByOrderItem[payload.orderItemId] = [
+        ...existing,
+        payload.option,
+      ];
+      state.loading = false;
+    })
+    .addCase(applyDiscountToOrderItem.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.error.message;
+    })
+    // Remove item discount (implemented as order item option link)
+    .addCase(removeDiscountFromOrderItem.pending, (state) => {
+      state.loading = true;
+      state.error = undefined;
+    })
+    .addCase(removeDiscountFromOrderItem.fulfilled, (state, { payload }) => {
+      state.itemOptionsByOrderItem[payload.orderItemId] = (
+        state.itemOptionsByOrderItem[payload.orderItemId] ?? []
+      ).filter((option) => option.id !== payload.optionLinkId);
+      state.loading = false;
+    })
+    .addCase(removeDiscountFromOrderItem.rejected, (state, action) => {
       state.loading = false;
       state.error = action.error.message;
     })

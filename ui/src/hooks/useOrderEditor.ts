@@ -685,6 +685,7 @@ export const useOrderEditor = () => {
     // State
     isEditMode,
     parsedOrderId,
+    selectedOrder,
     selectedItems,
     editingItem,
     editingItemBasePrice,

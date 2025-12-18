@@ -21,6 +21,7 @@ export type PaymentType = 'Cash' | 'CreditCard' | 'GiftCard';
 export type SplitBillPaymentRequest = {
   billId: number;
   amount: number;
+  tipAmount?: number;
   itemIndices: number[];
   paymentType: PaymentType;
 };

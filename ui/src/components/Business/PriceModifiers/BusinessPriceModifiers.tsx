@@ -5,6 +5,7 @@ import {
   EditOutlined,
   DollarOutlined,
 } from '@ant-design/icons';
+import dayjs from 'dayjs';
 import { useState, useEffect, useMemo } from 'react';
 import { usePriceModifiers } from '@/hooks/usePriceModifiers';
 import { useUser } from '@/hooks/useUser';
@@ -134,8 +135,15 @@ export const BusinessPriceModifiers = ({
       title: 'Type',
       dataIndex: 'modifierType',
       key: 'modifierType',
-      render: (type: string) => (
-        <Tag color={MODIFIER_TYPE_COLORS[type] || 'default'}>{type}</Tag>
+      render: (type: string, record) => (
+        <Space size={4}>
+          <Tag color={MODIFIER_TYPE_COLORS[type] || 'default'}>{type}</Tag>
+          {type === 'Discount' && record.validTo && (
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              Valid to: {dayjs(record.validTo).format('MMM D, YYYY')}
+            </Typography.Text>
+          )}
+        </Space>
       ),
     },
     {

@@ -1,11 +1,31 @@
-import { Modal, Form, Input, InputNumber, Select, Switch, Space } from 'antd';
+import {
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  Switch,
+  Space,
+  DatePicker,
+} from 'antd';
 import { ModelsasPriceModifierDto } from '@/api/types.gen';
+import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 export interface PriceModifierFormValues {
   name: string;
   modifierType: string;
   value: number;
   isPercentage?: boolean;
+  endDate?: string;
+}
+
+interface InternalFormValues {
+  name: string;
+  modifierType: string;
+  value: number;
+  isPercentage?: boolean;
+  endDate?: Dayjs;
 }
 
 export interface PriceModifierDefaultValues {
@@ -42,7 +62,7 @@ export const PriceModifierFormModal = ({
   onClose,
   onSubmit,
 }: PriceModifierFormModalProps) => {
-  const [form] = Form.useForm<PriceModifierFormValues>();
+  const [form] = Form.useForm<InternalFormValues>();
   const isPercentage = Form.useWatch('isPercentage', form);
   const modifierType = Form.useWatch('modifierType', form);
 
@@ -54,6 +74,9 @@ export const PriceModifierFormModal = ({
           modifierType: editingModifier.modifierType,
           value: editingModifier.value,
           isPercentage: editingModifier.isPercentage,
+          endDate: editingModifier.validTo
+            ? dayjs(editingModifier.validTo)
+            : undefined,
         });
       } else if (defaultValues) {
         form.setFieldsValue(defaultValues);
@@ -63,7 +86,15 @@ export const PriceModifierFormModal = ({
 
   const handleSubmit = () => {
     void form.validateFields().then((values) => {
-      onSubmit(values);
+      console.log(values);
+      const submitValues: PriceModifierFormValues = {
+        name: values.name,
+        modifierType: values.modifierType,
+        value: values.value,
+        isPercentage: values.isPercentage,
+        endDate: values.endDate ? values.endDate.toISOString() : undefined,
+      };
+      onSubmit(submitValues);
     });
   };
 
@@ -127,6 +158,19 @@ export const PriceModifierFormModal = ({
           valuePropName="checked"
         >
           <Switch />
+        </Form.Item>
+
+        <Form.Item
+          name="endDate"
+          label="End Date"
+          tooltip="Optional: Set an expiration date for this discount"
+          hidden={modifierType !== 'Discount'}
+        >
+          <DatePicker
+            style={{ width: '100%' }}
+            format="YYYY-MM-DD"
+            placeholder="Select end date (optional)"
+          />
         </Form.Item>
       </Form>
     </Modal>

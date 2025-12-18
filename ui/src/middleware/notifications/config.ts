@@ -14,10 +14,6 @@ import { addReservation } from '@/actions/reservation';
 import { NotificationConfigs, RejectetAction } from './interfaces';
 
 export const NOTIFICATIONS_CONFIG = {
-  [createAccount.fulfilled.type]: () => ({
-    type: 'success',
-    message: 'Account created successfully',
-  }),
   [createAccount.rejected.type]: (action: RejectetAction) => ({
     type: 'error',
     message: action.error.message,

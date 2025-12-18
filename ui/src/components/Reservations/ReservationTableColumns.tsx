@@ -1,9 +1,11 @@
-import { Input, Button, Space, Typography, Tag } from 'antd';
+import { Input, Button, Space, Typography, Tag, Tooltip } from 'antd';
 import {
   SearchOutlined,
   EditOutlined,
   DollarOutlined,
   CheckCircleOutlined,
+  ClockCircleOutlined,
+  ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType, ColumnType } from 'antd/es/table';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
@@ -19,6 +21,37 @@ import {
   formatCurrency,
   formatDuration,
 } from '@/utils/formatters';
+
+export const calculateReservationTotal = (
+  reservation: ModelsReservationDto,
+  service: ModelsServiceDto | undefined
+): number => {
+  if (!service) return 0;
+
+  const durationHours = (reservation.reservationLength || 60) / 60;
+  const hourlyAmount = (service.hourlyPrice || 0) * durationHours;
+  const serviceCharge = service.serviceCharge || 0;
+  const tipAmount = reservation.tipAmount || 0;
+
+  return hourlyAmount + serviceCharge + tipAmount;
+};
+
+export const calculateTotalPaid = (
+  reservation: ModelsReservationDto
+): number => {
+  return (
+    reservation.payments?.reduce((sum, p) => sum + (p.amount ?? 0), 0) ?? 0
+  );
+};
+
+export const calculateRemainingAmount = (
+  reservation: ModelsReservationDto,
+  service: ModelsServiceDto | undefined
+): number => {
+  const total = calculateReservationTotal(reservation, service);
+  const paid = calculateTotalPaid(reservation);
+  return Math.max(0, total - paid);
+};
 
 const { Text } = Typography;
 
@@ -193,21 +226,46 @@ export const getReservationColumns = ({
       title: 'Payment',
       key: 'payment',
       render: (_, record) => {
-        const hasPayments = record.payments && record.payments.length > 0;
-        const totalPaid =
-          record.payments?.reduce((sum, p) => sum + (p.amount ?? 0), 0) ?? 0;
+        const service = services.find((s) => s.id === record.serviceId);
+        const totalAmount = calculateReservationTotal(record, service);
+        const totalPaid = calculateTotalPaid(record);
+        const remaining = calculateRemainingAmount(record, service);
 
-        if (hasPayments && totalPaid > 0) {
+        if (remaining <= 0 && totalPaid > 0) {
           return (
-            <Tag icon={<CheckCircleOutlined />} color="success">
-              {formatCurrency(totalPaid)}
-            </Tag>
+            <Tooltip title={`Paid: ${formatCurrency(totalPaid)}`}>
+              <Tag icon={<CheckCircleOutlined />} color="success">
+                Paid
+              </Tag>
+            </Tooltip>
           );
         }
 
-        return <Tag color="default">Unpaid</Tag>;
+        if (totalPaid > 0 && remaining > 0) {
+          return (
+            <Tooltip
+              title={`Total: ${formatCurrency(totalAmount)} | Paid: ${formatCurrency(totalPaid)}`}
+            >
+              <Tag icon={<ClockCircleOutlined />} color="warning">
+                {formatCurrency(remaining)} left
+              </Tag>
+            </Tooltip>
+          );
+        }
+
+        if (totalAmount > 0) {
+          return (
+            <Tooltip title={`Total due: ${formatCurrency(totalAmount)}`}>
+              <Tag icon={<ExclamationCircleOutlined />} color="default">
+                {formatCurrency(totalAmount)}
+              </Tag>
+            </Tooltip>
+          );
+        }
+
+        return <Tag color="default">-</Tag>;
       },
-      width: 100,
+      width: 120,
     },
     {
       title: 'Placed',
@@ -229,7 +287,9 @@ export const getReservationColumns = ({
       key: 'actions',
       width: 160,
       render: (_, record) => {
-        const isPaid = record.payments && record.payments.length > 0;
+        const service = services.find((s) => s.id === record.serviceId);
+        const remaining = calculateRemainingAmount(record, service);
+        const isFullyPaid = remaining <= 0;
         const isPayable =
           record.status === 'Confirmed' || record.status === 'Completed';
 
@@ -247,7 +307,7 @@ export const getReservationColumns = ({
               type="primary"
               icon={<DollarOutlined />}
               onClick={() => onPay(record)}
-              disabled={isPaid || !isPayable}
+              disabled={isFullyPaid || !isPayable}
             >
               Pay
             </Button>

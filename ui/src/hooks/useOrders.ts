@@ -77,7 +77,10 @@ export const useOrders = () => {
     return dispatch(fetchOrderItemsForAllOrdersAction(orderIds)).unwrap();
   };
 
-  const addItemToOrder = async (orderId: number, data: ModelsCreateOrderItemRequest) => {
+  const addItemToOrder = async (
+    orderId: number,
+    data: ModelsCreateOrderItemRequest
+  ) => {
     return dispatch(addOrderItemAction({ orderId, data })).unwrap();
   };
 
@@ -102,7 +105,9 @@ export const useOrders = () => {
     itemId: number,
     data: ModelsCreateItemOptionLinkRequest
   ) => {
-    return dispatch(addOrderItemOptionAction({ orderId, itemId, data })).unwrap();
+    return dispatch(
+      addOrderItemOptionAction({ orderId, itemId, data })
+    ).unwrap();
   };
 
   const removeOptionFromOrderItem = async (

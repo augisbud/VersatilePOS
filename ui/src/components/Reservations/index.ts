@@ -1,5 +1,10 @@
 export { ReservationStatusTag } from './ReservationStatusTag';
-export { getReservationColumns } from './ReservationTableColumns';
+export {
+  getReservationColumns,
+  calculateReservationTotal,
+  calculateTotalPaid,
+  calculateRemainingAmount,
+} from './ReservationTableColumns';
 export { EditReservationModal } from './EditReservationModal';
 export { ReservationPaymentModal } from './ReservationPaymentModal';
 export { ClientInformationForm } from './ClientInformationForm';

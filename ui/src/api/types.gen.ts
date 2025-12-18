@@ -410,6 +410,7 @@ export type ModelsUpdateTagRequest = {
 
 export type ModelsasCreatePriceModifierRequest = {
     businessId: number;
+    endDate?: string;
     isPercentage?: boolean;
     modifierType: string;
     name: string;
@@ -428,6 +429,7 @@ export type ModelsasPriceModifierDto = {
 };
 
 export type ModelsasUpdatePriceModifierRequest = {
+    endDate?: string;
     isPercentage?: boolean;
     modifierType?: string;
     name?: string;

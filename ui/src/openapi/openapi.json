@@ -7077,6 +7077,9 @@
                 "businessId": {
                     "type": "integer"
                 },
+                "endDate": {
+                    "type": "string"
+                },
                 "isPercentage": {
                     "type": "boolean"
                 },
@@ -7123,6 +7126,9 @@
         "modelsas.UpdatePriceModifierRequest": {
             "type": "object",
             "properties": {
+                "endDate": {
+                    "type": "string"
+                },
                 "isPercentage": {
                     "type": "boolean"
                 },

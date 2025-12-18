@@ -3,6 +3,7 @@ package repository
 import (
 	"VersatilePOS/database"
 	"VersatilePOS/database/entities"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -18,7 +19,7 @@ func (r *Repository) CreatePriceModifier(priceModifier *entities.PriceModifier) 
 
 func (r *Repository) GetPriceModifiers(businessID uint) ([]entities.PriceModifier, error) {
 	var priceModifiers []entities.PriceModifier
-	if result := database.DB.Where("business_id = ?", businessID).Find(&priceModifiers); result.Error != nil {
+	if result := database.DB.Where("business_id = ? AND (end_date IS NULL OR end_date > ?)", businessID, time.Now()).Find(&priceModifiers); result.Error != nil {
 		return nil, result.Error
 	}
 	return priceModifiers, nil

@@ -8,6 +8,7 @@ import (
 	"VersatilePOS/item/repository"
 	"VersatilePOS/priceModifier/modelsas"
 	"errors"
+	"time"
 )
 
 type Service struct {
@@ -489,12 +490,16 @@ func (s *Service) GetItemsWithPriceModifiers(businessID uint, userID uint) ([]mo
 	}
 
 	dtos := make([]models.ItemWithModifiersDto, len(items))
+	now := time.Now()
 	for i, item := range items {
 		// Convert price modifiers to DTOs
 		priceModifiers := priceModifierMap[item.ID]
-		priceModifierDtos := make([]modelsas.PriceModifierDto, len(priceModifiers))
-		for j, pm := range priceModifiers {
-			priceModifierDtos[j] = modelsas.NewPriceModifierDtoFromEntity(pm)
+		var priceModifierDtos []modelsas.PriceModifierDto
+		for _, pm := range priceModifiers {
+			if pm.EndDate != nil && now.After(*pm.EndDate) {
+				continue
+			}
+			priceModifierDtos = append(priceModifierDtos, modelsas.NewPriceModifierDtoFromEntity(pm))
 		}
 
 		// Calculate final price
@@ -520,9 +525,13 @@ func (s *Service) GetItemsWithPriceModifiers(businessID uint, userID uint) ([]mo
 // Helper function to calculate final price after applying all modifiers
 func (s *Service) calculateFinalPrice(basePrice float64, priceModifiers []entities.PriceModifier) float64 {
 	finalPrice := basePrice
+	now := time.Now()
 
 	// Apply discounts and surcharges first (they affect the base price)
 	for _, modifier := range priceModifiers {
+		if modifier.EndDate != nil && now.After(*modifier.EndDate) {
+			continue
+		}
 		if modifier.ModifierType == constants.Discount || modifier.ModifierType == constants.Surcharge {
 			if modifier.IsPercentage {
 				if modifier.ModifierType == constants.Discount {
@@ -542,6 +551,9 @@ func (s *Service) calculateFinalPrice(basePrice float64, priceModifiers []entiti
 
 	// Then apply taxes (they are calculated on the discounted/surcharged price)
 	for _, modifier := range priceModifiers {
+		if modifier.EndDate != nil && now.After(*modifier.EndDate) {
+			continue
+		}
 		if modifier.ModifierType == constants.Tax {
 			if modifier.IsPercentage {
 				finalPrice = finalPrice * (1 + modifier.Value/100)

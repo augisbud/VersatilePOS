@@ -19,7 +19,15 @@ type OrderDto struct {
 	CustomerPhone      string                              `json:"customerPhone"`
 	ValidFrom          *time.Time                          `json:"validFrom,omitempty"`
 	ValidTo            *time.Time                          `json:"validTo,omitempty"`
-	PriceModifiers     []modelsas.PriceModifierDto `json:"priceModifiers"`
+	PriceModifiers     []modelsas.PriceModifierDto         `json:"priceModifiers"`
+	Items              []OrderItemWithDetailsDto           `json:"items"`
+}
+
+type OrderItemWithDetailsDto struct {
+	ID      uint                      `json:"id"`
+	ItemID  uint                      `json:"itemId"`
+	Count   uint32                    `json:"count"`
+	Options []ItemOptionLinkDto       `json:"options,omitempty"`
 }
 
 
@@ -28,6 +36,21 @@ func NewOrderDtoFromEntity(o entities.Order) OrderDto {
 	var priceModifiers []modelsas.PriceModifierDto
 	for _, link := range o.PriceModifierOrderLinks {
 		priceModifiers = append(priceModifiers, modelsas.NewPriceModifierDtoFromEntity(link.PriceModifier))
+	}
+
+	var items []OrderItemWithDetailsDto
+	for _, orderItem := range o.OrderItems {
+		var options []ItemOptionLinkDto
+		for _, optionLink := range orderItem.ItemOptionLinks {
+			options = append(options, NewItemOptionLinkDtoFromEntity(optionLink))
+		}
+
+		items = append(items, OrderItemWithDetailsDto{
+			ID:      orderItem.ID,
+			ItemID:  orderItem.ItemID,
+			Count:   orderItem.Count,
+			Options: options,
+		})
 	}
 
 	return OrderDto{
@@ -44,5 +67,6 @@ func NewOrderDtoFromEntity(o entities.Order) OrderDto {
 		ValidFrom:          o.ValidFrom,
 		ValidTo:            o.ValidTo,
 		PriceModifiers:     priceModifiers,
+		Items:              items,
 	}
 }

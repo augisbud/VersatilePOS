@@ -12,6 +12,7 @@ import {
   getReservationColumns,
   EditReservationModal,
   ReservationPaymentModal,
+  calculateRemainingAmount,
 } from '@/components/Reservations';
 import {
   ModelsReservationDto,
@@ -28,7 +29,8 @@ export const Reservations = () => {
     useReservations();
   const { services, fetchServices } = useServices();
   const { employees, fetchEmployees } = useEmployees();
-  const { createPayment, linkPaymentToReservation } = usePayments();
+  const { createPayment, linkPaymentToReservation, completePayment } =
+    usePayments();
   const { user, canReadReservations, canWriteReservations } = useUser();
 
   const [editingReservation, setEditingReservation] =
@@ -92,8 +94,13 @@ export const Reservations = () => {
     reservationId: number,
     amount: number,
     paymentType: PaymentType,
-    tipAmount: number
+    tipAmount: number,
+    giftCardCode?: string
   ) => {
+    // Find the reservation and service to calculate remaining
+    const reservation = reservations.find((r) => r.id === reservationId);
+    const service = services.find((s) => s.id === reservation?.serviceId);
+
     if (tipAmount > 0) {
       await updateReservation(reservationId, { tipAmount });
     }
@@ -101,11 +108,27 @@ export const Reservations = () => {
     const payment = await createPayment({
       amount,
       type: paymentType,
-      status: 'Completed',
+      status: 'Pending',
+      giftCardCode: paymentType === 'GiftCard' ? giftCardCode : undefined,
     });
 
     if (payment.id) {
       await linkPaymentToReservation(reservationId, payment.id);
+      await completePayment(payment.id);
+
+      const reservationWithTip = {
+        ...reservation,
+        tipAmount: tipAmount > 0 ? tipAmount : reservation?.tipAmount,
+      } as ModelsReservationDto;
+
+      const remainingBeforePayment = calculateRemainingAmount(
+        reservationWithTip,
+        service
+      );
+
+      if (amount >= remainingBeforePayment - 0.01) {
+        await updateReservation(reservationId, { status: 'Completed' });
+      }
     }
 
     void fetchReservations();

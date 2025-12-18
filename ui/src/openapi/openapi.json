@@ -1024,6 +1024,230 @@
                 }
             }
         },
+        "/giftcard": {
+            "get": {
+                "description": "Get all gift cards in the system",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "giftcard"
+                ],
+                "summary": "Get all gift cards",
+                "operationId": "getGiftCards",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.GiftCardDto"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new gift card with a unique code and initial value",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "giftcard"
+                ],
+                "summary": "Create a gift card",
+                "operationId": "createGiftCard",
+                "parameters": [
+                    {
+                        "description": "Gift card to create",
+                        "name": "giftcard",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateGiftCardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.GiftCardDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/giftcard/check-balance": {
+            "post": {
+                "description": "Check the balance of a gift card by its code",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "giftcard"
+                ],
+                "summary": "Check gift card balance",
+                "operationId": "checkGiftCardBalance",
+                "parameters": [
+                    {
+                        "description": "Gift card code",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CheckBalanceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GiftCardDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/giftcard/{id}": {
+            "get": {
+                "description": "Get a specific gift card by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "giftcard"
+                ],
+                "summary": "Get gift card by ID",
+                "operationId": "getGiftCardById",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Gift Card ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GiftCardDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/giftcard/{id}/deactivate": {
+            "post": {
+                "description": "Deactivate a gift card to prevent further use",
+                "tags": [
+                    "giftcard"
+                ],
+                "summary": "Deactivate gift card",
+                "operationId": "deactivateGiftCard",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Gift Card ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/item": {
             "get": {
                 "security": [
@@ -1480,6 +1704,70 @@
                 }
             }
         },
+        "/item/with-modifiers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all items with applied price modifiers and final prices",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "item-price-modifier"
+                ],
+                "summary": "Get all items with price modifiers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Business ID",
+                        "name": "businessId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ItemWithModifiersDto"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/item/{id}": {
             "get": {
                 "security": [
@@ -1651,6 +1939,217 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/item/{id}/price-modifier": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Apply a price modifier to an item",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "item"
+                ],
+                "summary": "Apply price modifier to item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Price modifier to apply",
+                        "name": "modifier",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ApplyPriceModifierToItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/item/{id}/price-modifier/{priceModifierId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Remove a price modifier from an item",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "item"
+                ],
+                "summary": "Remove price modifier from item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Price Modifier ID",
+                        "name": "priceModifierId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/item/{id}/with-modifiers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get item by id with applied price modifiers and final price",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "item-price-modifier"
+                ],
+                "summary": "Get item with price modifiers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ItemWithModifiersDto"
                         }
                     },
                     "400": {
@@ -5523,6 +6022,17 @@
                 }
             }
         },
+        "models.ApplyPriceModifierToItemRequest": {
+            "type": "object",
+            "required": [
+                "priceModifierId"
+            ],
+            "properties": {
+                "priceModifierId": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.ApplyPriceModifierToReservationRequest": {
             "type": "object",
             "required": [
@@ -5594,6 +6104,17 @@
                 }
             }
         },
+        "models.CheckBalanceRequest": {
+            "type": "object",
+            "required": [
+                "code"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CreateAccountRequest": {
             "type": "object",
             "required": [
@@ -5654,6 +6175,21 @@
                 },
                 "phone": {
                     "type": "string"
+                }
+            }
+        },
+        "models.CreateGiftCardRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "initialValue"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "initialValue": {
+                    "type": "number"
                 }
             }
         },
@@ -5755,6 +6291,18 @@
                 "customerPhone": {
                     "type": "string"
                 },
+                "itemIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "priceModifierIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "serviceCharge": {
                     "type": "number"
                 },
@@ -5775,6 +6323,9 @@
             "properties": {
                 "amount": {
                     "type": "number"
+                },
+                "giftCardCode": {
+                    "type": "string"
                 },
                 "status": {
                     "type": "string"
@@ -5923,6 +6474,26 @@
                 }
             }
         },
+        "models.GiftCardDto": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "number"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "initialValue": {
+                    "type": "number"
+                },
+                "isActive": {
+                    "type": "boolean"
+                }
+            }
+        },
         "models.HTTPError": {
             "type": "object",
             "properties": {
@@ -6005,6 +6576,35 @@
                 }
             }
         },
+        "models.ItemWithModifiersDto": {
+            "type": "object",
+            "properties": {
+                "businessId": {
+                    "type": "integer"
+                },
+                "finalPrice": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "priceModifiers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/modelsas.PriceModifierDto"
+                    }
+                },
+                "quantityInStock": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.LinkItemOptionRequest": {
             "type": "object",
             "required": [
@@ -6074,6 +6674,12 @@
                 "id": {
                     "type": "integer"
                 },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.OrderItemWithDetailsDto"
+                    }
+                },
                 "priceModifiers": {
                     "type": "array",
                     "items": {
@@ -6117,11 +6723,34 @@
                 }
             }
         },
+        "models.OrderItemWithDetailsDto": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "itemId": {
+                    "type": "integer"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ItemOptionLinkDto"
+                    }
+                }
+            }
+        },
         "models.PaymentDto": {
             "type": "object",
             "properties": {
                 "amount": {
                     "type": "number"
+                },
+                "giftCardCode": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"

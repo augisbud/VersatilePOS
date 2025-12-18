@@ -9,6 +9,7 @@ import {
   ToolOutlined,
   DollarOutlined,
   UnorderedListOutlined,
+  CreditCardOutlined,
 } from '@ant-design/icons';
 
 const { Text, Title } = Typography;
@@ -24,7 +25,8 @@ export type EmptyStateVariant =
   | 'business'
   | 'services'
   | 'priceModifiers'
-  | 'options';
+  | 'options'
+  | 'giftCards';
 
 type Props = {
   variant?: EmptyStateVariant;
@@ -46,6 +48,7 @@ const variantIcons: Record<EmptyStateVariant, ReactNode> = {
   services: <ToolOutlined />,
   priceModifiers: <DollarOutlined />,
   options: <UnorderedListOutlined />,
+  giftCards: <CreditCardOutlined />,
 };
 
 export const EmptyState = ({

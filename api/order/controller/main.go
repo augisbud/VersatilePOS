@@ -60,6 +60,10 @@ func (ctrl *Controller) CreateOrder(c *gin.Context) {
 			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: err.Error()})
 			return
 		}
+		if err.Error() == "insufficient stock for item" {
+			c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: err.Error()})
+			return
+		}
 		log.Println("Failed to create order:", err)
 		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
 		return
@@ -266,6 +270,10 @@ func (ctrl *Controller) AddItemToOrder(c *gin.Context) {
 			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: err.Error()})
 			return
 		}
+		if err.Error() == "insufficient stock for item" {
+			c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: err.Error()})
+			return
+		}
 		log.Println("Failed to add item to order:", err)
 		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})
 		return
@@ -374,6 +382,10 @@ func (ctrl *Controller) UpdateOrderItem(c *gin.Context) {
 		}
 		if err.Error() == "unauthorized to modify this order" {
 			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: err.Error()})
+			return
+		}
+		if err.Error() == "insufficient stock for item" {
+			c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: err.Error()})
 			return
 		}
 		log.Println("Failed to update order item:", err)
@@ -553,6 +565,10 @@ func (ctrl *Controller) AddOptionToOrderItem(c *gin.Context) {
 		}
 		if err.Error() == "unauthorized to modify this order" {
 			c.IndentedJSON(http.StatusForbidden, models.HTTPError{Error: err.Error()})
+			return
+		}
+		if err.Error() == "insufficient stock for item option" {
+			c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: err.Error()})
 			return
 		}
 		log.Println("Failed to add option to order item:", err)

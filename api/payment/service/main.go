@@ -4,6 +4,7 @@ import (
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
 	giftCardService "VersatilePOS/giftCard/service"
+	itemRepository "VersatilePOS/item/repository"
 	orderRepository "VersatilePOS/order/repository"
 	paymentModels "VersatilePOS/payment/models"
 	"VersatilePOS/payment/repository"
@@ -19,6 +20,7 @@ type Service struct {
 	repo              repository.Repository
 	orderRepo         orderRepository.Repository
 	reservationRepo   reservationRepository.Repository
+	itemRepo          itemRepository.Repository
 	stripeService     *StripeService
 	giftCardService   *giftCardService.Service
 }
@@ -34,6 +36,7 @@ func NewService() *Service {
 		repo:            repository.Repository{},
 		orderRepo:       orderRepository.Repository{},
 		reservationRepo: reservationRepository.Repository{},
+		itemRepo:        itemRepository.Repository{},
 		stripeService:   stripeService,
 		giftCardService: giftCardService.NewService(),
 	}
@@ -185,8 +188,44 @@ func (s *Service) updateOrderStatusAfterPayment(paymentID uint) error {
 					return err
 				}
 				log.Printf("Order %d status updated to Confirmed (all payments completed)", order.ID)
+				
+				// Decrease stock when order is confirmed
+				if err := s.decreaseOrderStock(order.ID); err != nil {
+					log.Printf("Warning: Failed to decrease stock for order %d: %v", order.ID, err)
+				}
 			} else {
 				log.Printf("Order %d has incomplete payments, status remains Pending", order.ID)
+			}
+		}
+	}
+
+	return nil
+}
+
+// decreaseOrderStock decreases inventory for all items and item options in an order
+func (s *Service) decreaseOrderStock(orderID uint) error {
+	// Get order with all items and item option links
+	order, err := s.orderRepo.GetOrderByID(orderID)
+	if err != nil {
+		return err
+	}
+	if order == nil {
+		return errors.New("order not found")
+	}
+
+	// Decrease stock for each order item
+	for _, orderItem := range order.OrderItems {
+		// Decrease item inventory by the count
+		if err := s.itemRepo.DecreaseItemInventory(orderItem.ItemID, int(orderItem.Count)); err != nil {
+			log.Printf("Warning: Failed to decrease inventory for item %d: %v", orderItem.ItemID, err)
+			// Continue with other items even if one fails
+		}
+
+		// Decrease stock for each item option link
+		for _, optionLink := range orderItem.ItemOptionLinks {
+			if err := s.itemRepo.DecreaseItemOptionInventory(optionLink.ItemOptionID, int(optionLink.Count)); err != nil {
+				log.Printf("Warning: Failed to decrease inventory for item option %d: %v", optionLink.ItemOptionID, err)
+				// Continue with other options even if one fails
 			}
 		}
 	}

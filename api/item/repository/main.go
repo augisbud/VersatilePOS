@@ -311,3 +311,45 @@ func (r *Repository) GetItemsWithPriceModifiers(businessID uint) ([]entities.Ite
 
 	return items, inventoryMap, priceModifierMap, nil
 }
+
+// DecreaseItemInventory decreases the inventory quantity for an item
+func (r *Repository) DecreaseItemInventory(itemID uint, quantity int) error {
+	var inventory entities.ItemInventory
+	if err := database.DB.Where("item_id = ?", itemID).First(&inventory).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// No inventory tracking for this item, skip
+			return nil
+		}
+		return err
+	}
+
+	// Decrease quantity (ensure it doesn't go below 0)
+	newQuantity := inventory.QuantityInStock - quantity
+	if newQuantity < 0 {
+		newQuantity = 0
+	}
+
+	inventory.QuantityInStock = newQuantity
+	return database.DB.Save(&inventory).Error
+}
+
+// DecreaseItemOptionInventory decreases the inventory quantity for an item option
+func (r *Repository) DecreaseItemOptionInventory(itemOptionID uint, quantity int) error {
+	var inventory entities.ItemOptionInventory
+	if err := database.DB.Where("item_option_id = ?", itemOptionID).First(&inventory).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// No inventory tracking for this item option, skip
+			return nil
+		}
+		return err
+	}
+
+	// Decrease quantity (ensure it doesn't go below 0)
+	newQuantity := inventory.QuantityInStock - quantity
+	if newQuantity < 0 {
+		newQuantity = 0
+	}
+
+	inventory.QuantityInStock = newQuantity
+	return database.DB.Save(&inventory).Error
+}

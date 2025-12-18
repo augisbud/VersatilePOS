@@ -45,6 +45,9 @@ export const NewOrder = () => {
     appliedServiceCharges,
     orderInfoItems,
     availableOptionsForEdit,
+    availableDiscountOptionsForEdit,
+    discountPriceModifiers,
+    canCreateDiscountOption,
     loading,
     itemsLoading,
     businessLoading,
@@ -72,6 +75,12 @@ export const NewOrder = () => {
     confirmCancelOrder,
     handleQuantityChange,
     setOptionToAdd,
+    discountToAdd,
+    setDiscountToAdd,
+    handleAddDiscount,
+    handleAddDiscountById,
+    handleRemoveDiscount,
+    createDiscountOptionForItem,
     navigateBack,
     applyPriceModifierToOrder,
     priceModifiers,
@@ -525,13 +534,31 @@ export const NewOrder = () => {
         quantity={editingItem?.count || 1}
         selectedOptions={editingItem?.options || []}
         availableOptions={availableOptionsForEdit}
+        availableDiscountOptions={availableDiscountOptionsForEdit}
+        discountPriceModifiers={discountPriceModifiers}
+        canCreateDiscountOption={canCreateDiscountOption}
+        onCreateDiscountOption={async (payload) => {
+          if (!editingItem) return;
+          const created = await createDiscountOptionForItem(
+            editingItem.itemId,
+            payload.priceModifierId,
+            payload.name
+          );
+          if (created?.id) {
+            handleAddDiscountById(created.id);
+          }
+        }}
         optionToAdd={optionToAdd}
+        discountToAdd={discountToAdd}
         getOptionName={getOptionNameLocal}
         getOptionPriceLabel={getOptionPriceLabel}
         onQuantityChange={handleQuantityChange}
         onOptionToAddChange={setOptionToAdd}
         onAddOption={handleAddOption}
         onRemoveOption={handleRemoveOption}
+        onDiscountToAddChange={setDiscountToAdd}
+        onAddDiscount={handleAddDiscount}
+        onRemoveDiscount={handleRemoveDiscount}
         onSave={() => void handleEditSave()}
         onCancel={handleEditCancel}
         onRemove={() => void handleRemoveItem()}

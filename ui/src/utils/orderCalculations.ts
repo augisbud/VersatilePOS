@@ -42,10 +42,60 @@ export const calculateOptionPriceChange = (
   if (!modifier) return 0;
 
   const value = modifier.value || 0;
-  if (modifier.isPercentage) {
-    return (basePrice * value) / 100;
+  const raw = modifier.isPercentage ? (basePrice * value) / 100 : value;
+
+  // Semantics: Discount-type price modifiers reduce the price, regardless of stored sign.
+  // (UI enforces non-negative values for price modifiers.)
+  if (modifier.modifierType === 'Discount') {
+    return -Math.abs(raw);
   }
-  return value;
+
+  return raw;
+};
+
+/**
+ * Checks whether an item option is backed by a Discount-type price modifier.
+ */
+export const isDiscountItemOption = (
+  itemOptionId: number,
+  itemOptions: ModelsItemOptionDto[],
+  priceModifiers: ModelsasPriceModifierDto[]
+): boolean => {
+  const option = getItemOptionById(itemOptions, itemOptionId);
+  if (!option?.priceModifierId) return false;
+  const modifier = getPriceModifierById(priceModifiers, option.priceModifierId);
+  return modifier?.modifierType === 'Discount';
+};
+
+/**
+ * Gets available Discount options for editing (filters out already selected options).
+ */
+export const getAvailableDiscountOptionsForEdit = (
+  itemId: number,
+  selectedOptionIds: number[],
+  itemOptions: ModelsItemOptionDto[],
+  priceModifiers: ModelsasPriceModifierDto[],
+  items: ModelsItemDto[],
+  formatPriceChange: (change: number) => string
+): { id: number; name: string; priceLabel: string }[] => {
+  const basePrice = getItemPrice(items, itemId);
+  const itemOptionsForItem = itemOptions.filter((opt) => opt.itemId === itemId);
+
+  return itemOptionsForItem
+    .filter((opt) => opt.id !== undefined && !selectedOptionIds.includes(opt.id))
+    .filter((opt) => isDiscountItemOption(opt.id!, itemOptions, priceModifiers))
+    .map((opt) => ({
+      id: opt.id!,
+      name: opt.name || `Discount #${opt.id}`,
+      priceLabel: formatPriceChange(
+        calculateOptionPriceChange(
+          opt.id!,
+          basePrice,
+          itemOptions,
+          priceModifiers
+        )
+      ),
+    }));
 };
 
 /**
@@ -67,6 +117,9 @@ export const calculateOptionsPrice = (
         let priceChange = opt.priceModifierValue;
         if (opt.priceModifierIsPercent) {
           priceChange = (basePrice * opt.priceModifierValue) / 100;
+        }
+        if ('priceModifierType' in opt && opt.priceModifierType === 'Discount') {
+          priceChange = -Math.abs(priceChange);
         }
         total += priceChange * (opt.count || 1);
       }
@@ -131,7 +184,14 @@ export const mapOptionsToDisplay = (
   return options
     .filter((opt) => {
       const id = 'itemOptionId' in opt ? opt.itemOptionId : undefined;
-      return id !== undefined;
+      if (id === undefined) return false;
+
+      // Hide discount-backed options from the generic "options" display.
+      // Discounts have their own dedicated UI elsewhere.
+      if ('priceModifierType' in opt && opt.priceModifierType === 'Discount') {
+        return false;
+      }
+      return !isDiscountItemOption(id, itemOptions, priceModifiers);
     })
     .map((opt) => {
       const optionId = opt.itemOptionId as number;
@@ -148,6 +208,9 @@ export const mapOptionsToDisplay = (
             priceChange = (basePrice * opt.priceModifierValue) / 100;
           } else {
             priceChange = opt.priceModifierValue;
+          }
+          if ('priceModifierType' in opt && opt.priceModifierType === 'Discount') {
+            priceChange = -Math.abs(priceChange);
           }
         } else {
           // Snapshot exists but no price modifier value -> price change is 0
@@ -235,7 +298,8 @@ export const getAvailableOptionsForEdit = (
   const itemOptionsForItem = itemOptions.filter((opt) => opt.itemId === itemId);
 
   return itemOptionsForItem
-    .filter((opt) => !selectedOptionIds.includes(opt.id!))
+    .filter((opt) => opt.id !== undefined && !selectedOptionIds.includes(opt.id))
+    .filter((opt) => !isDiscountItemOption(opt.id!, itemOptions, priceModifiers))
     .map((opt) => ({
       id: opt.id!,
       name: opt.name || `Option #${opt.id}`,

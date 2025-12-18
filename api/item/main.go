@@ -18,6 +18,10 @@ func RegisterHandlers(r *gin.Engine) {
 		itemGroup.GET("/:id", ctrl.GetItemByID)
 		itemGroup.PUT("/:id", ctrl.UpdateItem)
 		itemGroup.DELETE("/:id", ctrl.DeleteItem)
+		itemGroup.POST("/:id/price-modifier", ctrl.ApplyPriceModifierToItem)
+		itemGroup.DELETE("/:id/price-modifier/:priceModifierId", ctrl.RemovePriceModifierFromItem)
+		itemGroup.GET("/:id/with-modifiers", ctrl.GetItemWithPriceModifiers)
+		itemGroup.GET("/with-modifiers", ctrl.GetItemsWithPriceModifiers)
 	}
 
 	itemOptionGroup := r.Group("/item-option")

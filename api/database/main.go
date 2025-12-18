@@ -69,6 +69,7 @@ func Connect() {
 		&entities.PriceModifier{},
 		&entities.PriceModifierOrderLink{},
 		&entities.PriceModifierReservationLink{},
+		&entities.PriceModifierItemLink{},
 		&entities.Reservation{},
 		&entities.ReservationPaymentLink{},
 		&entities.Order{},

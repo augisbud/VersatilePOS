@@ -406,3 +406,183 @@ func (ctrl *Controller) DeleteItemOption(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
+
+// @Summary Apply price modifier to item
+// @Description Apply a price modifier to an item
+// @Tags item
+// @Accept  json
+// @Produce  json
+// @Param   id  path  int  true  "Item ID"
+// @Param   modifier  body  models.ApplyPriceModifierToItemRequest  true  "Price modifier to apply"
+// @Success 201
+// @Failure 400 {object} models.HTTPError
+// @Failure 401 {object} models.HTTPError
+// @Failure 403 {object} models.HTTPError
+// @Failure 404 {object} models.HTTPError
+// @Failure 500 {object} models.HTTPError
+// @Security BearerAuth
+// @Router /item/{id}/price-modifier [post]
+func (ctrl *Controller) ApplyPriceModifierToItem(c *gin.Context) {
+	userID, err := middleware.GetUserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, genericModels.HTTPError{Error: err.Error()})
+		return
+	}
+
+	itemID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, genericModels.HTTPError{Error: "invalid item id"})
+		return
+	}
+
+	var req itemModels.ApplyPriceModifierToItemRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, genericModels.HTTPError{Error: err.Error()})
+		return
+	}
+
+	err = ctrl.service.ApplyPriceModifierToItem(uint(itemID), req, userID)
+	if err != nil {
+		if err.Error() == "item not found" {
+			c.IndentedJSON(http.StatusNotFound, genericModels.HTTPError{Error: err.Error()})
+			return
+		}
+		if err.Error() == "unauthorized to modify this item" {
+			c.IndentedJSON(http.StatusForbidden, genericModels.HTTPError{Error: err.Error()})
+			return
+		}
+		c.IndentedJSON(http.StatusInternalServerError, genericModels.HTTPError{Error: "internal server error"})
+		return
+	}
+
+	c.Status(http.StatusCreated)
+}
+
+// @Summary Remove price modifier from item
+// @Description Remove a price modifier from an item
+// @Tags item
+// @Accept  json
+// @Produce  json
+// @Param   id  path  int  true  "Item ID"
+// @Param   priceModifierId  path  int  true  "Price Modifier ID"
+// @Success 204
+// @Failure 400 {object} models.HTTPError
+// @Failure 401 {object} models.HTTPError
+// @Failure 403 {object} models.HTTPError
+// @Failure 404 {object} models.HTTPError
+// @Failure 500 {object} models.HTTPError
+// @Security BearerAuth
+// @Router /item/{id}/price-modifier/{priceModifierId} [delete]
+func (ctrl *Controller) RemovePriceModifierFromItem(c *gin.Context) {
+	userID, err := middleware.GetUserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, genericModels.HTTPError{Error: err.Error()})
+		return
+	}
+
+	itemID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, genericModels.HTTPError{Error: "invalid item id"})
+		return
+	}
+
+	priceModifierID, err := strconv.ParseUint(c.Param("priceModifierId"), 10, 32)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, genericModels.HTTPError{Error: "invalid price modifier id"})
+		return
+	}
+
+	err = ctrl.service.RemovePriceModifierFromItem(uint(itemID), uint(priceModifierID), userID)
+	if err != nil {
+		if err.Error() == "item not found" {
+			c.IndentedJSON(http.StatusNotFound, genericModels.HTTPError{Error: err.Error()})
+			return
+		}
+		if err.Error() == "unauthorized to modify this item" {
+			c.IndentedJSON(http.StatusForbidden, genericModels.HTTPError{Error: err.Error()})
+			return
+		}
+		c.IndentedJSON(http.StatusInternalServerError, genericModels.HTTPError{Error: "internal server error"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+// @Summary Get item with price modifiers
+// @Description Get item by id with applied price modifiers and final price
+// @Tags item-price-modifier
+// @Accept  json
+// @Produce  json
+// @Param   id   path      int  true  "Item ID"
+// @Success 200 {object} models.ItemWithModifiersDto
+// @Failure 400 {object} models.HTTPError
+// @Failure 401 {object} models.HTTPError
+// @Failure 403 {object} models.HTTPError
+// @Failure 404 {object} models.HTTPError
+// @Failure 500 {object} models.HTTPError
+// @Security BearerAuth
+// @Router /item/{id}/with-modifiers [get]
+func (ctrl *Controller) GetItemWithPriceModifiers(c *gin.Context) {
+	userID, err := middleware.GetUserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, genericModels.HTTPError{Error: err.Error()})
+		return
+	}
+
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, genericModels.HTTPError{Error: "invalid id"})
+		return
+	}
+
+	item, err := ctrl.service.GetItemWithPriceModifiers(uint(id), userID)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, genericModels.HTTPError{Error: err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, item)
+}
+
+// @Summary Get all items with price modifiers
+// @Description Get all items with applied price modifiers and final prices
+// @Tags item-price-modifier
+// @Accept  json
+// @Produce  json
+// @Param   businessId query int true "Business ID"
+// @Success 200 {array} models.ItemWithModifiersDto
+// @Failure 400 {object} models.HTTPError
+// @Failure 401 {object} models.HTTPError
+// @Failure 403 {object} models.HTTPError
+// @Failure 500 {object} models.HTTPError
+// @Security BearerAuth
+// @Router /item/with-modifiers [get]
+func (ctrl *Controller) GetItemsWithPriceModifiers(c *gin.Context) {
+	userID, err := middleware.GetUserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, genericModels.HTTPError{Error: err.Error()})
+		return
+	}
+
+	businessIDStr := c.Query("businessId")
+	if businessIDStr == "" {
+		c.IndentedJSON(http.StatusBadRequest, genericModels.HTTPError{Error: "businessId query parameter is required"})
+		return
+	}
+
+	businessID, err := strconv.ParseUint(businessIDStr, 10, 32)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, genericModels.HTTPError{Error: "invalid businessId"})
+		return
+	}
+
+	items, err := ctrl.service.GetItemsWithPriceModifiers(uint(businessID), userID)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, genericModels.HTTPError{Error: err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, items)
+}

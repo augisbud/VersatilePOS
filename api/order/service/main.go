@@ -5,6 +5,7 @@ import (
 	"VersatilePOS/order/repository"
 	itemRepository "VersatilePOS/item/repository"
 	paymentRepository "VersatilePOS/payment/repository"
+	priceModifierRepository "VersatilePOS/priceModifier/repository"
 	"VersatilePOS/database"
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
@@ -16,16 +17,18 @@ import (
 )
 
 type Service struct {
-	repo         repository.Repository
-	itemRepo     itemRepository.Repository
-	paymentRepo  paymentRepository.Repository
+	repo                repository.Repository
+	itemRepo            itemRepository.Repository
+	paymentRepo         paymentRepository.Repository
+	priceModifierRepo   priceModifierRepository.Repository
 }
 
 func NewService() *Service {
 	return &Service{
-		repo:        repository.Repository{},
-		itemRepo:    itemRepository.Repository{},
-		paymentRepo: paymentRepository.Repository{},
+		repo:              repository.Repository{},
+		itemRepo:          itemRepository.Repository{},
+		paymentRepo:       paymentRepository.Repository{},
+		priceModifierRepo: priceModifierRepository.Repository{},
 	}
 }
 
@@ -44,18 +47,46 @@ func (s *Service) CreateOrder(req orderModels.CreateOrderRequest, userID uint) (
 		return nil, errors.New("unauthorized to create orders for this business")
 	}
 
+	// Validate items belong to the same business
+	for _, itemID := range req.ItemIDs {
+		itemEntity, _, err := s.itemRepo.GetItemByID(itemID)
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				return nil, errors.New("item not found")
+			}
+			return nil, err
+		}
+		if itemEntity == nil {
+			return nil, errors.New("item not found")
+		}
+		if itemEntity.BusinessID != req.BusinessID {
+			return nil, errors.New("item does not belong to the specified business")
+		}
+	}
+
+	// Validate price modifiers belong to the same business
+	for _, priceModifierID := range req.PriceModifierIDs {
+		priceModifierEntity, err := s.priceModifierRepo.GetPriceModifierByID(priceModifierID, req.BusinessID)
+		if err != nil {
+			return nil, err
+		}
+		if priceModifierEntity == nil {
+			return nil, errors.New("price modifier not found")
+		}
+	}
+
 	now := time.Now()
 	order := &entities.Order{
-		BusinessID:        req.BusinessID,
+		BusinessID:         req.BusinessID,
 		ServicingAccountID: req.ServicingAccountID,
-		DatePlaced:        now,
-		Status:            constants.OrderPending,
-		TipAmount:         req.TipAmount,
-		ServiceCharge:     req.ServiceCharge,
-		Customer:          req.Customer,
-		CustomerEmail:     req.CustomerEmail,
-		CustomerPhone:     req.CustomerPhone,
-		ValidFrom:         &now,
+		DatePlaced:         now,
+		Status:             constants.OrderPending,
+		TipAmount:          req.TipAmount,
+		ServiceCharge:      req.ServiceCharge,
+		Customer:           req.Customer,
+		CustomerEmail:      req.CustomerEmail,
+		CustomerPhone:      req.CustomerPhone,
+		ValidFrom:          &now,
 	}
 
 	createdOrder, err := s.repo.CreateOrder(order)
@@ -63,7 +94,40 @@ func (s *Service) CreateOrder(req orderModels.CreateOrderRequest, userID uint) (
 		return nil, err
 	}
 
-	dto := orderModels.NewOrderDtoFromEntity(*createdOrder)
+	// Create order items (default count of 1 for each item)
+	for _, itemID := range req.ItemIDs {
+		orderItem := &entities.OrderItem{
+			OrderID: createdOrder.ID,
+			ItemID:  itemID,
+			Count:   1, // Default count of 1
+		}
+
+		_, err := s.repo.CreateOrderItem(orderItem)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Create price modifier links
+	for _, priceModifierID := range req.PriceModifierIDs {
+		link := &entities.PriceModifierOrderLink{
+			PriceModifierID: priceModifierID,
+			OrderID:         createdOrder.ID,
+		}
+
+		_, err := s.repo.CreatePriceModifierOrderLink(link)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Fetch the complete order with all relationships
+	completeOrder, err := s.repo.GetOrderByID(createdOrder.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	dto := orderModels.NewOrderDtoFromEntity(*completeOrder)
 	return &dto, nil
 }
 

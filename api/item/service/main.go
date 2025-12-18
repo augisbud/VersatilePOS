@@ -6,6 +6,7 @@ import (
 	"VersatilePOS/generic/rbac"
 	"VersatilePOS/item/models"
 	"VersatilePOS/item/repository"
+	"VersatilePOS/priceModifier/modelsas"
 	"errors"
 )
 
@@ -379,4 +380,184 @@ func (s *Service) DeleteItemOption(id uint, userID uint) error {
 	}
 
 	return s.repo.DeleteItemOption(id)
+}
+
+func (s *Service) ApplyPriceModifierToItem(itemID uint, req models.ApplyPriceModifierToItemRequest, userID uint) error {
+	item, _, err := s.repo.GetItemByID(itemID)
+	if err != nil {
+		return err
+	}
+	if item == nil {
+		return errors.New("item not found")
+	}
+
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Items, constants.Write, item.BusinessID, userID)
+	if err != nil {
+		return errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return errors.New("unauthorized to modify this item")
+	}
+
+	link := &entities.PriceModifierItemLink{
+		PriceModifierID: req.PriceModifierID,
+		ItemID:          itemID,
+	}
+
+	_, err = s.repo.CreatePriceModifierItemLink(link)
+	return err
+}
+
+func (s *Service) RemovePriceModifierFromItem(itemID uint, priceModifierID uint, userID uint) error {
+	item, _, err := s.repo.GetItemByID(itemID)
+	if err != nil {
+		return err
+	}
+	if item == nil {
+		return errors.New("item not found")
+	}
+
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Items, constants.Write, item.BusinessID, userID)
+	if err != nil {
+		return errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return errors.New("unauthorized to modify this item")
+	}
+
+	return s.repo.DeletePriceModifierFromItem(itemID, priceModifierID)
+}
+
+func (s *Service) GetItemWithPriceModifiers(id uint, userID uint) (*models.ItemWithModifiersDto, error) {
+	item, inventory, priceModifiers, err := s.repo.GetItemWithPriceModifiers(id)
+	if err != nil {
+		return nil, err
+	}
+	if item == nil {
+		return nil, errors.New("item not found")
+	}
+
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Items, constants.Read, item.BusinessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to view this item")
+	}
+
+	// Convert price modifiers to DTOs
+	priceModifierDtos := make([]modelsas.PriceModifierDto, len(priceModifiers))
+	for i, pm := range priceModifiers {
+		priceModifierDtos[i] = modelsas.NewPriceModifierDtoFromEntity(pm)
+	}
+
+	// Calculate final price
+	finalPrice := s.calculateFinalPrice(item.Price, priceModifiers)
+
+	dto := &models.ItemWithModifiersDto{
+		ID:             item.ID,
+		BusinessID:     item.BusinessID,
+		Name:           item.Name,
+		Price:          item.Price,
+		PriceModifiers: priceModifierDtos,
+		FinalPrice:     finalPrice,
+	}
+
+	if inventory != nil {
+		dto.QuantityInStock = &inventory.QuantityInStock
+	}
+
+	return dto, nil
+}
+
+func (s *Service) GetItemsWithPriceModifiers(businessID uint, userID uint) ([]models.ItemWithModifiersDto, error) {
+	// Check RBAC permissions
+	ok, err := rbac.HasAccess(constants.Items, constants.Read, businessID, userID)
+	if err != nil {
+		return nil, errors.New("failed to verify permissions")
+	}
+	if !ok {
+		return nil, errors.New("unauthorized to view items for this business")
+	}
+
+	items, inventoryMap, priceModifierMap, err := s.repo.GetItemsWithPriceModifiers(businessID)
+	if err != nil {
+		return nil, err
+	}
+
+	dtos := make([]models.ItemWithModifiersDto, len(items))
+	for i, item := range items {
+		// Convert price modifiers to DTOs
+		priceModifiers := priceModifierMap[item.ID]
+		priceModifierDtos := make([]modelsas.PriceModifierDto, len(priceModifiers))
+		for j, pm := range priceModifiers {
+			priceModifierDtos[j] = modelsas.NewPriceModifierDtoFromEntity(pm)
+		}
+
+		// Calculate final price
+		finalPrice := s.calculateFinalPrice(item.Price, priceModifiers)
+
+		dtos[i] = models.ItemWithModifiersDto{
+			ID:             item.ID,
+			BusinessID:     item.BusinessID,
+			Name:           item.Name,
+			Price:          item.Price,
+			PriceModifiers: priceModifierDtos,
+			FinalPrice:     finalPrice,
+		}
+
+		if inv, exists := inventoryMap[item.ID]; exists {
+			dtos[i].QuantityInStock = &inv.QuantityInStock
+		}
+	}
+
+	return dtos, nil
+}
+
+// Helper function to calculate final price after applying all modifiers
+func (s *Service) calculateFinalPrice(basePrice float64, priceModifiers []entities.PriceModifier) float64 {
+	finalPrice := basePrice
+
+	// Apply discounts and surcharges first (they affect the base price)
+	for _, modifier := range priceModifiers {
+		if modifier.ModifierType == constants.Discount || modifier.ModifierType == constants.Surcharge {
+			if modifier.IsPercentage {
+				if modifier.ModifierType == constants.Discount {
+					finalPrice = finalPrice * (1 - modifier.Value/100)
+				} else { // Surcharge
+					finalPrice = finalPrice * (1 + modifier.Value/100)
+				}
+			} else {
+				if modifier.ModifierType == constants.Discount {
+					finalPrice = finalPrice - modifier.Value
+				} else { // Surcharge
+					finalPrice = finalPrice + modifier.Value
+				}
+			}
+		}
+	}
+
+	// Then apply taxes (they are calculated on the discounted/surcharged price)
+	for _, modifier := range priceModifiers {
+		if modifier.ModifierType == constants.Tax {
+			if modifier.IsPercentage {
+				finalPrice = finalPrice * (1 + modifier.Value/100)
+			} else {
+				finalPrice = finalPrice + modifier.Value
+			}
+		}
+	}
+
+	// Tips are usually added last and don't change the item price in most POS systems
+	// But if needed, they can be applied here similar to taxes
+
+	// Ensure the final price is not negative
+	if finalPrice < 0 {
+		finalPrice = 0
+	}
+
+	return finalPrice
 }

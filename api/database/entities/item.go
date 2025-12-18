@@ -9,5 +9,6 @@ type Item struct {
 	Name       string   `json:"name"`
 	Price      float64  `json:"price" gorm:"type:decimal(10,2)"`
 
-	ItemOptions []ItemOption `gorm:"foreignKey:ItemID" json:"-"`
+	ItemOptions        []ItemOption               `gorm:"foreignKey:ItemID" json:"-"`
+	PriceModifierLinks []PriceModifierItemLink    `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:ItemID" json:"-"`
 }

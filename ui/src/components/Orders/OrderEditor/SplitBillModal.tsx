@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Modal, Button, Divider, Typography, Spin } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -12,6 +12,7 @@ import {
   PaymentType,
   SplitBillPaymentRequest,
 } from './Bill';
+import { TipSelector } from '@/components/shared';
 
 type Props = {
   open: boolean;
@@ -40,6 +41,13 @@ export const SplitBillModal = ({
     {}
   );
   const [payingBillId, setPayingBillId] = useState<number | null>(null);
+  const [tipAmounts, setTipAmounts] = useState<Record<number, number>>({});
+  const [tipPresets, setTipPresets] = useState<Record<number, number | null>>(
+    {}
+  );
+  const [customTipFlags, setCustomTipFlags] = useState<Record<number, boolean>>(
+    {}
+  );
 
   const formattedOrderDate = orderCreatedAt
     ? dayjs(orderCreatedAt).format('YYYY-MM-DD HH:mm')
@@ -92,6 +100,8 @@ export const SplitBillModal = ({
     async (billId: number, paymentType: PaymentType) => {
       const billTotal = billTotals[billId] || 0;
       if (billTotal === 0) return;
+      const billTip = tipAmounts[billId] || 0;
+      const amountWithTip = billTotal + billTip;
 
       const itemIndices = items
         .map((_, index) => index)
@@ -101,7 +111,8 @@ export const SplitBillModal = ({
       try {
         await onPayBill({
           billId,
-          amount: billTotal,
+          amount: amountWithTip,
+          tipAmount: billTip,
           itemIndices,
           paymentType,
         });
@@ -110,11 +121,24 @@ export const SplitBillModal = ({
             b.id === billId ? { ...b, isPaid: true, paymentType } : b
           )
         );
+        // Clear tip state for paid bill
+        setTipAmounts((prev) => {
+          const { [billId]: _, ...rest } = prev;
+          return rest;
+        });
+        setTipPresets((prev) => {
+          const { [billId]: _, ...rest } = prev;
+          return rest;
+        });
+        setCustomTipFlags((prev) => {
+          const { [billId]: _, ...rest } = prev;
+          return rest;
+        });
       } finally {
         setPayingBillId(null);
       }
     },
-    [billTotals, items, itemAssignments, onPayBill]
+    [billTotals, items, itemAssignments, onPayBill, tipAmounts]
   );
 
   const handleClose = useCallback(() => {
@@ -122,6 +146,9 @@ export const SplitBillModal = ({
     setSelectedBillId(1);
     setItemAssignments({});
     setPayingBillId(null);
+    setTipAmounts({});
+    setTipPresets({});
+    setCustomTipFlags({});
     onClose();
   }, [onClose]);
 
@@ -143,6 +170,60 @@ export const SplitBillModal = ({
 
   const allBillsPaid = bills.every((b) => b.isPaid);
   const hasUnassignedItems = items.some((_, index) => !itemAssignments[index]);
+  const activeBillTotal = selectedBillId ? billTotals[selectedBillId] || 0 : 0;
+  const activeTip = selectedBillId ? tipAmounts[selectedBillId] || 0 : 0;
+  const activePreset = selectedBillId ? tipPresets[selectedBillId] ?? null : null;
+  const activeIsCustom = selectedBillId
+    ? customTipFlags[selectedBillId] ?? false
+    : false;
+  const activeTotalWithTip = activeBillTotal + activeTip;
+  const totalTips = useMemo(
+    () =>
+      Object.entries(tipAmounts).reduce((sum, [, value]) => {
+        return sum + (value || 0);
+      }, 0),
+    [tipAmounts]
+  );
+  const orderTotalWithTips = total + totalTips;
+
+  const setTipForBill = useCallback(
+    (billId: number, amount: number, preset: number | null, isCustom: boolean) => {
+      setTipAmounts((prev) => ({ ...prev, [billId]: amount }));
+      setTipPresets((prev) => ({ ...prev, [billId]: preset }));
+      setCustomTipFlags((prev) => ({ ...prev, [billId]: isCustom }));
+    },
+    []
+  );
+
+  const handleTipPresetClick = useCallback(
+    (percentage: number) => {
+      if (!selectedBillId) return;
+      const amount = Math.round(activeBillTotal * percentage * 100) / 100;
+      setTipForBill(selectedBillId, amount, percentage, false);
+    },
+    [selectedBillId, activeBillTotal, setTipForBill]
+  );
+
+  const handleCustomTipChange = useCallback(
+    (value: number | null) => {
+      if (!selectedBillId) return;
+      setTipForBill(selectedBillId, value || 0, null, true);
+    },
+    [selectedBillId, setTipForBill]
+  );
+
+  const handleNoTip = useCallback(() => {
+    if (!selectedBillId) return;
+    setTipForBill(selectedBillId, 0, null, false);
+  }, [selectedBillId, setTipForBill]);
+
+  useEffect(() => {
+    if (!open) {
+      setTipAmounts({});
+      setTipPresets({});
+      setCustomTipFlags({});
+    }
+  }, [open]);
 
   return (
     <Modal
@@ -226,7 +307,26 @@ export const SplitBillModal = ({
 
         <Divider style={{ margin: '12px 0' }} />
 
-        <BillTotal total={total} label="Order Total:" />
+        {selectedBillId && (
+          <>
+            <TipSelector
+              tipAmount={activeTip}
+              selectedTipPreset={activePreset}
+              isCustomTip={activeIsCustom}
+              onPresetClick={handleTipPresetClick}
+              onCustomChange={handleCustomTipChange}
+              onNoTip={handleNoTip}
+            />
+
+            <Divider style={{ margin: '12px 0' }} />
+
+            <BillTotal total={activeTotalWithTip} label={`Bill ${selectedBillId} Total:`} />
+          </>
+        )}
+
+        <Divider style={{ margin: '12px 0' }} />
+
+        <BillTotal total={orderTotalWithTips} label="Order Total (with tips):" />
 
         {hasUnassignedItems && (
           <Text

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal, Divider, Typography, Spin } from 'antd';
 import dayjs from 'dayjs';
 import { TipSelector, PaymentSummary } from '@/components/shared';
@@ -9,6 +9,7 @@ type Props = {
   items: BillItem[];
   total: number;
   orderCreatedAt?: string;
+  initialTipAmount?: number;
   loading?: boolean;
   onPayment: (paymentType: PaymentType, tipAmount: number) => void;
   onClose: () => void;
@@ -21,6 +22,7 @@ export const OrderBillModal = ({
   items,
   total,
   orderCreatedAt,
+  initialTipAmount,
   loading,
   onPayment,
   onClose,
@@ -38,6 +40,36 @@ export const OrderBillModal = ({
 
   const baseAmount = total;
   const totalAmount = baseAmount + tipAmount;
+
+  // Pre-fill tip when opening the modal (e.g., editing an order that already has a tip)
+  useEffect(() => {
+    if (!open) return;
+
+    const incomingTip = initialTipAmount ?? 0;
+    const tipPresets = [0.15, 0.18, 0.2, 0.25];
+    const presetMatch =
+      baseAmount > 0
+        ? tipPresets.find((preset) => {
+            const presetValue = Math.round(baseAmount * preset * 100) / 100;
+            return Math.abs(presetValue - incomingTip) < 0.01;
+          })
+        : undefined;
+
+    setTipAmount(incomingTip);
+    if (incomingTip === 0) {
+      setSelectedTipPreset(null);
+      setIsCustomTip(false);
+      return;
+    }
+
+    if (presetMatch) {
+      setSelectedTipPreset(presetMatch);
+      setIsCustomTip(false);
+    } else {
+      setSelectedTipPreset(null);
+      setIsCustomTip(true);
+    }
+  }, [open, initialTipAmount, baseAmount]);
 
   const handleTipPresetClick = (percentage: number) => {
     setSelectedTipPreset(percentage);

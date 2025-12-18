@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Alert, Modal, message } from 'antd';
 import { AccessDenied } from '@/components/shared';
 import { useOrderEditor, CustomerDetails } from '@/hooks/useOrderEditor';
@@ -26,12 +26,14 @@ export const NewOrder = () => {
   const [stripeAmount, setStripeAmount] = useState<number>(0);
   const [discountModalOpen, setDiscountModalOpen] = useState(false);
   const [discountSubmitting, setDiscountSubmitting] = useState(false);
+  const [splitTipsTotal, setSplitTipsTotal] = useState(0);
 
   const { createPayment, linkPaymentToOrder, completePayment } = usePayments();
 
   const {
     isEditMode,
     parsedOrderId,
+    selectedOrder,
     editingItem,
     editingItemBasePrice,
     optionToAdd,
@@ -76,6 +78,10 @@ export const NewOrder = () => {
     addLocalPriceModifier,
     updateOrder,
   } = useOrderEditor();
+
+  useEffect(() => {
+    setSplitTipsTotal(selectedOrder?.tipAmount ?? 0);
+  }, [selectedOrder?.tipAmount]);
 
   const handleCancelOrderClick = useCallback(() => {
     setConfirmModalOpen(true);
@@ -277,6 +283,7 @@ export const NewOrder = () => {
     billId: number;
     amount: number;
     itemIndices: number[];
+    tipAmount: number;
     resolve: () => void;
     reject: (error: Error) => void;
   } | null>(null);
@@ -287,14 +294,27 @@ export const NewOrder = () => {
       amount: number;
       itemIndices: number[];
       paymentType: 'Cash' | 'CreditCard' | 'GiftCard';
+      tipAmount?: number;
     }) => {
-      const { billId, amount, itemIndices, paymentType } = request;
+      const { billId, amount, itemIndices, paymentType, tipAmount = 0 } =
+        request;
 
       if (!parsedOrderId) {
         void message.warning(
           'Please save the order first before processing payment.'
         );
         return;
+      }
+
+      if (tipAmount > 0) {
+        const newTipTotal = splitTipsTotal + tipAmount;
+        try {
+          await updateOrder(parsedOrderId, { tipAmount: newTipTotal });
+          setSplitTipsTotal(newTipTotal);
+        } catch {
+          void message.error('Failed to save tip amount');
+          return;
+        }
       }
 
       // For Card payments, we need to open the Stripe modal
@@ -304,6 +324,7 @@ export const NewOrder = () => {
             billId,
             amount,
             itemIndices,
+            tipAmount,
             resolve,
             reject,
           });
@@ -518,6 +539,8 @@ export const NewOrder = () => {
         open={billModalOpen}
         items={orderInfoItems}
         total={total}
+        orderCreatedAt={selectedOrder?.datePlaced}
+        initialTipAmount={selectedOrder?.tipAmount}
         loading={billLoading}
         onPayment={(type, tipAmount) => void handlePayment(type, tipAmount)}
         onClose={handleBillModalClose}

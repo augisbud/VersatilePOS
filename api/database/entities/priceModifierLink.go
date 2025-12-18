@@ -25,3 +25,15 @@ type PriceModifierReservationLink struct {
 	ReservationID uint        `json:"reservationId"`
 	Reservation   Reservation `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:ReservationID"`
 }
+
+// PriceModifierItemLink links a PriceModifier to a specific Item
+// This allows applying discounts/taxes/surcharges to individual items
+type PriceModifierItemLink struct {
+	gorm.Model
+
+	PriceModifierID uint          `json:"priceModifierId"`
+	PriceModifier   PriceModifier `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:PriceModifierID"`
+
+	ItemID uint `json:"itemId"`
+	Item   Item `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:ItemID"`
+}

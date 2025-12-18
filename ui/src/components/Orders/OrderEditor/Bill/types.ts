@@ -24,4 +24,6 @@ export type SplitBillPaymentRequest = {
   tipAmount?: number;
   itemIndices: number[];
   paymentType: PaymentType;
+  giftCardCode?: string;
+  isPartialPayment?: boolean;
 };

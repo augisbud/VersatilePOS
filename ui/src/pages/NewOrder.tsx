@@ -3,6 +3,7 @@ import { Alert, Modal, message } from 'antd';
 import { AccessDenied } from '@/components/shared';
 import { useOrderEditor, CustomerDetails } from '@/hooks/useOrderEditor';
 import { usePayments } from '@/hooks/usePayments';
+import { PaymentType } from '@/components/Orders/OrderEditor/Bill/types';
 import {
   ItemsGrid,
   OrderEditorHeader,
@@ -125,10 +126,19 @@ export const NewOrder = () => {
   }, []);
 
   const handlePayment = useCallback(
-    async (
-      paymentType: 'Cash' | 'CreditCard' | 'GiftCard',
-      tipAmount: number
-    ) => {
+    async ({
+      paymentType,
+      amount,
+      tipAmount,
+      giftCardCode,
+      isPartial,
+    }: {
+      paymentType: PaymentType;
+      amount: number;
+      tipAmount: number;
+      giftCardCode?: string;
+      isPartial?: boolean;
+    }) => {
       if (!parsedOrderId) {
         void message.warning(
           'Please save the order first before processing payment.'
@@ -136,7 +146,7 @@ export const NewOrder = () => {
         return;
       }
 
-      const paymentAmount = total + tipAmount;
+      const paymentAmount = amount ?? total + tipAmount;
 
       if (tipAmount > 0) {
         try {
@@ -161,14 +171,20 @@ export const NewOrder = () => {
         const payment = await createPayment({
           amount: paymentAmount,
           type: paymentType,
-          status: 'Completed',
+          status: paymentType === 'GiftCard' ? 'Pending' : 'Completed',
+          giftCardCode,
         });
 
         if (payment?.id) {
           await linkPaymentToOrder(parsedOrderId, payment.id);
+          if (paymentType === 'GiftCard') {
+            await completePayment(payment.id);
+          }
           void message.success('Payment processed successfully');
-          setBillModalOpen(false);
-          navigateBack();
+          if (!isPartial) {
+            setBillModalOpen(false);
+            navigateBack();
+          }
         }
       } catch {
         void message.error('Failed to process payment');
@@ -176,14 +192,7 @@ export const NewOrder = () => {
         setBillLoading(false);
       }
     },
-    [
-      parsedOrderId,
-      total,
-      updateOrder,
-      createPayment,
-      linkPaymentToOrder,
-      navigateBack,
-    ]
+    [parsedOrderId, total, updateOrder, createPayment, linkPaymentToOrder, navigateBack, completePayment]
   );
 
   const handleStripePaymentSuccess = useCallback(
@@ -293,11 +302,20 @@ export const NewOrder = () => {
       billId: number;
       amount: number;
       itemIndices: number[];
-      paymentType: 'Cash' | 'CreditCard' | 'GiftCard';
+      paymentType: PaymentType;
       tipAmount?: number;
+      giftCardCode?: string;
+      isPartialPayment?: boolean;
     }) => {
-      const { billId, amount, itemIndices, paymentType, tipAmount = 0 } =
-        request;
+      const {
+        billId,
+        amount,
+        itemIndices,
+        paymentType,
+        tipAmount = 0,
+        giftCardCode,
+        isPartialPayment,
+      } = request;
 
       if (!parsedOrderId) {
         void message.warning(
@@ -338,13 +356,18 @@ export const NewOrder = () => {
         const payment = await createPayment({
           amount,
           type: paymentType,
-          status: 'Completed',
+          status: paymentType === 'GiftCard' ? 'Pending' : 'Completed',
+          giftCardCode,
         });
 
         if (payment?.id) {
           await linkPaymentToOrder(parsedOrderId, payment.id);
+          if (paymentType === 'GiftCard') {
+            await completePayment(payment.id);
+          }
           void message.success(`Bill ${billId} paid successfully`);
         }
+        return { isPartial: !!isPartialPayment };
       } catch {
         void message.error('Failed to process payment');
         throw new Error('Payment failed');
@@ -352,7 +375,7 @@ export const NewOrder = () => {
         setSplitBillLoading(false);
       }
     },
-    [parsedOrderId, createPayment, linkPaymentToOrder]
+    [parsedOrderId, createPayment, linkPaymentToOrder, completePayment]
   );
 
   // Handler for split bill card payment success
@@ -542,7 +565,7 @@ export const NewOrder = () => {
         orderCreatedAt={selectedOrder?.datePlaced}
         initialTipAmount={selectedOrder?.tipAmount}
         loading={billLoading}
-        onPayment={(type, tipAmount) => void handlePayment(type, tipAmount)}
+        onPayment={(payload) => handlePayment(payload)}
         onClose={handleBillModalClose}
       />
 

@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { Modal, Button, Divider, Typography, Spin } from 'antd';
+import { Modal, Button, Divider, Typography, Spin, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import {
@@ -13,6 +13,10 @@ import {
   SplitBillPaymentRequest,
 } from './Bill';
 import { TipSelector } from '@/components/shared';
+import {
+  GiftCardPaymentModal,
+  GiftCardPaymentResult,
+} from '@/components/Payment';
 
 type Props = {
   open: boolean;
@@ -20,7 +24,9 @@ type Props = {
   total: number;
   orderCreatedAt?: string;
   loading?: boolean;
-  onPayBill: (request: SplitBillPaymentRequest) => Promise<void>;
+  onPayBill: (
+    request: SplitBillPaymentRequest
+  ) => Promise<{ isPartial?: boolean } | void>;
   onClose: () => void;
 };
 
@@ -48,6 +54,16 @@ export const SplitBillModal = ({
   const [customTipFlags, setCustomTipFlags] = useState<Record<number, boolean>>(
     {}
   );
+  const [partialRemainders, setPartialRemainders] = useState<
+    Record<number, number>
+  >({});
+  const [showGiftCardModal, setShowGiftCardModal] = useState(false);
+  const [giftCardPayment, setGiftCardPayment] = useState<{
+    billId: number;
+    amount: number;
+    tipAmount: number;
+    itemIndices: number[];
+  } | null>(null);
 
   const formattedOrderDate = orderCreatedAt
     ? dayjs(orderCreatedAt).format('YYYY-MM-DD HH:mm')
@@ -99,46 +115,71 @@ export const SplitBillModal = ({
   const handlePayBill = useCallback(
     async (billId: number, paymentType: PaymentType) => {
       const billTotal = billTotals[billId] || 0;
-      if (billTotal === 0) return;
-      const billTip = tipAmounts[billId] || 0;
-      const amountWithTip = billTotal + billTip;
+      const billRemainder = partialRemainders[billId] || 0;
+      const effectiveBillTotal = billRemainder > 0 ? billRemainder : billTotal;
+      if (effectiveBillTotal === 0) return;
+      const billTip = billRemainder > 0 ? 0 : tipAmounts[billId] || 0;
+      const amountWithTip = effectiveBillTotal + billTip;
 
       const itemIndices = items
         .map((_, index) => index)
         .filter((index) => itemAssignments[index] === billId);
 
+      if (paymentType === 'GiftCard') {
+        setGiftCardPayment({
+          billId,
+          amount: amountWithTip,
+          tipAmount: billTip,
+          itemIndices,
+        });
+        setShowGiftCardModal(true);
+        return;
+      }
+
       setPayingBillId(billId);
       try {
-        await onPayBill({
+        const result = await onPayBill({
           billId,
           amount: amountWithTip,
           tipAmount: billTip,
           itemIndices,
           paymentType,
         });
-        setBills((prev) =>
-          prev.map((b) =>
-            b.id === billId ? { ...b, isPaid: true, paymentType } : b
-          )
-        );
-        // Clear tip state for paid bill
-        setTipAmounts((prev) => {
-          const { [billId]: _, ...rest } = prev;
-          return rest;
-        });
-        setTipPresets((prev) => {
-          const { [billId]: _, ...rest } = prev;
-          return rest;
-        });
-        setCustomTipFlags((prev) => {
-          const { [billId]: _, ...rest } = prev;
-          return rest;
-        });
+        const isPartial = !!result && 'isPartial' in result && result.isPartial;
+
+        if (isPartial) {
+          message.info(
+            `Partial payment applied to Bill ${billId}. Please pay the remaining balance.`
+          );
+        } else {
+          setBills((prev) =>
+            prev.map((b) =>
+              b.id === billId ? { ...b, isPaid: true, paymentType } : b
+            )
+          );
+          // Clear tip and partial state for paid bill
+          setTipAmounts((prev) => {
+            const { [billId]: _, ...rest } = prev;
+            return rest;
+          });
+          setTipPresets((prev) => {
+            const { [billId]: _, ...rest } = prev;
+            return rest;
+          });
+          setCustomTipFlags((prev) => {
+            const { [billId]: _, ...rest } = prev;
+            return rest;
+          });
+          setPartialRemainders((prev) => {
+            const { [billId]: _, ...rest } = prev;
+            return rest;
+          });
+        }
       } finally {
         setPayingBillId(null);
       }
     },
-    [billTotals, items, itemAssignments, onPayBill, tipAmounts]
+    [billTotals, items, itemAssignments, onPayBill, tipAmounts, partialRemainders]
   );
 
   const handleClose = useCallback(() => {
@@ -149,6 +190,9 @@ export const SplitBillModal = ({
     setTipAmounts({});
     setTipPresets({});
     setCustomTipFlags({});
+    setPartialRemainders({});
+    setShowGiftCardModal(false);
+    setGiftCardPayment(null);
     onClose();
   }, [onClose]);
 
@@ -171,12 +215,20 @@ export const SplitBillModal = ({
   const allBillsPaid = bills.every((b) => b.isPaid);
   const hasUnassignedItems = items.some((_, index) => !itemAssignments[index]);
   const activeBillTotal = selectedBillId ? billTotals[selectedBillId] || 0 : 0;
-  const activeTip = selectedBillId ? tipAmounts[selectedBillId] || 0 : 0;
-  const activePreset = selectedBillId ? tipPresets[selectedBillId] ?? null : null;
-  const activeIsCustom = selectedBillId
-    ? customTipFlags[selectedBillId] ?? false
-    : false;
-  const activeTotalWithTip = activeBillTotal + activeTip;
+  const activeRemainder = selectedBillId
+    ? partialRemainders[selectedBillId] || 0
+    : 0;
+  const activeTip =
+    selectedBillId && activeRemainder === 0 ? tipAmounts[selectedBillId] || 0 : 0;
+  const activePreset =
+    selectedBillId && activeRemainder === 0 ? tipPresets[selectedBillId] ?? null : null;
+  const activeIsCustom =
+    selectedBillId && activeRemainder === 0
+      ? customTipFlags[selectedBillId] ?? false
+      : false;
+  const activeBaseTotal =
+    activeRemainder > 0 ? activeRemainder : activeBillTotal;
+  const activeTotalWithTip = activeBaseTotal + activeTip;
   const totalTips = useMemo(
     () =>
       Object.entries(tipAmounts).reduce((sum, [, value]) => {
@@ -222,8 +274,78 @@ export const SplitBillModal = ({
       setTipAmounts({});
       setTipPresets({});
       setCustomTipFlags({});
+      setPartialRemainders({});
     }
   }, [open]);
+
+  const handleGiftCardSuccess = useCallback(
+    async (result: GiftCardPaymentResult) => {
+      if (!giftCardPayment) return;
+
+      const { billId, amount, tipAmount, itemIndices } = giftCardPayment;
+
+      setPayingBillId(billId);
+      try {
+        await onPayBill({
+          billId,
+          amount: result.amountUsed,
+          tipAmount,
+          itemIndices,
+          paymentType: 'GiftCard',
+          giftCardCode: result.giftCardCode,
+          isPartialPayment: result.isPartialPayment,
+        });
+
+        setShowGiftCardModal(false);
+
+        if (result.isPartialPayment) {
+          message.info(
+            `Gift card applied to Bill ${billId}! $${result.amountUsed.toFixed(
+              2
+            )} paid. Remaining balance: $${result.remainingAmount.toFixed(2)}.`
+          );
+          setPartialRemainders((prev) => ({
+            ...prev,
+            [billId]: result.remainingAmount,
+          }));
+        } else {
+          setBills((prev) =>
+            prev.map((b) =>
+              b.id === billId ? { ...b, isPaid: true, paymentType: 'GiftCard' } : b
+            )
+          );
+          setTipAmounts((prev) => {
+            const { [billId]: _, ...rest } = prev;
+            return rest;
+          });
+          setTipPresets((prev) => {
+            const { [billId]: _, ...rest } = prev;
+            return rest;
+          });
+          setCustomTipFlags((prev) => {
+            const { [billId]: _, ...rest } = prev;
+            return rest;
+          });
+          setPartialRemainders((prev) => {
+            const { [billId]: _, ...rest } = prev;
+            return rest;
+          });
+        }
+      } catch (error) {
+        message.error('Failed to process gift card payment');
+        console.error('Gift card payment error:', error);
+      } finally {
+        setPayingBillId(null);
+        setGiftCardPayment(null);
+      }
+    },
+    [giftCardPayment, onPayBill]
+  );
+
+  const handleGiftCardCancel = () => {
+    setShowGiftCardModal(false);
+    setGiftCardPayment(null);
+  };
 
   return (
     <Modal
@@ -309,14 +431,16 @@ export const SplitBillModal = ({
 
         {selectedBillId && (
           <>
-            <TipSelector
-              tipAmount={activeTip}
-              selectedTipPreset={activePreset}
-              isCustomTip={activeIsCustom}
-              onPresetClick={handleTipPresetClick}
-              onCustomChange={handleCustomTipChange}
-              onNoTip={handleNoTip}
-            />
+            {activeRemainder === 0 && (
+              <TipSelector
+                tipAmount={activeTip}
+                selectedTipPreset={activePreset}
+                isCustomTip={activeIsCustom}
+                onPresetClick={handleTipPresetClick}
+                onCustomChange={handleCustomTipChange}
+                onNoTip={handleNoTip}
+              />
+            )}
 
             <Divider style={{ margin: '12px 0' }} />
 
@@ -345,6 +469,13 @@ export const SplitBillModal = ({
           </div>
         )}
       </Spin>
+
+      <GiftCardPaymentModal
+        open={showGiftCardModal}
+        amount={giftCardPayment?.amount || 0}
+        onSuccess={(result) => void handleGiftCardSuccess(result)}
+        onCancel={handleGiftCardCancel}
+      />
     </Modal>
   );
 };

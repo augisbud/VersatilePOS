@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Modal, Divider, Typography, Spin } from 'antd';
+import { Modal, Divider, Typography, Spin, message } from 'antd';
 import dayjs from 'dayjs';
 import { TipSelector, PaymentSummary } from '@/components/shared';
 import { BillItemsTable, PaymentButtons, BillItem, PaymentType } from './Bill';
+import {
+  GiftCardPaymentModal,
+  GiftCardPaymentResult,
+} from '@/components/Payment';
 
 type Props = {
   open: boolean;
@@ -11,7 +15,13 @@ type Props = {
   orderCreatedAt?: string;
   initialTipAmount?: number;
   loading?: boolean;
-  onPayment: (paymentType: PaymentType, tipAmount: number) => void;
+  onPayment: (payload: {
+    paymentType: PaymentType;
+    amount: number;
+    tipAmount: number;
+    giftCardCode?: string;
+    isPartial?: boolean;
+  }) => Promise<void>;
   onClose: () => void;
 };
 
@@ -32,6 +42,9 @@ export const OrderBillModal = ({
     null
   );
   const [isCustomTip, setIsCustomTip] = useState(false);
+  const [showGiftCardModal, setShowGiftCardModal] = useState(false);
+  const [partialPaymentRemainder, setPartialPaymentRemainder] =
+    useState<number>(0);
 
   const billCreatedAt = dayjs().format('YYYY-MM-DD HH:mm');
   const formattedOrderDate = orderCreatedAt
@@ -39,7 +52,10 @@ export const OrderBillModal = ({
     : dayjs().format('YYYY-MM-DD HH:mm');
 
   const baseAmount = total;
-  const totalAmount = baseAmount + tipAmount;
+  const effectiveBaseAmount =
+    partialPaymentRemainder > 0 ? partialPaymentRemainder : baseAmount;
+  const totalAmount =
+    effectiveBaseAmount + (partialPaymentRemainder > 0 ? 0 : tipAmount);
 
   // Pre-fill tip when opening the modal (e.g., editing an order that already has a tip)
   useEffect(() => {
@@ -89,6 +105,10 @@ export const OrderBillModal = ({
     setTipAmount(0);
   };
 
+  const resetPartialPayment = () => {
+    setPartialPaymentRemainder(0);
+  };
+
   const resetTipState = () => {
     setTipAmount(0);
     setSelectedTipPreset(null);
@@ -97,63 +117,118 @@ export const OrderBillModal = ({
 
   const handleClose = () => {
     resetTipState();
+    resetPartialPayment();
+    setShowGiftCardModal(false);
     onClose();
   };
 
   const handlePayment = (paymentType: PaymentType) => {
-    onPayment(paymentType, tipAmount);
+    const amountToPay =
+      partialPaymentRemainder > 0 ? partialPaymentRemainder : baseAmount + tipAmount;
+    const tipToApply = partialPaymentRemainder > 0 ? 0 : tipAmount;
+
+    if (paymentType === 'GiftCard') {
+      setShowGiftCardModal(true);
+      return;
+    }
+
+    void onPayment({ paymentType, amount: amountToPay, tipAmount: tipToApply });
+  };
+
+  const handleGiftCardSuccess = async (result: GiftCardPaymentResult) => {
+    const tipToApply = partialPaymentRemainder > 0 ? 0 : tipAmount;
+
+    try {
+      await onPayment({
+        paymentType: 'GiftCard',
+        amount: result.amountUsed,
+        tipAmount: tipToApply,
+        giftCardCode: result.giftCardCode,
+        isPartial: result.isPartialPayment,
+      });
+      setShowGiftCardModal(false);
+
+      if (result.isPartialPayment) {
+        message.info(
+          `Gift card applied! $${result.amountUsed.toFixed(
+            2
+          )} paid. Remaining amount: $${result.remainingAmount.toFixed(2)}.`
+        );
+        setPartialPaymentRemainder(result.remainingAmount);
+      } else {
+        handleClose();
+      }
+    } catch (error) {
+      message.error('Failed to complete gift card payment');
+      console.error('Gift card payment finalization error:', error);
+    }
+  };
+
+  const handleGiftCardCancel = () => {
+    setShowGiftCardModal(false);
   };
 
   return (
-    <Modal
-      title="Order Bill"
-      open={open}
-      onCancel={handleClose}
-      footer={null}
-      width={600}
-      centered
-      destroyOnClose
-    >
-      <Spin spinning={loading}>
-        <div style={{ display: 'flex', gap: 24 }}>
-          {/* Left side - Bill details */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <Text type="secondary" style={{ fontSize: 13 }}>
-              Order created: {formattedOrderDate}
-            </Text>
+    <>
+      <Modal
+        title="Order Bill"
+        open={open}
+        onCancel={handleClose}
+        footer={null}
+        width={600}
+        centered
+        destroyOnClose
+      >
+        <Spin spinning={loading}>
+          <div style={{ display: 'flex', gap: 24 }}>
+            {/* Left side - Bill details */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                Order created: {formattedOrderDate}
+              </Text>
 
-            <Divider style={{ margin: '12px 0' }} />
+              <Divider style={{ margin: '12px 0' }} />
 
-            <BillItemsTable items={items} />
+              <BillItemsTable items={items} />
 
-            <Divider style={{ margin: '12px 0' }} />
+              <Divider style={{ margin: '12px 0' }} />
 
-            <TipSelector
-              tipAmount={tipAmount}
-              selectedTipPreset={selectedTipPreset}
-              isCustomTip={isCustomTip}
-              onPresetClick={handleTipPresetClick}
-              onCustomChange={handleCustomTipChange}
-              onNoTip={handleNoTip}
-            />
+              {partialPaymentRemainder === 0 && (
+                <TipSelector
+                  tipAmount={tipAmount}
+                  selectedTipPreset={selectedTipPreset}
+                  isCustomTip={isCustomTip}
+                  onPresetClick={handleTipPresetClick}
+                  onCustomChange={handleCustomTipChange}
+                  onNoTip={handleNoTip}
+                />
+              )}
 
-            <PaymentSummary
-              baseAmount={baseAmount}
-              tipAmount={tipAmount}
-              totalAmount={totalAmount}
-            />
+              <PaymentSummary
+                baseAmount={effectiveBaseAmount}
+                tipAmount={partialPaymentRemainder > 0 ? 0 : tipAmount}
+                totalAmount={totalAmount}
+              />
 
-            <Divider style={{ margin: '12px 0' }} />
+              <Divider style={{ margin: '12px 0' }} />
 
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              Bill created: {billCreatedAt}
-            </Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Bill created: {billCreatedAt}
+              </Text>
+            </div>
+
+            {/* Right side - Payment buttons */}
+            <PaymentButtons onPayment={handlePayment} disabled={loading} />
           </div>
+        </Spin>
+      </Modal>
 
-          {/* Right side - Payment buttons */}
-          <PaymentButtons onPayment={handlePayment} disabled={loading} />
-        </div>
-      </Spin>
-    </Modal>
+      <GiftCardPaymentModal
+        open={showGiftCardModal}
+        amount={partialPaymentRemainder > 0 ? partialPaymentRemainder : baseAmount + tipAmount}
+        onSuccess={(result) => void handleGiftCardSuccess(result)}
+        onCancel={handleGiftCardCancel}
+      />
+    </>
   );
 };

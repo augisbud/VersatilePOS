@@ -37,6 +37,46 @@ func isOrderInFinalState(status constants.OrderStatus) bool {
 	return status == constants.OrderConfirmed || status == constants.OrderCompleted || status == constants.OrderRefunded
 }
 
+// checkItemStockAvailability checks if an item has sufficient stock available
+func (s *Service) checkItemStockAvailability(itemID uint, requestedQuantity int) error {
+	_, inventory, err := s.itemRepo.GetItemByID(itemID)
+	if err != nil {
+		return err
+	}
+
+	// If inventory tracking doesn't exist, allow the order (no stock tracking)
+	if inventory == nil {
+		return nil
+	}
+
+	// Check if there's enough stock
+	if inventory.QuantityInStock < requestedQuantity {
+		return errors.New("insufficient stock for item")
+	}
+
+	return nil
+}
+
+// checkItemOptionStockAvailability checks if an item option has sufficient stock available
+func (s *Service) checkItemOptionStockAvailability(itemOptionID uint, requestedQuantity int) error {
+	_, inventory, err := s.itemRepo.GetItemOptionByID(itemOptionID)
+	if err != nil {
+		return err
+	}
+
+	// If inventory tracking doesn't exist, allow the order (no stock tracking)
+	if inventory == nil {
+		return nil
+	}
+
+	// Check if there's enough stock
+	if inventory.QuantityInStock < requestedQuantity {
+		return errors.New("insufficient stock for item option")
+	}
+
+	return nil
+}
+
 func (s *Service) CreateOrder(req orderModels.CreateOrderRequest, userID uint) (*orderModels.OrderDto, error) {
 	// Check RBAC permissions
 	ok, err := rbac.HasAccess(constants.Orders, constants.Write, req.BusinessID, userID)
@@ -47,7 +87,7 @@ func (s *Service) CreateOrder(req orderModels.CreateOrderRequest, userID uint) (
 		return nil, errors.New("unauthorized to create orders for this business")
 	}
 
-	// Validate items belong to the same business
+	// Validate items belong to the same business and check stock availability
 	for _, itemID := range req.ItemIDs {
 		itemEntity, _, err := s.itemRepo.GetItemByID(itemID)
 		if err != nil {
@@ -61,6 +101,11 @@ func (s *Service) CreateOrder(req orderModels.CreateOrderRequest, userID uint) (
 		}
 		if itemEntity.BusinessID != req.BusinessID {
 			return nil, errors.New("item does not belong to the specified business")
+		}
+
+		// Check stock availability (default count is 1)
+		if err := s.checkItemStockAvailability(itemID, 1); err != nil {
+			return nil, err
 		}
 	}
 
@@ -269,6 +314,11 @@ func (s *Service) AddItemToOrder(orderID uint, req orderModels.CreateOrderItemRe
 		return nil, errors.New("item does not belong to the same business as the order")
 	}
 
+	// Check stock availability
+	if err := s.checkItemStockAvailability(req.ItemID, int(req.Count)); err != nil {
+		return nil, err
+	}
+
 	orderItem := &entities.OrderItem{
 		OrderID: orderID,
 		ItemID:  req.ItemID,
@@ -347,6 +397,13 @@ func (s *Service) UpdateOrderItem(orderID, itemID uint, req orderModels.UpdateOr
 	}
 
 	if req.Count != nil {
+		// If increasing the count, check if there's enough stock for the additional quantity
+		if *req.Count > orderItem.Count {
+			additionalQuantity := int(*req.Count - orderItem.Count)
+			if err := s.checkItemStockAvailability(orderItem.ItemID, additionalQuantity); err != nil {
+				return nil, err
+			}
+		}
 		orderItem.Count = *req.Count
 	}
 
@@ -482,6 +539,11 @@ func (s *Service) AddOptionToOrderItem(orderID, itemID uint, req orderModels.Cre
 	}
 	if itemOption.ItemID != orderItem.ItemID {
 		return nil, errors.New("item option does not belong to the same item as the order item")
+	}
+
+	// Check stock availability
+	if err := s.checkItemOptionStockAvailability(req.ItemOptionID, int(req.Count)); err != nil {
+		return nil, err
 	}
 
 	link := &entities.ItemOptionLink{
@@ -636,6 +698,42 @@ func (s *Service) LinkPaymentToOrder(orderID, paymentID uint, userID uint) error
 		order.Status = constants.OrderConfirmed
 		if err := s.repo.UpdateOrder(order); err != nil {
 			log.Printf("Warning: Failed to update order %d status after linking completed payment: %v", orderID, err)
+		} else {
+			// Decrease stock when order is confirmed
+			if err := s.decreaseOrderStock(orderID); err != nil {
+				log.Printf("Warning: Failed to decrease stock for order %d: %v", orderID, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+// decreaseOrderStock decreases inventory for all items and item options in an order
+func (s *Service) decreaseOrderStock(orderID uint) error {
+	// Get order with all items and item option links
+	order, err := s.repo.GetOrderByID(orderID)
+	if err != nil {
+		return err
+	}
+	if order == nil {
+		return errors.New("order not found")
+	}
+
+	// Decrease stock for each order item
+	for _, orderItem := range order.OrderItems {
+		// Decrease item inventory by the count
+		if err := s.itemRepo.DecreaseItemInventory(orderItem.ItemID, int(orderItem.Count)); err != nil {
+			log.Printf("Warning: Failed to decrease inventory for item %d: %v", orderItem.ItemID, err)
+			// Continue with other items even if one fails
+		}
+
+		// Decrease stock for each item option link
+		for _, optionLink := range orderItem.ItemOptionLinks {
+			if err := s.itemRepo.DecreaseItemOptionInventory(optionLink.ItemOptionID, int(optionLink.Count)); err != nil {
+				log.Printf("Warning: Failed to decrease inventory for item option %d: %v", optionLink.ItemOptionID, err)
+				// Continue with other options even if one fails
+			}
 		}
 	}
 

@@ -43,6 +43,10 @@ export type ModelsApplyPriceModifierRequest = {
     priceModifierId: number;
 };
 
+export type ModelsApplyPriceModifierToItemRequest = {
+    priceModifierId: number;
+};
+
 export type ModelsApplyPriceModifierToReservationRequest = {
     priceModifierId: number;
 };
@@ -68,6 +72,10 @@ export type ModelsBusinessDto = {
     phone?: string;
 };
 
+export type ModelsCheckBalanceRequest = {
+    code: string;
+};
+
 export type ModelsCreateAccountRequest = {
     businessId?: number;
     name: string;
@@ -85,6 +93,11 @@ export type ModelsCreateBusinessRequest = {
     email: string;
     name: string;
     phone: string;
+};
+
+export type ModelsCreateGiftCardRequest = {
+    code: string;
+    initialValue: number;
 };
 
 export type ModelsCreateItemOptionLinkRequest = {
@@ -118,6 +131,8 @@ export type ModelsCreateOrderRequest = {
     customer?: string;
     customerEmail?: string;
     customerPhone?: string;
+    itemIds?: Array<number>;
+    priceModifierIds?: Array<number>;
     serviceCharge?: number;
     servicingAccountId?: number;
     tipAmount?: number;
@@ -125,6 +140,7 @@ export type ModelsCreateOrderRequest = {
 
 export type ModelsCreatePaymentRequest = {
     amount: number;
+    giftCardCode?: string;
     status?: string;
     type: string;
 };
@@ -175,6 +191,14 @@ export type ModelsFunctionDto = {
     name?: string;
 };
 
+export type ModelsGiftCardDto = {
+    balance?: number;
+    code?: string;
+    id?: number;
+    initialValue?: number;
+    isActive?: boolean;
+};
+
 export type ModelsHttpError = {
     error?: string;
 };
@@ -210,6 +234,16 @@ export type ModelsItemOptionLinkDto = {
     priceModifierValue?: number;
 };
 
+export type ModelsItemWithModifiersDto = {
+    businessId?: number;
+    finalPrice?: number;
+    id?: number;
+    name?: string;
+    price?: number;
+    priceModifiers?: Array<ModelsasPriceModifierDto>;
+    quantityInStock?: number;
+};
+
 export type ModelsLinkItemOptionRequest = {
     itemOptionId: number;
 };
@@ -234,6 +268,7 @@ export type ModelsOrderDto = {
     customerPhone?: string;
     datePlaced?: string;
     id?: number;
+    items?: Array<ModelsOrderItemWithDetailsDto>;
     priceModifiers?: Array<ModelsasPriceModifierDto>;
     serviceCharge?: number;
     servicingAccountId?: number;
@@ -250,8 +285,16 @@ export type ModelsOrderItemDto = {
     orderId?: number;
 };
 
+export type ModelsOrderItemWithDetailsDto = {
+    count?: number;
+    id?: number;
+    itemId?: number;
+    options?: Array<ModelsItemOptionLinkDto>;
+};
+
 export type ModelsPaymentDto = {
     amount?: number;
+    giftCardCode?: string;
     id?: number;
     status?: string;
     stripeCustomerId?: string;
@@ -1078,6 +1121,177 @@ export type GetBusinessRolesResponses = {
 
 export type GetBusinessRolesResponse = GetBusinessRolesResponses[keyof GetBusinessRolesResponses];
 
+export type GetGiftCardsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/giftcard';
+};
+
+export type GetGiftCardsErrors = {
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetGiftCardsError = GetGiftCardsErrors[keyof GetGiftCardsErrors];
+
+export type GetGiftCardsResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsGiftCardDto>;
+};
+
+export type GetGiftCardsResponse = GetGiftCardsResponses[keyof GetGiftCardsResponses];
+
+export type CreateGiftCardData = {
+    /**
+     * Gift card to create
+     */
+    body: ModelsCreateGiftCardRequest;
+    path?: never;
+    query?: never;
+    url: '/giftcard';
+};
+
+export type CreateGiftCardErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Conflict
+     */
+    409: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type CreateGiftCardError = CreateGiftCardErrors[keyof CreateGiftCardErrors];
+
+export type CreateGiftCardResponses = {
+    /**
+     * Created
+     */
+    201: ModelsGiftCardDto;
+};
+
+export type CreateGiftCardResponse = CreateGiftCardResponses[keyof CreateGiftCardResponses];
+
+export type CheckGiftCardBalanceData = {
+    /**
+     * Gift card code
+     */
+    body: ModelsCheckBalanceRequest;
+    path?: never;
+    query?: never;
+    url: '/giftcard/check-balance';
+};
+
+export type CheckGiftCardBalanceErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type CheckGiftCardBalanceError = CheckGiftCardBalanceErrors[keyof CheckGiftCardBalanceErrors];
+
+export type CheckGiftCardBalanceResponses = {
+    /**
+     * OK
+     */
+    200: ModelsGiftCardDto;
+};
+
+export type CheckGiftCardBalanceResponse = CheckGiftCardBalanceResponses[keyof CheckGiftCardBalanceResponses];
+
+export type GetGiftCardByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Gift Card ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/giftcard/{id}';
+};
+
+export type GetGiftCardByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetGiftCardByIdError = GetGiftCardByIdErrors[keyof GetGiftCardByIdErrors];
+
+export type GetGiftCardByIdResponses = {
+    /**
+     * OK
+     */
+    200: ModelsGiftCardDto;
+};
+
+export type GetGiftCardByIdResponse = GetGiftCardByIdResponses[keyof GetGiftCardByIdResponses];
+
+export type DeactivateGiftCardData = {
+    body?: never;
+    path: {
+        /**
+         * Gift Card ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/giftcard/{id}/deactivate';
+};
+
+export type DeactivateGiftCardErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type DeactivateGiftCardError = DeactivateGiftCardErrors[keyof DeactivateGiftCardErrors];
+
+export type DeactivateGiftCardResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
 export type GetItemData = {
     body?: never;
     path?: never;
@@ -1383,6 +1597,48 @@ export type PutItemOptionByIdResponses = {
 
 export type PutItemOptionByIdResponse = PutItemOptionByIdResponses[keyof PutItemOptionByIdResponses];
 
+export type GetItemWithModifiersData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Business ID
+         */
+        businessId: number;
+    };
+    url: '/item/with-modifiers';
+};
+
+export type GetItemWithModifiersErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetItemWithModifiersError = GetItemWithModifiersErrors[keyof GetItemWithModifiersErrors];
+
+export type GetItemWithModifiersResponses = {
+    /**
+     * OK
+     */
+    200: Array<ModelsItemWithModifiersDto>;
+};
+
+export type GetItemWithModifiersResponse = GetItemWithModifiersResponses[keyof GetItemWithModifiersResponses];
+
 export type DeleteItemByIdData = {
     body?: never;
     path: {
@@ -1523,6 +1779,147 @@ export type PutItemByIdResponses = {
 };
 
 export type PutItemByIdResponse = PutItemByIdResponses[keyof PutItemByIdResponses];
+
+export type PostItemByIdPriceModifierData = {
+    /**
+     * Price modifier to apply
+     */
+    body: ModelsApplyPriceModifierToItemRequest;
+    path: {
+        /**
+         * Item ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/item/{id}/price-modifier';
+};
+
+export type PostItemByIdPriceModifierErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type PostItemByIdPriceModifierError = PostItemByIdPriceModifierErrors[keyof PostItemByIdPriceModifierErrors];
+
+export type PostItemByIdPriceModifierResponses = {
+    /**
+     * Created
+     */
+    201: unknown;
+};
+
+export type DeleteItemByIdPriceModifierByPriceModifierIdData = {
+    body?: never;
+    path: {
+        /**
+         * Item ID
+         */
+        id: number;
+        /**
+         * Price Modifier ID
+         */
+        priceModifierId: number;
+    };
+    query?: never;
+    url: '/item/{id}/price-modifier/{priceModifierId}';
+};
+
+export type DeleteItemByIdPriceModifierByPriceModifierIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type DeleteItemByIdPriceModifierByPriceModifierIdError = DeleteItemByIdPriceModifierByPriceModifierIdErrors[keyof DeleteItemByIdPriceModifierByPriceModifierIdErrors];
+
+export type DeleteItemByIdPriceModifierByPriceModifierIdResponses = {
+    /**
+     * No Content
+     */
+    204: unknown;
+};
+
+export type GetItemByIdWithModifiersData = {
+    body?: never;
+    path: {
+        /**
+         * Item ID
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/item/{id}/with-modifiers';
+};
+
+export type GetItemByIdWithModifiersErrors = {
+    /**
+     * Bad Request
+     */
+    400: ModelsHttpError;
+    /**
+     * Unauthorized
+     */
+    401: ModelsHttpError;
+    /**
+     * Forbidden
+     */
+    403: ModelsHttpError;
+    /**
+     * Not Found
+     */
+    404: ModelsHttpError;
+    /**
+     * Internal Server Error
+     */
+    500: ModelsHttpError;
+};
+
+export type GetItemByIdWithModifiersError = GetItemByIdWithModifiersErrors[keyof GetItemByIdWithModifiersErrors];
+
+export type GetItemByIdWithModifiersResponses = {
+    /**
+     * OK
+     */
+    200: ModelsItemWithModifiersDto;
+};
+
+export type GetItemByIdWithModifiersResponse = GetItemByIdWithModifiersResponses[keyof GetItemByIdWithModifiersResponses];
 
 export type GetOrdersData = {
     body?: never;

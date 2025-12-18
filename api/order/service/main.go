@@ -73,6 +73,9 @@ func (s *Service) CreateOrder(req orderModels.CreateOrderRequest, userID uint) (
 		if priceModifierEntity == nil {
 			return nil, errors.New("price modifier not found")
 		}
+		if priceModifierEntity.EndDate != nil && time.Now().After(*priceModifierEntity.EndDate) {
+			return nil, errors.New("cannot apply expired price modifier")
+		}
 	}
 
 	now := time.Now()
@@ -411,6 +414,18 @@ func (s *Service) ApplyPriceModifierToOrder(orderID uint, req orderModels.ApplyP
 	// Check if order is in final state
 	if isOrderInFinalState(order.Status) {
 		return errors.New("cannot modify order: order is in final state")
+	}
+
+	// Validate price modifier
+	pm, err := s.priceModifierRepo.GetPriceModifierByID(req.PriceModifierID, order.BusinessID)
+	if err != nil {
+		return err
+	}
+	if pm == nil {
+		return errors.New("price modifier not found")
+	}
+	if pm.EndDate != nil && time.Now().After(*pm.EndDate) {
+		return errors.New("cannot apply expired price modifier")
 	}
 
 	link := &entities.PriceModifierOrderLink{

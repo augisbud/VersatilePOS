@@ -42,6 +42,7 @@ func (s *Service) CreatePriceModifier(req modelsas.CreatePriceModifierRequest, u
 		Name:         req.Name,
 		Value:        req.Value,
 		IsPercentage: req.IsPercentage,
+		EndDate:      req.EndDate,
 	}
 
 	createdPriceModifier, err := s.repo.CreatePriceModifier(priceModifier)
@@ -134,6 +135,9 @@ func (s *Service) UpdatePriceModifier(id uint, businessID uint, req modelsas.Upd
 	}
 	if req.IsPercentage != nil {
 		priceModifier.IsPercentage = *req.IsPercentage
+	}
+	if req.EndDate != nil {
+		priceModifier.EndDate = req.EndDate
 	}
 
 	updatedPriceModifier, err := s.repo.UpdatePriceModifier(priceModifier)

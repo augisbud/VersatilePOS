@@ -19,7 +19,9 @@ type PriceModifierDto struct {
 // NewPriceModifierDtoFromEntity constructs a PriceModifierDto from the DB entity.
 func NewPriceModifierDtoFromEntity(pm entities.PriceModifier) PriceModifierDto {
 	var validTo *time.Time
-	if pm.DeletedAt.Valid {
+	if pm.EndDate != nil {
+		validTo = pm.EndDate
+	} else if pm.DeletedAt.Valid {
 		validTo = &pm.DeletedAt.Time
 	}
 

@@ -282,7 +282,7 @@ export const SplitBillModal = ({
     async (result: GiftCardPaymentResult) => {
       if (!giftCardPayment) return;
 
-      const { billId, amount, tipAmount, itemIndices } = giftCardPayment;
+      const { billId, tipAmount, itemIndices } = giftCardPayment;
 
       setPayingBillId(billId);
       try {

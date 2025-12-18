@@ -3,6 +3,7 @@ package service
 import (
 	"VersatilePOS/database/entities"
 	"VersatilePOS/generic/constants"
+	giftCardService "VersatilePOS/giftCard/service"
 	orderRepository "VersatilePOS/order/repository"
 	paymentModels "VersatilePOS/payment/models"
 	"VersatilePOS/payment/repository"
@@ -19,6 +20,7 @@ type Service struct {
 	orderRepo         orderRepository.Repository
 	reservationRepo   reservationRepository.Repository
 	stripeService     *StripeService
+	giftCardService   *giftCardService.Service
 }
 
 func NewService() *Service {
@@ -33,6 +35,7 @@ func NewService() *Service {
 		orderRepo:       orderRepository.Repository{},
 		reservationRepo: reservationRepository.Repository{},
 		stripeService:   stripeService,
+		giftCardService: giftCardService.NewService(),
 	}
 }
 
@@ -56,10 +59,17 @@ func (s *Service) CreatePayment(req paymentModels.CreatePaymentRequest) (*paymen
 		paymentStatus = status
 	}
 
+	if paymentType == constants.GiftCard {
+		if req.GiftCardCode == nil || *req.GiftCardCode == "" {
+			return nil, errors.New("gift card code is required for gift card payments")
+		}
+	}
+
 	payment := &entities.Payment{
-		Amount: req.Amount,
-		Type:   paymentType,
-		Status: paymentStatus,
+		Amount:       req.Amount,
+		Type:         paymentType,
+		Status:       paymentStatus,
+		GiftCardCode: req.GiftCardCode,
 	}
 
 	createdPayment, err := s.repo.CreatePayment(payment)
@@ -159,12 +169,24 @@ func (s *Service) updateOrderStatusAfterPayment(paymentID uint) error {
 	}
 
 	for _, order := range orders {
-		// Only update status if order is currently Pending
 		if order.Status == constants.OrderPending {
-			order.Status = constants.OrderConfirmed
-			if err := s.orderRepo.UpdateOrder(&order); err != nil {
-				log.Printf("Failed to update order %d status after payment: %v", order.ID, err)
-				return err
+			allPaymentsCompleted := true
+			for _, link := range order.OrderPaymentLinks {
+				if link.Payment.Status != constants.Completed {
+					allPaymentsCompleted = false
+					break
+				}
+			}
+
+			if allPaymentsCompleted && len(order.OrderPaymentLinks) > 0 {
+				order.Status = constants.OrderConfirmed
+				if err := s.orderRepo.UpdateOrder(&order); err != nil {
+					log.Printf("Failed to update order %d status after payment: %v", order.ID, err)
+					return err
+				}
+				log.Printf("Order %d status updated to Confirmed (all payments completed)", order.ID)
+			} else {
+				log.Printf("Order %d has incomplete payments, status remains Pending", order.ID)
 			}
 		}
 	}
@@ -180,10 +202,23 @@ func (s *Service) updateReservationStatusAfterPayment(paymentID uint) error {
 
 	for _, reservation := range reservations {
 		if reservation.Status == constants.ReservationConfirmed {
-			reservation.Status = constants.ReservationCompleted
-			if err := s.reservationRepo.UpdateReservation(&reservation); err != nil {
-				log.Printf("Failed to update reservation %d status after payment: %v", reservation.ID, err)
-				return err
+			allPaymentsCompleted := true
+			for _, link := range reservation.ReservationPaymentLinks {
+				if link.Payment.Status != constants.Completed {
+					allPaymentsCompleted = false
+					break
+				}
+			}
+
+			if allPaymentsCompleted && len(reservation.ReservationPaymentLinks) > 0 {
+				reservation.Status = constants.ReservationCompleted
+				if err := s.reservationRepo.UpdateReservation(&reservation); err != nil {
+					log.Printf("Failed to update reservation %d status after payment: %v", reservation.ID, err)
+					return err
+				}
+				log.Printf("Reservation %d status updated to Completed (all payments completed)", reservation.ID)
+			} else {
+				log.Printf("Reservation %d has incomplete payments, status remains Confirmed", reservation.ID)
 			}
 		}
 	}
@@ -257,6 +292,32 @@ func (s *Service) UpdatePaymentStatusByID(paymentID uint, status constants.Payme
 
 // CompletePayment completes a payment and updates linked order status
 func (s *Service) CompletePayment(paymentID uint) error {
+	payment, err := s.repo.GetPaymentByID(paymentID)
+	if err != nil {
+		return err
+	}
+	if payment == nil {
+		return errors.New("payment not found")
+	}
+
+	if payment.Type == constants.GiftCard {
+		if payment.GiftCardCode == nil || *payment.GiftCardCode == "" {
+			return errors.New("gift card code is missing for this payment")
+		}
+
+		updatedCard, remainingPayment, err := s.giftCardService.RedeemGiftCard(*payment.GiftCardCode, payment.Amount)
+		if err != nil {
+			return fmt.Errorf("failed to redeem gift card: %w", err)
+		}
+
+		log.Printf("Gift card %s redeemed. Previous balance: %.2f, Amount deducted: %.2f, New balance: %.2f, Remaining payment: %.2f",
+			updatedCard.Code, updatedCard.Balance+payment.Amount, payment.Amount, updatedCard.Balance, remainingPayment)
+
+		if remainingPayment > 0 {
+			return fmt.Errorf("gift card has insufficient balance. Remaining amount to pay: %.2f", remainingPayment)
+		}
+	}
+
 	return s.UpdatePaymentStatusByID(paymentID, constants.Completed)
 }
 

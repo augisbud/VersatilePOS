@@ -59,12 +59,24 @@ func (ctrl *Controller) CreateGiftCard(c *gin.Context) {
 // @Description Get all gift cards in the system
 // @Tags giftcard
 // @Produce  json
+// @Param   businessId  query  int  true  "Business ID"
 // @Success 200 {array} models.GiftCardDto
 // @Failure 500 {object} models.HTTPError
 // @Router /giftcard [get]
 // @Id getGiftCards
 func (ctrl *Controller) GetGiftCards(c *gin.Context) {
-	giftCards, err := ctrl.service.GetGiftCards()
+	businessIDStr := c.Query("businessId")
+	if businessIDStr == "" {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "businessId is required"})
+		return
+	}
+	var businessID uint
+	if _, err := fmt.Sscanf(businessIDStr, "%d", &businessID); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, models.HTTPError{Error: "invalid businessId"})
+		return
+	}
+
+	giftCards, err := ctrl.service.GetGiftCards(businessID)
 	if err != nil {
 		log.Println("Failed to get gift cards:", err)
 		c.IndentedJSON(http.StatusInternalServerError, models.HTTPError{Error: "internal server error"})

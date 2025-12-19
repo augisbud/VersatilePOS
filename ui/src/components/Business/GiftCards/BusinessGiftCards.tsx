@@ -30,7 +30,7 @@ export const BusinessGiftCards = ({ businessId }: BusinessGiftCardsProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    void fetchGiftCards();
+    void fetchGiftCards(businessId);
   }, [businessId]);
 
   const handleDeactivate = async (giftCardId: number) => {
@@ -56,6 +56,7 @@ export const BusinessGiftCards = ({ businessId }: BusinessGiftCardsProps) => {
       await createGiftCard({
         code: values.code,
         initialValue: values.initialValue,
+        businessId,
       });
 
       handleCloseModal();

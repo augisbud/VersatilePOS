@@ -29,8 +29,8 @@ export const useGiftCards = () => {
   const loading = useAppSelector(getGiftCardsLoading);
   const error = useAppSelector(getGiftCardsError);
 
-  const fetchGiftCards = async () => {
-    return dispatch(fetchGiftCardsAction()).unwrap();
+  const fetchGiftCards = async (businessId: number) => {
+    return dispatch(fetchGiftCardsAction(businessId)).unwrap();
   };
 
   const fetchGiftCardById = async (giftCardId: number) => {

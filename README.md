@@ -1,5 +1,10 @@
 # VersatilePOS
 
+## Evaluation and Change Log document
+
+Link to commentable version of `Evaluation-and-Change-Log.pdf`:
+https://www.overleaf.com/5485489882kbnpptkhyvkf#480b1d
+
 ## Backend Setup (MacOS)
 
 ```bash

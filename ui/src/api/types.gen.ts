@@ -98,6 +98,7 @@ export type ModelsCreateBusinessRequest = {
 export type ModelsCreateGiftCardRequest = {
     code: string;
     initialValue: number;
+    businessId: number;
 };
 
 export type ModelsCreateItemOptionLinkRequest = {
@@ -1126,7 +1127,9 @@ export type GetBusinessRolesResponse = GetBusinessRolesResponses[keyof GetBusine
 export type GetGiftCardsData = {
     body?: never;
     path?: never;
-    query?: never;
+    query: {
+        businessId: number;
+    };
     url: '/giftcard';
 };
 

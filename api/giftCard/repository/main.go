@@ -16,9 +16,9 @@ func (r *Repository) CreateGiftCard(giftCard *entities.GiftCard) (*entities.Gift
 	return giftCard, nil
 }
 
-func (r *Repository) GetGiftCards() ([]entities.GiftCard, error) {
+func (r *Repository) GetGiftCards(businessID uint) ([]entities.GiftCard, error) {
 	var giftCards []entities.GiftCard
-	if result := database.DB.Find(&giftCards); result.Error != nil {
+	if result := database.DB.Where("business_id = ?", businessID).Find(&giftCards); result.Error != nil {
 		return nil, result.Error
 	}
 	return giftCards, nil

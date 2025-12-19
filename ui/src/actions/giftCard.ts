@@ -12,10 +12,10 @@ import {
   deactivateGiftCard,
 } from '@/api';
 
-export const fetchGiftCards = createAsyncThunk<ModelsGiftCardDto[], void>(
+export const fetchGiftCards = createAsyncThunk<ModelsGiftCardDto[], number>(
   'giftCard/fetchGiftCards',
-  async () => {
-    const response = await getGiftCards();
+  async (businessId) => {
+    const response = await getGiftCards({ query: { businessId } });
 
     if (response.error) {
       throw new Error(response.error.error);

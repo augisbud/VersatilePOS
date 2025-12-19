@@ -32,6 +32,7 @@ func (s *Service) CreateGiftCard(req giftCardModels.CreateGiftCardRequest) (*gif
 		InitialValue: req.InitialValue,
 		Balance:      req.InitialValue,
 		IsActive:     true,
+		BusinessID:   req.BusinessID,
 	}
 
 	createdCard, err := s.repo.CreateGiftCard(giftCard)
@@ -43,8 +44,8 @@ func (s *Service) CreateGiftCard(req giftCardModels.CreateGiftCardRequest) (*gif
 	return &dto, nil
 }
 
-func (s *Service) GetGiftCards() ([]giftCardModels.GiftCardDto, error) {
-	giftCards, err := s.repo.GetGiftCards()
+func (s *Service) GetGiftCards(businessID uint) ([]giftCardModels.GiftCardDto, error) {
+	giftCards, err := s.repo.GetGiftCards(businessID)
 	if err != nil {
 		return nil, err
 	}
